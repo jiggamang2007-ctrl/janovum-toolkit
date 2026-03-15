@@ -1272,7 +1272,7 @@ sudo ufw enable
 // ══════════════════════════════════════
 // CONFIG & STATE
 // ══════════════════════════════════════
-const API = 'http://localhost:5050';
+const API = window.location.origin || 'http://localhost:5050';
 let currentTab = 'dashboard';
 let refreshTimer = null;
 let eventRefreshTimer = null;

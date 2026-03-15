@@ -138,8 +138,10 @@ daily_tracker = DailyTracker()
 async def incoming_call(request: Request):
     try:
         form_data = await request.form()
+        logger.info(f"[{CLIENT_ID}] Twilio form data: {dict(form_data)}")
         from_number = form_data.get("From", form_data.get("Caller", "unknown"))
-    except Exception:
+    except Exception as e:
+        logger.error(f"[{CLIENT_ID}] Failed to parse form data: {e}")
         from_number = "unknown"
 
     can_accept, reason = daily_tracker.can_accept()

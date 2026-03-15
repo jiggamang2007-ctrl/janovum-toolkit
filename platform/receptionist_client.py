@@ -295,7 +295,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     )
 
     from pipecat.services.deepgram.stt import DeepgramSTTService
-    stt = DeepgramSTTService(api_key=DEEPGRAM_KEY, audio_passthrough=True)
+    stt = DeepgramSTTService(api_key=DEEPGRAM_KEY, audio_passthrough=True, encoding="mulaw", sample_rate=8000)
 
     llm = OpenAILLMService(
         api_key=GROQ_KEY,

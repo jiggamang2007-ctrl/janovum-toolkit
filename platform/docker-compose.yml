@@ -1,0 +1,29 @@
+# Janovum Platform — Docker Compose
+# Start with: docker compose up -d
+# Logs:       docker compose logs -f janovum
+# Stop:       docker compose down
+
+services:
+  janovum:
+    build: .
+    container_name: janovum-platform
+    ports:
+      - "${SERVER_PORT:-5050}:5050"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./agent_screenshots:/app/agent_screenshots
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - SERVER_PORT=${SERVER_PORT:-5050}
+      - DEBUG=${DEBUG:-false}
+      - GMAIL_USER=${GMAIL_USER:-}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5050/api/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s

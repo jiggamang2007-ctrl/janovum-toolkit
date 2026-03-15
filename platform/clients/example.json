@@ -1,0 +1,24 @@
+{
+  "client_name": "Example Client",
+  "client_context": "This is an example client config. Replace with real client details.",
+  "enabled_modules": ["telegram_bot", "lead_responder"],
+
+  "monthly_spend_limit": 200,
+  "monthly_charge": 500,
+
+  "email": "",
+  "email_password": "",
+  "imap_server": "imap.gmail.com",
+  "smtp_server": "smtp.gmail.com",
+  "smtp_port": 587,
+  "telegram_token": "",
+  "phone": "",
+  "auto_send": false,
+  "auto_send_leads": false,
+  "services": "",
+  "target_area": "",
+  "max_price": 0,
+  "min_roi": 0,
+  "investment_strategy": "",
+  "scan_interval": 1800
+}

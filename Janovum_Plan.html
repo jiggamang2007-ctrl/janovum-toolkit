@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — Step-by-Step Plan</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; color: #e0e0e0; padding: 0; margin: 0; }
+  .page-content { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* ── NAV BAR ── */
+  .topnav { background: #111; border-bottom: 1px solid #222; padding: 0 20px; display: flex; align-items: center; gap: 0; position: sticky; top: 0; z-index: 1000; }
+  .topnav-brand { font-size: 1.1em; font-weight: 700; background: linear-gradient(135deg, #ff6b35, #f7c948); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 12px 20px 12px 0; border-right: 1px solid #222; margin-right: 4px; white-space: nowrap; text-decoration: none; }
+  .topnav a.nav-link { display: flex; align-items: center; gap: 8px; padding: 14px 18px; color: #777; text-decoration: none; font-size: 0.88em; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .topnav a.nav-link:hover { color: #ccc; background: #1a1a1a; }
+  .topnav a.nav-link.active { color: #f7c948; border-bottom-color: #f7c948; }
+  .topnav a.nav-link svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+  h1 { text-align: center; font-size: 2.2em; background: linear-gradient(135deg, #ff6b35, #f7c948); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 0.95em; margin-bottom: 10px; }
+  .progress-bar-container { background: #1a1a1a; border-radius: 12px; padding: 15px 20px; margin-bottom: 25px; border: 1px solid #2a2a2a; position: sticky; top: 48px; z-index: 100; }
+  .progress-text { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9em; }
+  .progress-text span:first-child { color: #f7c948; font-weight: bold; }
+  .progress-text span:last-child { color: #888; }
+  .progress-bar { width: 100%; height: 10px; background: #2a2a2a; border-radius: 5px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #ff6b35, #f7c948); border-radius: 5px; transition: width 0.4s ease; }
+  .phase { margin-bottom: 30px; }
+  .phase-header { padding: 12px 18px; border-radius: 10px; margin-bottom: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+  .phase-header:hover { filter: brightness(1.1); }
+  .phase-header h2 { font-size: 1.15em; }
+  .phase-header .phase-count { font-size: 0.85em; opacity: 0.8; }
+  .phase-header .toggle { font-size: 1.2em; transition: transform 0.3s; }
+  .phase-header .toggle.collapsed { transform: rotate(-90deg); }
+  .walking .phase-header { background: linear-gradient(135deg, #1a3a1a, #1a4a1a); border: 1px solid #2a5a2a; }
+  .jogging .phase-header { background: linear-gradient(135deg, #1a2a3a, #1a3a4a); border: 1px solid #2a4a5a; }
+  .running .phase-header { background: linear-gradient(135deg, #2a2a1a, #3a3a1a); border: 1px solid #4a4a2a; }
+  .sprinting .phase-header { background: linear-gradient(135deg, #3a1a1a, #4a2a1a); border: 1px solid #5a2a2a; }
+  .blasting .phase-header { background: linear-gradient(135deg, #2a1a3a, #3a1a4a); border: 1px solid #4a2a5a; }
+  .flying .phase-header { background: linear-gradient(135deg, #1a2a2a, #1a3a3a); border: 1px solid #2a4a4a; }
+  .soaring .phase-header { background: linear-gradient(135deg, #3a2a1a, #4a3a1a); border: 1px solid #5a4a2a; }
+  .steps { display: block; }
+  .steps.hidden { display: none; }
+  .step { background: #141414; border: 1px solid #222; border-radius: 8px; margin-bottom: 8px; overflow: hidden; transition: all 0.3s; }
+  .step.completed { border-color: #2a5a2a; background: #0a1a0a; }
+  .step-header { padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; user-select: none; }
+  .step-header:hover { background: #1a1a1a; }
+  .step input[type="checkbox"] { appearance: none; width: 22px; height: 22px; min-width: 22px; border: 2px solid #444; border-radius: 5px; cursor: pointer; position: relative; margin-top: 1px; transition: all 0.2s; }
+  .step input[type="checkbox"]:checked { background: #2ecc71; border-color: #2ecc71; }
+  .step input[type="checkbox"]:checked::after { content: '\2713'; position: absolute; color: #fff; font-size: 14px; font-weight: bold; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .step-title { font-weight: 600; font-size: 0.95em; flex: 1; }
+  .step.completed .step-title { color: #2ecc71; }
+  .step-number { color: #f7c948; font-weight: bold; font-size: 0.85em; min-width: 32px; }
+  .step-details { display: none; padding: 0 16px 14px 52px; font-size: 0.88em; color: #aaa; line-height: 1.6; }
+  .step-details.show { display: block; }
+  .step-details ul { list-style: none; padding: 0; }
+  .step-details li { padding: 3px 0; padding-left: 16px; position: relative; }
+  .step-details li::before { content: '\2192'; position: absolute; left: 0; color: #555; }
+  .step-details .budget { color: #f7c948; font-weight: 500; margin-top: 6px; }
+  .expand-btn { color: #666; font-size: 0.8em; padding: 2px 8px; border: 1px solid #333; border-radius: 4px; background: none; cursor: pointer; white-space: nowrap; }
+  .expand-btn:hover { border-color: #555; color: #999; }
+  .reset-btn { display: block; margin: 30px auto; padding: 10px 25px; background: #2a1a1a; color: #ff6b6b; border: 1px solid #5a2a2a; border-radius: 8px; cursor: pointer; font-size: 0.9em; }
+  .reset-btn:hover { background: #3a1a1a; }
+
+  /* Notes styles */
+  .notes-toggle-row { margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .notes-toggle-btn { color: #777; font-size: 0.8em; padding: 3px 10px; border: 1px solid #333; border-radius: 4px; background: #1a1a1a; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+  .notes-toggle-btn:hover { border-color: #555; color: #bbb; background: #222; }
+  .notes-toggle-btn.has-note { border-color: #f7c948; color: #f7c948; }
+  .note-indicator { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #f7c948; flex-shrink: 0; }
+  .notes-area { display: none; margin-top: 8px; }
+  .notes-area.show { display: block; }
+  .notes-area textarea { width: 100%; min-height: 72px; max-height: 300px; resize: vertical; background: #111; color: #ddd; border: 1px solid #333; border-radius: 6px; padding: 8px 10px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 0.85em; line-height: 1.5; outline: none; transition: border-color 0.2s, max-height 0.3s, min-height 0.3s; }
+  .notes-area textarea.expanded { min-height: 500px; max-height: none; }
+  .notes-expand-btn { color: #777; font-size: 0.75em; padding: 2px 8px; border: 1px solid #333; border-radius: 4px; background: #1a1a1a; cursor: pointer; margin-top: 6px; display: inline-block; transition: all 0.2s; }
+  .notes-expand-btn:hover { border-color: #f7c948; color: #f7c948; }
+  .notes-area textarea:focus { border-color: #f7c948; }
+  .notes-area textarea::placeholder { color: #444; }
+  .notes-saved-indicator { font-size: 0.7em; color: #555; margin-left: 4px; opacity: 0; transition: opacity 0.3s; }
+  .notes-saved-indicator.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV BAR ═══ -->
+<nav class="topnav">
+  <a class="topnav-brand" href="Janovum_Plan.html">◈ Janovum</a>
+  <a class="nav-link active" href="Janovum_Plan.html">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Business Plan
+  </a>
+  <a class="nav-link" href="Janovum_Expenses.html" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Expenses
+  </a>
+  <a class="nav-link" href="Janovum_Mileage.html" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Mileage
+  </a>
+  <a class="nav-link" href="Janovum_Platform.html" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Toolkit
+  </a>
+  <a class="nav-link" href="Janovum_Clients.html" target="_blank">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Clients
+  </a>
+  <a class="nav-link" href="Janovum_Agent_Viewer.html" target="_blank">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Agent Viewer
+  </a>
+</nav>
+
+<div class="page-content">
+<h1>◈ Janovum</h1>
+<p class="subtitle" style="font-style:italic; color:#f7c948; margin-bottom:4px;">"The Doorway to New Creation."</p>
+<p class="subtitle">Step-by-Step Execution Plan — Walk → Jog → Run → Sprint → Blast → Fly → Soar</p>
+<div class="progress-bar-container">
+  <div class="progress-text">
+    <span id="progress-label">0 / 101 Steps Completed</span>
+    <span id="progress-pct">0%</span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width: 0%"></div></div>
+</div>
+<div id="plan"></div>
+<button class="reset-btn" onclick="if(confirm('Reset ALL checkmarks? This cannot be undone.')){localStorage.removeItem('janovum_progress');location.reload();}">Reset All Progress</button>
+<button class="reset-btn" style="background:#1a1a2a;color:#6b9bff;border-color:#2a2a5a;" onclick="if(confirm('Clear ALL notes? This cannot be undone.')){clearAllNotes();location.reload();}">Clear All Notes</button>
+<script>
+const phases = [
+  {
+    name: "\uD83D\uDEB6 WALKING \u2014 Getting Off the Ground ($500 budget)",
+    className: "walking",
+    steps: [
+      { num: 1, title: "Research Your State's LLC Requirements", details: [
+        "Go to your state's Secretary of State website",
+        "Search '[your state] LLC filing' on Google",
+        "Write down: filing fee, annual renewal fee, registered agent requirements, Operating Agreement requirements, local business licenses needed",
+        "This costs $0 \u2014 just research"
+      ], budget: "Budget spent so far: $0" },
+      { num: 2, title: "Check if 'Janovum' Is Available", details: [
+        "Search your state's business name database",
+        "Search USPTO.gov trademark database for 'Janovum'",
+        "Search Google for any existing companies named 'Janovum'",
+        "If taken, brainstorm alternatives: Janovum AI, Janovum Tech, etc."
+      ], budget: "Budget spent so far: $0" },
+      { num: 3, title: "Buy the Domain Name", details: [
+        "Go to Namecheap, GoDaddy, or Google Domains",
+        "Search for janovum.com (or janovum.ai)",
+        "Buy it \u2014 ~$10-15 for the first year",
+        "If taken: try getjanovum.com, janovum.ai, janovumtech.com, janovum.co",
+        "Just lock in the domain now \u2014 build the website later"
+      ], budget: "Budget spent so far: ~$12" },
+      { num: 4, title: "File the LLC", details: [
+        "Go to your state's Secretary of State website",
+        "Fill out Articles of Organization online",
+        "Info needed: Business name (Janovum LLC), home address, registered agent (yourself), single-member, purpose (Technology services and AI consulting)",
+        "Pay the filing fee",
+        "Save confirmation \u2014 DOWNLOAD Articles of Organization"
+      ], budget: "Budget spent so far: ~$12 + filing fee" },
+      { num: 5, title: "Get Your EIN (Free)", details: [
+        "Go to irs.gov \u2192 search 'apply for EIN'",
+        "Fill out online application (5 minutes)",
+        "Need: LLC name, your SSN, your address",
+        "100% FREE \u2014 get EIN instantly",
+        "Save the confirmation letter as PDF"
+      ], budget: "Budget spent so far: same (free)" },
+      { num: 6, title: "Open a Business Bank Account", details: [
+        "Options: Chase, Bank of America, local credit union, or online (Mercury, Relay \u2014 free)",
+        "Bring: Articles of Organization, EIN letter, your ID",
+        "Open business checking under 'Janovum LLC'",
+        "Get a business debit card, set up online banking",
+        "FROM NOW ON: every business dollar goes through this account"
+      ], budget: "Budget spent so far: same (most are free)" },
+      { num: 7, title: "Set Up Basic Expense Tracking", details: [
+        "Option A: Google Sheets spreadsheet (Date, Description, Category, Amount In, Amount Out, Balance)",
+        "Option B: Wave (free accounting software \u2014 wave.app)",
+        "Track EVERY business expense from Day 1",
+        "Save ALL receipts (photos, email confirmations)"
+      ], budget: "$0 extra" },
+      { num: 8, title: "Download a Mileage Tracking App", details: [
+        "Download Stride (free) or MileIQ (free tier)",
+        "Track EVERY business-related drive from Day 1",
+        "IRS rate ~$0.67/mile \u2014 40 miles round trip = $26.80 deduction",
+        "50 trips/year = $1,340 off your taxes"
+      ], budget: "$0 extra" },
+      { num: 9, title: "Set Up a Free Professional Email", details: [
+        "Option A: Zoho Mail (free for 1 user with your domain) \u2014 gives you yourname@janovum.com FREE",
+        "Option B: Professional Gmail as temporary",
+        "Use for ALL business communication",
+        "Upgrade to Google Workspace later when revenue flows"
+      ], budget: "$0 extra" },
+      { num: 10, title: "Set Up Telegram for Business Alerts", details: [
+        "Download Telegram if you don't have it",
+        "Create a private channel: 'Janovum Alerts'",
+        "Later you'll connect a Telegram bot for automated alerts",
+        "For now just have the app ready"
+      ], budget: "$0 extra" },
+      { num: 11, title: "Set Up a Business Phone Number (Google Voice)", details: [
+        "Don't give out your personal number",
+        "Google Voice is FREE \u2014 separate business number that rings on your phone",
+        "Set up a professional voicemail: \"You've reached Janovum, AI solutions for local businesses. Leave a message and we'll get back to you within 3 business days.\"",
+        "Keeps personal and business communication separate",
+        "Give this number on business cards, website, and all client communication"
+      ], budget: "$0" },
+      { num: 12, title: "Write a Simple Operating Agreement", details: [
+        "Claude drafts this \u2014 takes 20 minutes, costs $0",
+        "States: you are sole member and 100% owner",
+        "Covers: decision making, profits, equity handling if partners join later, selling the company",
+        "Sign it, date it, save as PDF",
+        "Matters LATER when you sell equity \u2014 investors want to see this",
+        "\u2705 DONE \u2014 <a href='Janovum_LLC_Operating_Agreement.html' target='_blank'>Open Operating Agreement</a>"
+      ], budget: "$0 extra" },
+      { num: 13, title: "Design a Simple Logo (Free)", details: [
+        "Use Canva (free) or Claude generates concepts via Pollinations AI",
+        "Keep it simple \u2014 text-based logos look professional",
+        "Get it in PNG with transparent background",
+        "Save in project files, push to GitHub",
+        "Hire a professional designer later when you have revenue"
+      ], budget: "$0 extra" },
+      { num: 14, title: "Create a Simple One-Page Website (Free)", details: [
+        "Claude builds this \u2014 HTML, CSS, JavaScript",
+        "Host free on GitHub Pages, Netlify, or Vercel",
+        "Connect your domain (janovum.com)",
+        "Needs: logo, headline, what Janovum does, how it works, use cases, contact info, contact form",
+        "Clean, professional, mobile-friendly"
+      ], budget: "$0 extra" },
+      { num: 15, title: "Set Up Cloud Storage for Business Documents", details: [
+        "Google Drive (free 15GB)",
+        "Create folders: Contracts, Receipts, Client Docs, Proposals, Brochures, Templates",
+        "Accessible from anywhere \u2014 phone, laptop, any device",
+        "All business documents go here from now on",
+        "Organized from Day 1 so you never lose anything"
+      ], budget: "$0" },
+      { num: 16, title: "Set Up Your Claude Workflows", details: [
+        "Organize projects: Development, Business, Clients",
+        "Make sure memory files are up to date",
+        "Claude's role: co-builder, advisor, writer, developer, outreach assistant",
+        "You already have Claude Max \u2014 this is free"
+      ], budget: "$0 extra" },
+      { num: 17, title: "Create Email Templates", details: [
+        "Write once, use forever. Templates to create:",
+        "Pitch email \u2014 cold outreach to businesses you want as clients",
+        "Follow-up #1 (3 days after pitch) \u2014 friendly check-in",
+        "Follow-up #2 (7 days) \u2014 add value, share a case study or stat",
+        "Follow-up #3 (14 days) \u2014 final follow-up, leave the door open",
+        "Welcome email for new clients \u2014 what to expect next",
+        "Invoice reminder \u2014 polite payment nudge",
+        "Monthly report cover email \u2014 accompanies the auto-generated report",
+        "Claude helps write all of these. Save in Google Drive Templates folder."
+      ], budget: "$0" },
+      { num: 18, title: "Learn VPS Server Setup", details: [
+        "Before building the demo, learn how to set up and manage a VPS (Virtual Private Server)",
+        "Providers: DigitalOcean ($6/mo), Vultr ($3.50-6/mo), Hetzner ($3.29-5/mo)",
+        "Skills to learn: Ubuntu Server setup, SSH key-only access, firewall (ufw), fail2ban",
+        "Install Python, pip, git, screen/tmux for persistent processes",
+        "Learn systemd services — how to make your toolkit auto-start on boot",
+        "Learn how to deploy Flask apps that run 24/7",
+        "Practice on a cheap $4/mo VPS — spin one up and experiment",
+        "Create a step-by-step VPS setup checklist — this becomes your SOP for every client deployment"
+      ], budget: "$0-6 (practice VPS)" },
+      { num: 19, title: "Build the Demo on Your Own Machine", details: [
+        "Set up the Janovum Toolkit on your personal computer",
+        "Run the toolkit dashboard (python server_v7.py) — shows all modules, agents, setup wizard",
+        "Set up the AI Receptionist (receptionist_simple.py) — uses Twilio + Cartesia + Deepgram + Groq",
+        "The receptionist answers REAL phone calls — give them the Twilio number and let them call it live",
+        "Stack: Twilio ($1.15/mo phone), Cartesia Sonic (voice, 40ms), Deepgram (STT), Groq (LLM, free)",
+        "Run cloudflared tunnel to expose your local server, set Twilio webhook to tunnel URL",
+        "Show the /app page on your phone — appointments appear in real time as they book",
+        "Practice your pitch while running the demo — show the receptionist + appointment dashboard in action"
+      ], budget: "$0 extra" },
+      { num: 20, title: "Record a Demo Video", details: [
+        "Record a clean 3-5 minute video showing Janovum running",
+        "Screen recording of the dashboard, agents working, real-time interactions",
+        "Show: agents responding to queries, dashboard updating, system monitoring",
+        "Send via email to anyone who says \"send me more info\"",
+        "Post on your website \u2014 embed on the landing page",
+        "Not everyone has time for in-person demos \u2014 a video works 24/7"
+      ], budget: "$0" },
+      { num: 21, title: "Test Your Setup for 1 Week", details: [
+        "Run Janovum on your own machine for a full week like it's a real client",
+        "Let the agents run 24/7 \u2014 don't babysit them constantly",
+        "Check for: crashes, errors, memory leaks, agents going off-prompt",
+        "Check the dashboard: does it display correctly over time?",
+        "Find bugs NOW before they happen at a client's business",
+        "Fix everything you find, then run another day or two clean",
+        "If it runs stable for a week, you're ready to pitch"
+      ], budget: "$0" },
+      { num: 22, title: "Write a Simple Service Agreement (V1)", details: [
+        "Claude drafts a basic 1-2 page agreement",
+        "Covers: what you provide, $300/mo, 30-day cancellation, your software stays your property",
+        "Everything runs on YOUR VPS — no hardware at client's location, no client maintenance",
+        "AI assistant is available 24/7 for client interaction (phone, chat, or both)",
+        "YOUR personal service hours: you reply within 3 business days",
+        "Phone costs (Twilio) baked into your $300/mo — client doesn't pay separately",
+        "Can skip formal contract for first client if it's someone you trust"
+      ], budget: "$0 extra" },
+      { num: 23, title: "Define Service Hours & Client Communication", details: [
+        "AI assistant: available 24/7 \u2014 clients can interact with it anytime",
+        "YOUR response time: within 3 business days for non-emergencies",
+        "Set up a notification bot: when a client reaches out, you get notified on Telegram",
+        "Communication channels: clients can reach you via phone, email, or through the AI assistant",
+        "Emergency (system down): Telegram alert hits you automatically from monitoring",
+        "Make this clear in the contract and when onboarding clients \u2014 set expectations early"
+      ], budget: "$0" },
+      { num: 24, title: "Figure Out How Clients Will Pay You", details: [
+        "Keep it simple for first clients: Zelle (free, instant, bank-to-bank)",
+        "Other options: Venmo Business, Cash App Business, direct bank transfer, check",
+        "Pick ONE method, all payments to business bank account",
+        "Upgrade to professional invoicing later"
+      ], budget: "$0 extra" },
+      { num: 25, title: "Build a Pricing Calculator", details: [
+        "Create a spreadsheet that helps you quote clients on the spot",
+        "Inputs: number of modules needed, complexity level, industry type",
+        "Auto-calculates: setup fee ($200-500 for config time) + monthly ($300)",
+        "YOUR costs per client: Twilio ~$1.15/mo + call minutes ~$0.023/min + VPS ~$6/mo = ~$10-20/mo for 5-10 calls/day",
+        "Your profit: $300 - $20 = ~$280/mo per client (even better with more clients sharing VPS)",
+        "When a business asks 'how much?' you pull this up and give them a number in seconds"
+      ], budget: "$0" },
+      { num: 26, title: "Research VPS Providers & Best Deals", details: [
+        "Compare: DigitalOcean vs Vultr vs Hetzner vs Linode",
+        "Minimum specs needed: 1 vCPU, 1-2GB RAM, 25GB SSD, Ubuntu",
+        "Hetzner is cheapest (~$3.29/mo) but EU-based — latency matters for voice",
+        "DigitalOcean/Vultr ($6/mo) have US data centers — better for US clients",
+        "Check if provider offers snapshots/backups included or extra",
+        "Bulk discounts: some providers give discounts for 10+ VPS instances",
+        "Have this info ready so you can quote costs instantly"
+      ], budget: "$0" },
+      { num: 27, title: "Create a Client FAQ Document", details: [
+        "A document you can email to interested businesses that answers common questions",
+        "What is Janovum? How does it work? What does the AI actually do?",
+        "How much does it cost? What's included? What's not included?",
+        "Do I need to do anything? (No — it runs on its own in the cloud)",
+        "What if something breaks? (We monitor 24/7 and fix remotely — you'll never know it happened)",
+        "Is my data safe? (Encrypted, secure, never shared)",
+        "Can I cancel? (Yes, 30-day notice)",
+        "What about the phone receptionist? (AI answers your calls, takes messages, books appointments)",
+        "How do I reach you? (AI assistant 24/7, you reply within 3 business days)",
+        "Save as PDF — email to anyone who asks 'tell me more'"
+      ], budget: "$0" },
+      { num: 28, title: "Write Your Elevator Pitch Word-for-Word", details: [
+        "Not just practice \u2014 actually WRITE it out word for word",
+        "30-second version: who you are, what Janovum does, the value proposition, call to action",
+        "5-minute version: deeper dive into how it works, use cases, pricing, next steps",
+        "Print it out. Have it on your phone. Memorize both versions.",
+        "This is separate from practicing your pitch later \u2014 this is the WRITING step",
+        "Claude helps you draft and refine it until it sounds natural and compelling"
+      ], budget: "$0" },
+      { num: 29, title: "Create Your Objection Handling List", details: [
+        "Write out every possible objection a business owner might throw at you",
+        "For each objection, write a calm, confident counter-response",
+        "Common ones: 'not interested', 'too expensive', 'don't trust AI', 'need to think about it', 'send me an email', 'we already have systems', 'don't have time'",
+        "Also cover: 'is my data safe?', 'AI will take jobs', 'I need to ask my partner', 'how do I know it works?', 'we're too small for this'",
+        "Golden rules: never argue, agree first, ask a question back, always bring it back to the demo",
+        "If they say no twice, respect it — leave the door open",
+        "Print this out and keep it next to your pitch script",
+        "Practice until the responses feel natural, not rehearsed"
+      ], budget: "$0" },
+      { num: 30, title: "Set Up Your CRM/Prospect Spreadsheet BEFORE Pitching", details: [
+        "Don't wait until you have clients \u2014 have it ready before your first pitch",
+        "Columns: Business Name, Owner/Manager, Phone, Email, Industry",
+        "Date Contacted, Method (in-person/email/phone), Response",
+        "Follow-up Date, Status (prospect/contacted/interested/demo scheduled/proposal sent/closed), Notes",
+        "Google Sheets is fine \u2014 upgrade to a real CRM later",
+        "Every business you talk to goes in here immediately"
+      ], budget: "$0" }
+    ]
+  },
+  {
+    name: "\uD83C\uDFC3 JOGGING \u2014 Getting Your First Clients",
+    className: "jogging",
+    steps: [
+      { num: 31, title: "Make a List of Local Businesses to Pitch", details: [
+        "Walk around your area or use Google Maps",
+        "List every business within driving distance",
+        "For each: business name, what they do, owner/manager, phone, email, what AI could do for them",
+        "Prioritize: who benefits most? Who's easiest to convince?",
+        "Start with businesses you already know"
+      ], budget: "$0" },
+      { num: 32, title: "Network Before Pitching", details: [
+        "Before cold-walking into businesses, build some relationships first",
+        "Join your local chamber of commerce (some are free or cheap)",
+        "Go to local business meetups, networking events, small business workshops",
+        "Introduce yourself as 'I help businesses automate with AI'",
+        "Be known in the community first \u2014 then when you pitch, you're not a stranger",
+        "Even 1-2 events before you start pitching makes a difference",
+        "Collect business cards from people you meet \u2014 add to your prospect list"
+      ], budget: "$0-50 (some events have small fees)" },
+      { num: 33, title: "Practice Your Pitch", details: [
+        "30-second elevator pitch: memorize it",
+        "5-minute demo pitch: walk through agents + dashboard + pricing",
+        "Handle objections: 'too expensive' \u2192 show value, 'don't trust AI' \u2192 show dashboard + human oversight, 'let me think' \u2192 leave card + follow up",
+        "Practice in mirror, record yourself, get comfortable"
+      ], budget: "$0" },
+      { num: 34, title: "Start Pitching \u2014 In Person", details: [
+        "You need: your demo working + confidence. That's it.",
+        "Walk into businesses, ask for owner/manager",
+        "Give elevator pitch \u2192 if interested, show demo \u2192 discuss pricing",
+        "Hand them your FAQ document or brochure",
+        "If they need time: get contact info, follow up in 2-3 days",
+        "You might pitch 10 to get 1 yes \u2014 that's normal",
+        "Track every interaction in your spreadsheet"
+      ], budget: "$0" },
+      { num: 35, title: "Close Your First Client", details: [
+        "Someone you trust: can start without formal contract, verbal agreement, get it running fast",
+        "Someone you don't know well: use simple agreement from Step 22",
+        "Collect: setup fee ($200-500 for configuration + first month $300)",
+        "VPS cost is on YOU (~$6/mo per client) — built into your $300/mo price",
+        "No hardware for client to break. No on-site visits needed. Everything runs in the cloud.",
+        "NOW you have revenue. This changes everything."
+      ], budget: "Revenue starts flowing" },
+      { num: 36, title: "Send Client Welcome Packet", details: [
+        "After signing, email the client a welcome document with everything they need to know",
+        "What to expect during the setup process and timeline",
+        "Your contact info and how to reach the AI assistant (available 24/7)",
+        "When their first monthly report will come",
+        "Link to the FAQ document",
+        "What they need from the client: business info (hours, services, prices, staff names, phone numbers)",
+        "Makes the client feel taken care of and sets professional expectations from Day 1"
+      ], budget: "$0" },
+      { num: 37, title: "Spin Up a VPS for Client #1", details: [
+        "DigitalOcean, Vultr, or Hetzner — $6-10/mo for a basic VPS",
+        "Ubuntu Server, SSH key-only access, firewall configured",
+        "Install the Janovum Toolkit (git clone from your private repo)",
+        "Install Python, pip, all dependencies",
+        "This is YOUR cost — built into the $300/mo you charge the client",
+        "One VPS per client keeps things isolated and clean"
+      ], budget: "~$6-10/mo (your cost)" },
+      { num: 38, title: "Configure the Toolkit for the Client", details: [
+        "Open the toolkit dashboard (http://vps-ip:5050)",
+        "Go to Setup Wizard — pick the client's business type preset",
+        "All the config fields auto-fill: services, prices, greeting, after-hours message",
+        "Fill in their unique info: business name, address, phone, hours, staff names",
+        "Toggle on the modules they need (receptionist, scheduler, etc.)",
+        "Hit Save — toolkit is configured in minutes, not hours",
+        "Push config to GitHub (private repo) as backup"
+      ], budget: "$0" },
+      { num: 39, title: "Set Up the AI Receptionist Phone Line", details: [
+        "Buy a Twilio local phone number ($1.15/mo) in the client's area code",
+        "Run receptionist_simple.py on the VPS (port 5051)",
+        "Set up Cloudflare tunnel or point domain directly to VPS",
+        "Configure Twilio webhook: POST to https://your-domain/incoming",
+        "Update receptionist_simple.py with: client business name, services, hours, staff in system prompt",
+        "Update API keys if using separate accounts per client",
+        "Voice: Cartesia Sonic (Jacqueline voice ID: 9626c31c-bec5-4cca-baa8-f8ba9e84c8bc) — or let client pick",
+        "Test the phone line — call it yourself, book a test appointment, check /app page",
+        "Cost: Twilio $1.15/mo + ~$0.023/min per call (Twilio + Deepgram + Cartesia)",
+        "Give client the /app URL to bookmark on their phone — they see appointments in real time"
+      ], budget: "~$1.15/mo + usage" },
+      { num: 40, title: "Deploy & Test Everything", details: [
+        "Run the toolkit on the VPS: python server_v7.py",
+        "Set it up as a systemd service so it auto-starts on reboot",
+        "Test every enabled module — receptionist, scheduler, support, etc.",
+        "Call the AI phone line with the client listening — show them it works",
+        "Show them the dashboard, answer questions",
+        "Verify monitoring, backups, and alerts are all connected",
+        "Push ALL client configs and setup docs to GitHub — EVERY TIME, no exceptions"
+      ], budget: "$300/mo revenue locked in" },
+      { num: 41, title: "Set Up Client Dashboard Access", details: [
+        "Give the client a URL to view their dashboard (read-only)",
+        "They can see: agent activity, recent calls, appointments booked, system status",
+        "Optional: set up a simple password or IP whitelist for security",
+        "Client feels in control — they can check their AI system anytime",
+        "You manage everything behind the scenes via SSH"
+      ], budget: "$0" },
+      { num: 42, title: "Monitor Client #1 Extra Closely (First 2 Weeks)", details: [
+        "Check VPS monitoring dashboard multiple times daily for first week",
+        "Check agent logs for errors, check the receptionist call quality",
+        "Listen to a few recorded calls — make sure the AI sounds natural",
+        "Day 2: check-in call/text with client",
+        "Day 7: check-in — any issues? Any calls that went weird?",
+        "Day 14: check-in, ask for feedback, tweak the receptionist personality if needed",
+        "Fix issues immediately — first client is your reputation"
+      ], budget: "" },
+      { num: 43, title: "Write a Lessons Learned Doc After Deployment", details: [
+        "After every deployment, write down what happened",
+        "What went well? What was smooth and easy?",
+        "What took longer than expected? Why?",
+        "What went wrong? How did you fix it?",
+        "What would you do differently next time?",
+        "This is how you improve every single time. By client #3 you'll be twice as fast.",
+        "Save in Google Drive under the client's folder"
+      ], budget: "$0" },
+      { num: 44, title: "Take Screenshots & Photos During Every Deployment", details: [
+        "Dashboard screenshots showing agents actively working",
+        "Screenshot of the toolkit dashboard running for the client",
+        "Before/after comparisons if applicable",
+        "Use for: case studies, social media posts, website portfolio, pitch deck",
+        "Ask client permission first \u2014 most are happy to let you",
+        "Start building a visual portfolio from Day 1"
+      ], budget: "$0" },
+      { num: 45, title: "Get Client #1's Feedback and Testimonial", details: [
+        "After 2-4 weeks of smooth operation",
+        "Ask: 'How has Janovum been working for you?'",
+        "Ask for a testimonial quote or 30-second video",
+        "This is your FIRST social proof \u2014 use it in every future pitch"
+      ], budget: "" },
+      { num: 46, title: "Pitch More Businesses (With Proof)", details: [
+        "Now you pitch with PROOF: 'I set this up for [Business] down the street...'",
+        "Show testimonial + demo + dashboard",
+        "Email the FAQ document to interested businesses",
+        "Follow up with anyone who said 'let me think about it'",
+        "Goal: close Client #2 and #3"
+      ], budget: "" },
+      { num: 47, title: "Deploy for Client #2", details: [
+        "Same process as Steps 37-41: spin up VPS → Setup Wizard → configure phone → test → done",
+        "Should be faster now — you've done it before",
+        "Apply lessons learned from Client #1",
+        "Another $300/mo locked in"
+      ], budget: "$600/mo recurring" },
+      { num: 48, title: "Deploy for Client #3", details: [
+        "Same process again — getting faster every time",
+        "3 clients running. $900/mo recurring. You're in business.",
+        "Your costs: 3 × ~$15/mo = ~$45/mo. Profit: ~$855/mo.",
+        "Get testimonials from Client #2 and #3 too"
+      ], budget: "$900/mo recurring" },
+      { num: 49, title: "Set Up a Follow-Up Reminder System", details: [
+        "Never forget to follow up with a lead",
+        "When someone says \"let me think about it\" \u2192 set a Google Calendar reminder for 3 days, 7 days, and 14 days",
+        "Track all follow-ups in your CRM spreadsheet",
+        "A missed follow-up = a lost client",
+        "Most sales happen on the 2nd or 3rd follow-up, not the first pitch"
+      ], budget: "$0" }
+    ]
+  },
+  {
+    name: "\uD83C\uDFC3\u200D\u2642\uFE0F RUNNING \u2014 Establishing the Business ($900+/mo)",
+    className: "running",
+    steps: [
+      { num: 50, title: "Upgrade to Professional Invoicing", details: ["Set up Wave (free) or Stripe Invoicing", "Recurring invoices for each client, auto-send on the 1st", "Track who's paid and who hasn't"], budget: "$0 (Wave is free)" },
+      { num: 51, title: "Get Business Cards Printed", details: ["Logo, name, Founder, phone, email, website, optional QR code", "Order 250-500 from Vistaprint or Canva Print", "Always carry these everywhere"], budget: "~$20-40" },
+      { num: 52, title: "Create the Leave-Behind Brochure", details: ["One-page PDF: what Janovum does, benefits, testimonial, pricing, contact", "Print copies + have PDF to email", "Claude designs this"], budget: "~$10-20 for prints" },
+      { num: 53, title: "Set Up a Central Monitoring VPS", details: ["One VPS that monitors ALL your client VPS instances", "Choose provider: DigitalOcean ($4-6/mo), Vultr ($3.50-6/mo), Hetzner ($3.29-5/mo)", "Deploy monitoring scripts: ping each client VPS, check toolkit processes, disk space, auto-fix", "Connect Telegram bot for alerts — get notified if any client's toolkit goes down", "This is separate from the client VPS instances — it's YOUR operations hub"], budget: "~$4-6/mo" },
+      { num: 54, title: "Set Up External Uptime Monitoring (UptimeRobot)", details: [
+        "Free service that pings your clients' machines from OUTSIDE your network every 5 minutes",
+        "Catches issues your VPS might miss \u2014 like if the VPS itself goes down",
+        "Free for up to 50 monitors \u2014 more than enough for years",
+        "Go to uptimerobot.com, create a free account, add each client's IP or hostname",
+        "Get email and/or Telegram alerts if something goes down",
+        "Two layers of monitoring (VPS + UptimeRobot) = almost impossible to miss an outage"
+      ], budget: "$0" },
+      { num: 55, title: "Set Up the Telegram Alert Bot", details: ["Create bot via @BotFather, get API token", "Create 'Janovum Alerts' channel, add bot", "Connect to VPS monitoring scripts", "Alert format: \uD83D\uDD34 CRITICAL / \uD83D\uDFE1 WARNING / \uD83D\uDFE2 INFO + client + issue + action", "ALSO: set up client notification bot \u2014 when a client messages/reaches out, you get a Telegram ping"], budget: "$0" },
+      { num: 56, title: "Set Up Automated Backups", details: ["Backup script: pull each client's config.json, agent prompts, and data from their VPS", "Push to private GitHub repos — version controlled, searchable, never lost", "Schedule: daily at 3am via cron job on monitoring VPS", "Verify backups complete, alert if they fail", "If a client VPS dies, rebuild from GitHub backup in minutes"], budget: "$0 (included in VPS)" },
+      { num: 57, title: "Build the Monthly Auto-Report System", details: ["Python script: pull stats from each client, generate PDF report", "Janovum branding, tasks completed, time saved, uptime, issues resolved", "Auto-email to client on the 1st", "Keeps clients happy and aware of value"], budget: "$0 (Claude builds)" },
+      { num: 58, title: "Document Everything So Far", details: ["Per client: business info, agents + prompts, VPS IP/SSH details, toolkit config, modules enabled", "Store in CRM/spreadsheet + GitHub (private) + password manager (credentials)"], budget: "$0" },
+      { num: 59, title: "Create a Troubleshooting Knowledge Base", details: [
+        "A document of every problem you've encountered and how you fixed it",
+        "Format: Problem \u2192 Cause \u2192 Fix \u2192 Time to resolve",
+        "When you hire people later, this document is gold \u2014 they can fix issues without calling you",
+        "When the same issue hits a different client, you already know the fix instantly",
+        "Save on GitHub in a shared internal repo \u2014 version controlled and searchable"
+      ], budget: "$0" },
+      { num: 60, title: "Set Up GitHub Private Repos for Client Configs", details: [
+        "Create a GitHub organization or use private repos under your account",
+        "One private repo per client: 'janovum-client-[businessname]'",
+        "Store: config.json, agent prompts, module configs, custom scripts",
+        "Version controlled — you can see every change ever made",
+        "If a client VPS dies, rebuild from the repo in minutes — spin up new VPS, clone repo, done",
+        "NEVER store passwords or SSH keys in GitHub — those stay in Bitwarden only",
+        "RULE: Every time you touch a client's setup — add, change, or fix anything — push to GitHub before you close out",
+        "GitHub = your online hard drive. Files can NEVER be lost. VPS crashes? Rebuild in 10 minutes from GitHub.",
+        "This applies to EVERY client, EVERY deployment, EVERY change. No exceptions."
+      ], budget: "$0 (GitHub free private repos)" },
+      { num: 61, title: "Get a Password Manager (Bitwarden Free)", details: ["Download on computer and phone", "Store ALL business credentials here", "NEVER store passwords in plain text"], budget: "$0" },
+      { num: 62, title: "Set Up Basic Tax Tracking", details: ["Track all income and expenses in spreadsheet/Wave", "Keep all receipts", "Set aside 25-30% of every payment for taxes in savings account", "Quarterly estimated taxes: April 15, June 15, Sept 15, Jan 15"], budget: "$0" },
+      { num: 63, title: "Write a Simple Security Checklist", details: ["For every deployment: FileVault ON, firewall ON, SSH key-only, strong passwords, auto-updates, agents limited access, encrypted backups, monitoring connected", "Follow for every single deployment"], budget: "$0" },
+      { num: 64, title: "Build a Maintenance Log Template", details: [
+        "Every fix gets documented in a standard format",
+        "Fields: Date, Client, Issue Description, How Detected (AI/manual/client reported), How Fixed, Time Spent, Resolved (yes/no)",
+        "This data goes into monthly reports AND proves your value to clients",
+        "Keep in a spreadsheet or CRM \u2014 one row per incident",
+        "Over time, this shows patterns: which issues are most common, which clients need the most attention"
+      ], budget: "$0" },
+      { num: 65, title: "Set Up an Escalation Process", details: [
+        "Level 1: Monitoring VPS auto-detects and auto-fixes (restart services, clear logs, reboot client VPS)",
+        "Level 2: You fix remotely via SSH — AI alerts you on Telegram, you investigate and resolve",
+        "Level 3: Escalate to you personally — complex issues, prompt tuning, client complaints",
+        "No on-site visits needed — everything is cloud-based, fixed remotely",
+        "Clear process for how issues escalate from AI → you",
+        "Write this down — it goes in your SOPs and in the client FAQ",
+        "Clients should know what happens when something goes wrong and how fast you respond"
+      ], budget: "$0" },
+      { num: 66, title: "Track Time Spent Per Client", details: [
+        "Simple time tracking using a spreadsheet or free app like Toggl",
+        "Log time for every fix, every call, every visit, per client",
+        "Know which clients take the most maintenance time",
+        "If one client eats 10x the time of others, adjust pricing or investigate their setup",
+        "This data also helps you price future clients more accurately"
+      ], budget: "$0" },
+      { num: 67, title: "Build AI Model Update Process", details: [
+        "AI models (Claude, Pollinations, etc.) update regularly — this can change agent behavior",
+        "Build a process that runs after model updates:",
+        "1. Monitoring VPS detects model behavior change (response format, tone shift)",
+        "2. Runs automated tests on each client's receptionist — does it still sound right?",
+        "3. If agents behave differently: flag it, alert you via Telegram",
+        "4. You review and adjust prompts if needed",
+        "5. Push updated configs to affected client VPS instances",
+        "This prevents a model update from silently breaking a client's receptionist",
+        "Also covers Ubuntu/Python updates: schedule during off-hours, test after"
+      ], budget: "$0 (automated)" },
+      { num: 68, title: "Build Case Studies from First 3 Clients", details: ["Per client: their business, challenges, agents deployed, results, testimonial", "Use in pitches, website, investor deck later"], budget: "$0" }
+    ]
+  },
+  {
+    name: "\uD83D\uDCA8 SPRINTING \u2014 Scaling to 10-20 Clients",
+    className: "sprinting",
+    steps: [
+      { num: 69, title: "Set Up the AI Outreach Agent", details: ["Build agent that researches businesses, drafts personalized pitch emails, follow-ups, proposals", "YOU review every email before sending", "Claude builds this"], budget: "$0" },
+      { num: 70, title: "Ramp Up Outreach", details: ["5-10 personalized emails per week + 3-5 in-person visits per week", "Target: 2-3 new clients per month", "Track pipeline in CRM"], budget: "$0" },
+      { num: 71, title: "Streamline Deployments", details: ["Create a VPS snapshot/image with toolkit pre-installed (OS, Python, dependencies, Janovum base)", "Clone snapshot for each new client — only customize: business info + module toggles via Setup Wizard", "New client deployment: spin up VPS from snapshot → run Setup Wizard → done in under 30 minutes", "Pre/post deployment checklists"], budget: "$0" },
+      { num: 72, title: "Upgrade to Professional Contracts (Lawyer Review)", details: ["Expand contract: full SLA, liability limits, IP protection, data privacy, confidentiality, detailed payment terms", "Include: cloud-hosted solution (no client hardware), AI 24/7, personal reply within 3 business days", "Phone line setup and monthly Twilio costs included in service fee", "Get a lawyer to review: ~$300-500 one-time", "Use for ALL new clients"], budget: "~$300-500" },
+      { num: 73, title: "Get Business Insurance", details: ["General Liability (~$30-50/mo) + Professional Liability/E&O (~$30-60/mo)", "Quotes from: Hiscox, Next Insurance, The Hartford", "Protects you if something goes wrong at a client site"], budget: "~$50-100/mo" },
+      { num: 74, title: "Upgrade Email to Google Workspace", details: ["$6/mo \u2014 name@janovum.com with Gmail interface", "Plus Google Drive, Calendar, Meet under your domain"], budget: "$6/mo" },
+      { num: 75, title: "Upgrade Your CRM", details: ["Move to: HubSpot Free, Airtable, or Notion", "Track: client details, payments, maintenance history, pipeline, follow-ups"], budget: "$0 (free tiers)" },
+      { num: 76, title: "Add Portfolio/Case Studies Page to Website", details: [
+        "Update your website with a dedicated portfolio or case studies page",
+        "Include: photos from deployments, detailed case study write-ups",
+        "Show results and stats: uptime percentages, tasks automated, time saved",
+        "Feature client testimonials with permission",
+        "Every new client deployment gets added here as a new case study",
+        "Shows proof to anyone visiting your site \u2014 builds trust before they even talk to you",
+        "Claude helps build the page and write the case studies"
+      ], budget: "$0" },
+      { num: 77, title: "Register on Local Business Directories", details: [
+        "Yelp Business page \u2014 free to create, shows up in Yelp searches",
+        "Better Business Bureau (BBB) \u2014 builds trust and credibility",
+        "Local chamber of commerce directory \u2014 you may already be a member from networking",
+        "Any city/county business directories specific to your area",
+        "Some people search these directories instead of Google",
+        "Make sure your name, address, phone, and website are consistent everywhere"
+      ], budget: "$0-50" },
+      { num: 78, title: "Set Up Google Analytics on Your Website", details: [
+        "Free and takes 10 minutes to set up",
+        "See how many people visit your site, where they come from, what pages they view, what they click",
+        "Data tells you what's working and what's not",
+        "Go to analytics.google.com, create an account, add the tracking code to your site",
+        "Check it weekly \u2014 watch for trends in traffic after you pitch, post, or send emails"
+      ], budget: "$0" },
+      { num: 79, title: "Sell Equity for Growth Capital", details: ["Build pitch deck: Problem → Solution → Traction → Model → Financials → Ask", "Determine equity to sell (under 20%), valuation, how much to raise", "Approach: people who've seen it, local entrepreneurs, family, angel networks", "Use capital for: marketing, first hire, better VPS infrastructure, premium API keys", "NEVER sell more than 49%"], budget: "Capital incoming" },
+      { num: 80, title: "Hit 10 Clients", details: ["$3,000/mo recurring + service calls + add-ons", "AI handles all remote maintenance", "You focus on: pitching, deploying, growing"], budget: "$3,000+/mo" }
+    ]
+  },
+  {
+    name: "\uD83D\uDE80 BLASTING \u2014 20 Clients & First Hire ($6,000+/mo)",
+    className: "blasting",
+    steps: [
+      { num: 81, title: "Hit 20 Clients", details: ["$6,000/mo recurring minimum", "Realistically $8,000-$10,000/mo with service calls and add-ons", "Time to think about help"], budget: "$6,000+/mo" },
+      { num: 82, title: "Upgrade Tax Planning", details: ["QuickBooks ($15-25/mo) OR hire a bookkeeper (~$100-200/mo)", "Consider S-Corp election (saves self-employment tax)", "Maximize deductions: home office, vehicle, depreciation, health insurance, retirement (SEP IRA)", "Hire a CPA (~$500-1,500/yr) \u2014 they'll save you more than they cost"], budget: "~$15-25/mo + $500-1,500/yr CPA" },
+      { num: 83, title: "Write Full SOPs (Standard Operating Procedures)", details: ["SOPs for: new client VPS setup, toolkit config via Setup Wizard, module deployment, troubleshooting, client communication, emergencies, offboarding", "Include: how to use the Setup Wizard, how to configure the receptionist, how to set up Twilio phone lines", "New hires read these and know exactly what to do", "Makes business sellable"], budget: "$0" },
+      { num: 84, title: "Draft NDA and Non-Compete for Employees", details: ["NDA: can't share prompts, client info, pricing, processes", "Non-compete: can't start competing service in your area for 1-2 years", "Claude drafts, lawyer reviews"], budget: "Included in legal review" },
+      { num: 85, title: "Hire Your First Remote Operations Assistant", details: ["Someone who can set up VPS instances, run the Setup Wizard, configure toolkits", "No car needed — everything is remote. They just need a laptop and internet", "Sign NDA + non-compete, background check optional", "Training: read SOPs → shadow you on 2-3 client setups → supervised deployment → solo with Slack backup → independent", "Pay: $15-25/hr or per-deployment"], budget: "Hourly labor cost" },
+      { num: 86, title: "Build Employee Management System", details: ["Track: schedules, assignments, completion reports, feedback, hours, expenses", "Start simple: Google Calendar + shared spreadsheet"], budget: "$0" },
+      { num: 87, title: "Set Up Payroll", details: ["Gusto ($40/mo + $6/employee): handles pay, taxes, direct deposit, W-2s", "Or talk to your accountant about payroll setup"], budget: "~$46/mo" }
+    ]
+  },
+  {
+    name: "\u2708\uFE0F FLYING \u2014 30+ Clients, Full Team ($9,000+/mo)",
+    className: "flying",
+    steps: [
+      { num: 88, title: "Scale VPS Infrastructure", details: ["Monitor VPS performance, upgrade if needed", "Consider second VPS for redundancy", "Optimize monitoring scripts for 30+ clients"], budget: "$10-50/mo" },
+      { num: 89, title: "Hire a Second Technician (If Needed)", details: ["Same process as Step 84: NDA, non-compete, training", "Now you have a TEAM"], budget: "Hourly labor cost" },
+      { num: 90, title: "Build a Google Business Profile", details: ["business.google.com \u2014 create Janovum LLC profile", "Add: service area, phone, website, hours, description, photos", "Ask clients for Google Reviews (aim for 5-star)", "Shows up when people search 'AI for business [your city]'"], budget: "$0" },
+      { num: 91, title: "Create Social Media Pages & Content Strategy", details: [
+        "Create business profiles: Instagram, Facebook Business Page, LinkedIn",
+        "All profiles: Janovum logo, consistent branding, link to website, contact info",
+        "Post 2-3x/week: demo videos, client testimonials, behind-the-scenes, AI tips",
+        "This builds your brand and drives leads organically",
+        "You don't need to post daily \u2014 consistency > quantity"
+      ], budget: "$0" },
+      { num: 92, title: "Build Client Retention Program", details: ["Monthly reports (already set up), quarterly check-ins, proactive improvements", "Annual review with each client", "Loyalty discount for 12+ month clients"], budget: "$0" },
+      { num: 93, title: "Quarterly Business Reviews with Clients", details: [
+        "Sit down (call or in-person) with each client every 3 months",
+        "Review agent performance: uptime, tasks completed, issues resolved",
+        "Discuss what's working well and what could be improved",
+        "Suggest improvements and new features they might benefit from",
+        "Identify upsell opportunities: \"You could add an inventory agent too\"",
+        "This keeps clients happy AND grows revenue per client over time",
+        "Schedule these in advance \u2014 put them on your calendar for the whole year"
+      ], budget: "$0" },
+      { num: 94, title: "Implement Client Feedback Surveys", details: ["Quarterly survey: satisfaction (1-10), most valuable feature, improvements, would they recommend?", "Google Forms (free) or Typeform (free tier)", "Act on feedback: if multiple clients ask for something, build it"], budget: "$0" }
+    ]
+  },
+  {
+    name: "\uD83E\uDD85 SOARING \u2014 50+ Clients, Empire Mode ($15,000+/mo)",
+    className: "soaring",
+    steps: [
+      { num: 95, title: "Advanced Tax Strategy", details: ["S-Corp election if not done, retirement accounts (SEP IRA / Solo 401k), health insurance deduction", "Equipment depreciation (Section 179), vehicle deduction, QBI deduction (20% off)", "Hire family members to shift income to lower brackets (future)", "Your CPA handles all of this \u2014 saves you thousands/yr"], budget: "Saves thousands/yr" },
+      { num: 96, title: "Full Legal Protection Upgrade", details: ["Increase insurance coverage limits, add umbrella insurance", "Review all contracts with lawyer", "Complete trademark registration", "IP audit: all code, prompts, brand properly protected"], budget: "Varies" },
+      { num: 97, title: "Expand to Other Cities & States", details: ["Since everything is cloud-based, you can serve clients ANYWHERE — no location limits", "Target new cities via cold email, social media, Google Ads", "Hire remote sales reps in different regions to pitch locally", "Same toolkit, same process, same SOPs — just new clients"], budget: "Marketing + sales labor" },
+      { num: 98, title: "Evaluate Franchising or Licensing Model", details: ["License Janovum to operators in other cities", "They pay franchise/license fee + % of revenue", "They follow your SOPs, use your brand and tech", "This is how you go from local to NATIONAL \u2014 the billion-dollar play"], budget: "Revenue generating" },
+      { num: 99, title: "Build a Board of Advisors", details: ["Business mentor, tech advisor, legal advisor, financial advisor", "They advise, they don't run the company", "Help avoid mistakes, see opportunities, make better decisions"], budget: "Equity or advisory fees" },
+      { num: 100, title: "Consider Office Space", details: ["Dedicated workspace for client meetings, team meetings, and operations", "Since everything is cloud-based VPS, you can run the entire business remotely", "Office is optional — nice for meetings and team culture, not required for operations", "Or stay remote if it works — decision based on needs"], budget: "Rent varies" },
+      { num: 101, title: "Never Stop Improving", details: ["Stay on top of AI developments (Claude updates, new models, new capabilities)", "Keep improving agents and dashboards", "Listen to client feedback, watch for competitors", "Keep innovating, keep pushing", "This is a forever business. Keep building."], budget: "" }
+    ]
+  }
+];
+
+const TOTAL = 101;
+
+function getNoteKey(num) { return `janovum_note_${num}`; }
+
+const DEFAULT_NOTES = {
+  28: `=== SYNTHFORCE — COLD CALL PITCH SCRIPT ===
+
+INTRO:
+"Hey, how are you doing? This is Jaden Gonzalez with Janovum — am I speaking with [name]?"
+(If they say yes, keep it moving. Don't overthink the intro.)
+
+HOOK:
+"Yeah so basically, I'm not sure if you've seen it yet, but a lot of businesses have been bringing in AI to run things — everything from automated systems, websites, AI employees, you name it. It's been picking up a lot lately and I just wanted to get you ahead of the game."
+
+THE QUESTION:
+"But real quick — is there anything in your business right now that's either taking up way too much time, costing too much, or you just wish ran smoother? Could be a role you need filled, a system you don't have yet, anything."
+
+(Let them talk. Don't interrupt. Whatever they say, that's your in.)
+
+THE OFFER (after they answer):
+"Yeah, so that's literally what we do. We come in and set up AI-powered solutions for businesses — whether that's an AI employee handling [whatever they said], automated systems that run on their own, a website, whatever you need. We basically look at what's slowing you down and build something that handles it."
+
+KEEP IT REAL:
+"And I'm not gonna sit here and act like we come in and change everything overnight — but the stuff that's eating up your time and money for no reason? That's what we take off your plate."
+
+THE CLOSE:
+"Look, I don't wanna take up too much of your time — but I can show you exactly how it works in like 10 minutes. It's way easier to see it than hear me explain it. When's a good time for you this week?"
+
+(If they hesitate: "No pressure at all — I can send you a quick video to check out on your own time too. What's a good email?")
+
+===
+
+TIPS:
+• Talk like a person, not a salesman. If it sounds like a script, they'll tune out.
+• Match their energy. If they're chill, be chill. If they're in a rush, get to the point faster.
+• If they say no, don't push it. Just say "All good, appreciate your time" and move on. Some people come back later.
+• The goal isn't to close on the phone — it's to get the demo scheduled. That's it.`,
+
+  29: `=== SYNTHFORCE — OBJECTION HANDLING GUIDE ===
+
+1. "I'm not interested."
+→ "Totally understand — most people aren't until they see it. Can I ask you one quick question though? If I could show you a way to cut one salary's worth of costs without losing any productivity, would that be worth 5 minutes of your time?"
+
+2. "We don't need AI, we're doing fine."
+→ "That's great — honestly, the best time to get ahead is when things are going well. The businesses that wait until they're struggling are the ones playing catch-up. This is more about staying ahead than fixing a problem."
+
+3. "I don't trust AI / AI isn't reliable."
+→ "I hear that a lot, and honestly, I respect it. That's exactly why we don't just drop it in and leave. We set it up, we monitor it, and we're on call if anything needs adjusting. You're never on your own with this. And the AI we use isn't guessing — it follows the exact rules and processes you set."
+
+4. "That sounds expensive."
+→ "I totally get that. Here's the thing though — a full-time employee costs you what, $30,000, $40,000 a year minimum? Our AI employees run 24/7 for a flat $300 a month. No benefits, no overtime, no sick days. It actually saves you money from day one."
+
+5. "I need to think about it."
+→ "Of course, I'd never want you to rush into anything. But tell you what — instead of thinking about it in the abstract, let me just show you a quick 10-minute demo. That way you're making a decision based on what you've actually seen, not what you're imagining. Fair enough?"
+
+6. "Can you just send me an email?"
+→ "Absolutely, I'll send that over right now. But real quick — most of what I send makes a lot more sense after you've seen a 2-minute demo. Can I shoot you a quick video along with that email so it actually clicks?"
+
+7. "We already have software / systems for that."
+→ "That's perfect actually — we don't replace your systems, we plug into them. Think of it like hiring a new employee who already knows how to use all your existing tools on day one. It just makes what you already have work harder."
+
+8. "I don't have time for this right now."
+→ "I completely respect that — you're busy, I get it. How about this: I'll send you a 3-minute video that explains everything. Watch it whenever you get a chance, and if it makes sense, we'll set up a time that works for you. Sound fair?"
+
+9. "How do I know this actually works?"
+→ "Great question. I can show you a live demo right now — real agents, doing real tasks. And I also have a case study from another business in the area that was in a similar situation. Seeing is believing, right?"
+
+10. "What if it breaks or goes wrong?"
+→ "That's the best part — we monitor everything remotely 24/7. If something goes sideways, we usually fix it before you even notice. And if it's something bigger, we come on-site. You've got our number, and we actually answer it."
+
+11. "I need to talk to my partner / manager first."
+→ "Makes total sense — you shouldn't make this call alone. What if I set up a quick 10-minute demo with both of you there? That way they can see it too and you can make the decision together. When would work for the two of you?"
+
+12. "Is my data safe? I don't want AI accessing our stuff."
+→ "100% valid concern. Everything runs on a dedicated machine in your office — your data stays on your property. Nothing goes to the cloud unless you want it to. We take security seriously because our reputation depends on it."
+
+13. "We're a small business, this seems like big company stuff."
+→ "Actually, small businesses are exactly who we built this for. The big companies already have IT departments and automation. This is how you compete with them without having their budget. It levels the playing field."
+
+14. "AI is going to take people's jobs."
+→ "I understand that concern. But honestly, what we usually see is the opposite — it takes the boring, repetitive stuff off your team's plate so they can focus on what actually matters. Nobody's losing their job; they're just not stuck doing busywork anymore."
+
+=== GOLDEN RULES ===
+• Never argue — always agree first: "I totally get that," "That's a fair point," "I hear you."
+• Ask a question back when you can — keeps them talking instead of shutting down.
+• Always bring it back to the demo — that's your goal. Don't sell over the phone, sell the meeting.
+• If they say no twice, respect it. "No problem at all — if anything changes, you've got my number." Leave the door open.`
+};
+
+function getNote(num) {
+  const userNote = localStorage.getItem(getNoteKey(num));
+  if (userNote !== null) return userNote;
+  return DEFAULT_NOTES[num] || '';
+}
+function saveNote(num, text) {
+  if (text.trim() === '') {
+    localStorage.removeItem(getNoteKey(num));
+  } else {
+    localStorage.setItem(getNoteKey(num), text);
+  }
+}
+function clearAllNotes() {
+  for (let i = 1; i <= 101; i++) {
+    localStorage.removeItem(getNoteKey(i));
+  }
+}
+
+function render() {
+  const saved = JSON.parse(localStorage.getItem('janovum_progress') || '{}');
+  const container = document.getElementById('plan');
+  container.innerHTML = '';
+  let totalChecked = 0;
+  phases.forEach((phase, pi) => {
+    const div = document.createElement('div');
+    div.className = `phase ${phase.className}`;
+    let phaseChecked = 0;
+    phase.steps.forEach(s => { if (saved[s.num]) phaseChecked++; });
+    totalChecked += phaseChecked;
+    div.innerHTML = `
+      <div class="phase-header" onclick="togglePhase(${pi})">
+        <h2>${phase.name}</h2>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span class="phase-count">${phaseChecked}/${phase.steps.length}</span>
+          <span class="toggle" id="toggle-${pi}">\u25BC</span>
+        </div>
+      </div>
+      <div class="steps" id="steps-${pi}">
+        ${phase.steps.map(s => {
+          const hasNote = getNote(s.num) !== '';
+          return `
+          <div class="step ${saved[s.num] ? 'completed' : ''}" id="step-${s.num}">
+            <div class="step-header" onclick="toggleDetails(${s.num})">
+              <input type="checkbox" ${saved[s.num] ? 'checked' : ''} onclick="event.stopPropagation();toggleCheck(${s.num})">
+              <span class="step-number">#${s.num}</span>
+              <span class="step-title">${s.title}</span>
+              <button class="expand-btn">details</button>
+            </div>
+            <div class="step-details" id="details-${s.num}">
+              <ul>${s.details.map(d => `<li>${d}</li>`).join('')}</ul>
+              ${s.budget ? `<p class="budget">${s.budget}</p>` : ''}
+              <div class="notes-toggle-row">
+                <button class="notes-toggle-btn ${hasNote ? 'has-note' : ''}" onclick="event.stopPropagation();toggleNotes(${s.num})">
+                  ${hasNote ? '<span class="note-indicator"></span>' : ''}Notes
+                </button>
+                <span class="notes-saved-indicator" id="notes-saved-${s.num}">saved</span>
+              </div>
+              <div class="notes-area" id="notes-area-${s.num}">
+                <textarea
+                  id="note-input-${s.num}"
+                  placeholder="Add your notes for this step..."
+                  oninput="handleNoteInput(${s.num})"
+                >${getNote(s.num)}</textarea>
+                <button class="notes-expand-btn" id="expand-btn-${s.num}" onclick="event.stopPropagation();toggleExpand(${s.num})">Expand</button>
+              </div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    container.appendChild(div);
+  });
+  updateProgress(totalChecked);
+}
+
+let noteTimers = {};
+function handleNoteInput(num) {
+  clearTimeout(noteTimers[num]);
+  noteTimers[num] = setTimeout(() => {
+    const textarea = document.getElementById(`note-input-${num}`);
+    if (!textarea) return;
+    saveNote(num, textarea.value);
+    // Update the notes button indicator without re-rendering the whole page
+    const step = document.getElementById(`step-${num}`);
+    if (step) {
+      const btn = step.querySelector('.notes-toggle-btn');
+      const hasNote = textarea.value.trim() !== '';
+      if (hasNote) {
+        btn.classList.add('has-note');
+        if (!btn.querySelector('.note-indicator')) {
+          const dot = document.createElement('span');
+          dot.className = 'note-indicator';
+          btn.prepend(dot);
+        }
+      } else {
+        btn.classList.remove('has-note');
+        const dot = btn.querySelector('.note-indicator');
+        if (dot) dot.remove();
+      }
+    }
+    // Flash "saved" indicator
+    const savedEl = document.getElementById(`notes-saved-${num}`);
+    if (savedEl) {
+      savedEl.classList.add('visible');
+      setTimeout(() => savedEl.classList.remove('visible'), 1500);
+    }
+  }, 400);
+}
+
+function toggleExpand(num) {
+  const textarea = document.getElementById(`note-input-${num}`);
+  const btn = document.getElementById(`expand-btn-${num}`);
+  if (textarea && btn) {
+    textarea.classList.toggle('expanded');
+    btn.textContent = textarea.classList.contains('expanded') ? 'Collapse' : 'Expand';
+  }
+}
+
+function toggleNotes(num) {
+  const area = document.getElementById(`notes-area-${num}`);
+  if (area) {
+    area.classList.toggle('show');
+    if (area.classList.contains('show')) {
+      const textarea = document.getElementById(`note-input-${num}`);
+      if (textarea) textarea.focus();
+    }
+  }
+}
+
+function toggleCheck(num) {
+  const saved = JSON.parse(localStorage.getItem('janovum_progress') || '{}');
+  saved[num] = !saved[num];
+  if (!saved[num]) delete saved[num];
+  localStorage.setItem('janovum_progress', JSON.stringify(saved));
+  render();
+}
+function toggleDetails(num) { document.getElementById(`details-${num}`).classList.toggle('show'); }
+function togglePhase(pi) { document.getElementById(`steps-${pi}`).classList.toggle('hidden'); document.getElementById(`toggle-${pi}`).classList.toggle('collapsed'); }
+function updateProgress(checked) {
+  const pct = Math.round((checked / TOTAL) * 100);
+  document.getElementById('progress-label').textContent = `${checked} / ${TOTAL} Steps Completed`;
+  document.getElementById('progress-pct').textContent = `${pct}%`;
+  document.getElementById('progress-fill').style.width = `${pct}%`;
+}
+render();
+</script>
+</div><!-- /page-content -->
+</body>
+</html>

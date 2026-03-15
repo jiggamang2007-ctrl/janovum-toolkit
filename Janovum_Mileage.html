@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — Mileage Tracker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; }
+
+  /* ── NAV BAR ─────────────────────────────────────────── */
+  .topnav { background: #111; border-bottom: 1px solid #222; padding: 0 20px; display: flex; align-items: center; gap: 0; position: sticky; top: 0; z-index: 1000; }
+  .topnav-brand { font-size: 1.1em; font-weight: 700; background: linear-gradient(135deg, #ff6b35, #f7c948); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 12px 20px 12px 0; border-right: 1px solid #222; margin-right: 4px; white-space: nowrap; text-decoration: none; }
+  .topnav a.nav-link { display: flex; align-items: center; gap: 8px; padding: 14px 18px; color: #777; text-decoration: none; font-size: 0.88em; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .topnav a.nav-link:hover { color: #ccc; background: #1a1a1a; }
+  .topnav a.nav-link.active { color: #f7c948; border-bottom-color: #f7c948; }
+  .topnav a.nav-link svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+  /* ── MAIN ────────────────────────────────────────────── */
+  .main { max-width: 1000px; margin: 0 auto; padding: 20px; }
+  h1 { text-align: center; font-size: 2em; background: linear-gradient(135deg, #ff6b35, #f7c948); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 0.9em; margin-bottom: 20px; }
+
+  /* ── CARDS ───────────────────────────────────────────── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .card { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 16px 18px; }
+  .card-label { font-size: 0.78em; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .card-value { font-size: 1.5em; font-weight: 700; }
+  .card-value.green { color: #00c853; }
+  .card-value.gold { color: #f7c948; }
+  .card-value.blue { color: #448aff; }
+  .card-value.orange { color: #ff6b35; }
+  .card-sub { font-size: 0.75em; color: #555; margin-top: 2px; }
+
+  /* ── IRS RATE BANNER ────────────────────────────────── */
+  .irs-banner { background: linear-gradient(135deg, #1a2a1a, #0a1a0a); border: 1px solid #2a5a2a; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px; }
+  .irs-banner .irs-icon { font-size: 1.8em; }
+  .irs-banner .irs-text { font-size: 0.88em; color: #aaa; }
+  .irs-banner .irs-text strong { color: #00c853; }
+
+  /* ── TABLE ───────────────────────────────────────────── */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; flex-wrap: wrap; }
+  .toolbar input, .toolbar select { background: #1a1a1a; border: 1px solid #333; color: #ddd; padding: 7px 12px; border-radius: 6px; font-size: 0.85em; outline: none; }
+  .toolbar input:focus, .toolbar select:focus { border-color: #f7c948; }
+  .toolbar input[type="text"] { flex: 1; min-width: 150px; }
+  .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #ddd; font-size: 0.85em; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn:hover { border-color: #555; background: #222; }
+  .btn-gold { border-color: #f7c948; color: #f7c948; }
+  .btn-gold:hover { background: #2a2200; }
+  .btn-green { border-color: #00c853; color: #00c853; }
+  .btn-green:hover { background: #002a10; }
+  .btn-red { border-color: #ff5252; color: #ff5252; }
+  .btn-red:hover { background: #2a0a0a; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #161620; color: #aaa; font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; border-bottom: 2px solid #f7c94833; cursor: pointer; user-select: none; }
+  thead th:hover { color: #f7c948; }
+  thead th.sort-asc::after { content: ' ▲'; color: #f7c948; }
+  thead th.sort-desc::after { content: ' ▼'; color: #f7c948; }
+  tbody tr { border-bottom: 1px solid #1a1a1a; transition: background 0.15s; }
+  tbody tr:hover { background: #141420; }
+  tbody td { padding: 10px 12px; font-size: 0.88em; }
+  td.date { color: #aaa; white-space: nowrap; }
+  td.miles { color: #448aff; font-weight: 600; }
+  td.deduction { color: #00c853; font-weight: 700; }
+  td.purpose span { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.82em; font-weight: 500; }
+  .purp-client { background: #0a2a1a; color: #69f0ae; }
+  .purp-setup { background: #1a2a1a; color: #81c784; }
+  .purp-supplies { background: #1a1a2a; color: #7986cb; }
+  .purp-meeting { background: #2a1a2a; color: #ba68c8; }
+  .purp-bank { background: #2a2a1a; color: #ffd54f; }
+  .purp-other { background: #1a1a1a; color: #aaa; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #444; }
+  .empty-state .icon { font-size: 3em; margin-bottom: 10px; }
+
+  /* ── MODAL ───────────────────────────────────────────── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: #000a; z-index: 2000; justify-content: center; align-items: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: #141414; border: 1px solid #333; border-radius: 14px; padding: 28px; width: 90%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 1.1em; color: #f7c948; margin-bottom: 18px; }
+  .modal label { display: block; font-size: 0.82em; color: #888; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select, .modal textarea { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #ddd; padding: 9px 12px; border-radius: 6px; font-size: 0.9em; outline: none; font-family: inherit; }
+  .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: #f7c948; }
+  .modal textarea { resize: vertical; min-height: 50px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+
+  /* ── QUICK CALC ──────────────────────────────────────── */
+  .quick-calc { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 18px; margin-top: 24px; }
+  .quick-calc h3 { font-size: 0.95em; color: #f7c948; margin-bottom: 12px; }
+  .calc-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .calc-row input { width: 100px; background: #0a0a0a; border: 1px solid #333; color: #ddd; padding: 8px 12px; border-radius: 6px; font-size: 0.9em; outline: none; text-align: center; }
+  .calc-row input:focus { border-color: #f7c948; }
+  .calc-row span { color: #888; font-size: 0.88em; }
+  .calc-result { color: #00c853; font-size: 1.2em; font-weight: 700; margin-left: 10px; }
+
+  /* ── MONTHLY BREAKDOWN ──────────────────────────────── */
+  .monthly { margin-top: 24px; }
+  .monthly h3 { font-size: 0.95em; color: #f7c948; margin-bottom: 12px; }
+  .month-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .month-card { background: #111; border: 1px solid #1a1a1a; border-radius: 8px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .month-card .m-name { font-size: 0.88em; color: #aaa; }
+  .month-card .m-miles { font-size: 0.88em; color: #448aff; font-weight: 600; }
+  .month-card .m-ded { font-size: 0.88em; color: #00c853; font-weight: 700; }
+  .month-bar { height: 3px; background: #222; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .month-bar-fill { height: 100%; background: linear-gradient(90deg, #448aff, #00c853); border-radius: 2px; transition: width 0.4s; }
+
+  @media (max-width: 700px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+    .main { padding: 12px; }
+    table { font-size: 0.82em; }
+    td, th { padding: 8px 6px; }
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV BAR ═══ -->
+<nav class="topnav">
+  <a class="topnav-brand" href="Janovum_Plan_v6.html">◈ Janovum</a>
+  <a class="nav-link" href="Janovum_Plan_v6.html">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Business Plan
+  </a>
+  <a class="nav-link" href="Janovum_Expenses.html">
+    <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Expenses
+  </a>
+  <a class="nav-link active" href="Janovum_Mileage.html">
+    <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Mileage
+  </a>
+  <a class="nav-link" href="Janovum_Platform_v5.html">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Toolkit
+  </a>
+  <a class="nav-link" href="Janovum_Agent_Viewer.html">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Agent Viewer
+  </a>
+</nav>
+
+<div class="main">
+<h1>Mileage Tracker</h1>
+<p class="subtitle">Every business drive = tax deduction. Log them ALL.</p>
+
+<!-- IRS Rate Banner -->
+<div class="irs-banner">
+  <div class="irs-icon">🚗</div>
+  <div class="irs-text">
+    <strong>2026 IRS Standard Mileage Rate: $0.67/mile</strong><br>
+    20 miles to a client and back = 40 miles × $0.67 = <strong>$26.80 deduction</strong>. Do that 50 times = <strong>$1,340 off your taxes</strong>.
+  </div>
+</div>
+
+<!-- ═══ SUMMARY CARDS ═══ -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Total Miles</div>
+    <div class="card-value blue" id="card-miles">0</div>
+    <div class="card-sub" id="card-trips">0 trips</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Total Deduction</div>
+    <div class="card-value green" id="card-deduction">$0.00</div>
+    <div class="card-sub">at $0.67/mi</div>
+  </div>
+  <div class="card">
+    <div class="card-label">This Month</div>
+    <div class="card-value gold" id="card-month-miles">0 mi</div>
+    <div class="card-sub" id="card-month-ded">$0.00 deduction</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Avg per Trip</div>
+    <div class="card-value orange" id="card-avg">0 mi</div>
+    <div class="card-sub" id="card-avg-ded">$0.00</div>
+  </div>
+</div>
+
+<!-- ═══ TRIP LOG ═══ -->
+<div class="toolbar">
+  <input type="text" id="search" placeholder="Search trips...">
+  <select id="filter-purpose">
+    <option value="">All Purposes</option>
+  </select>
+  <button class="btn btn-green" onclick="openModal()">+ Log Trip</button>
+  <button class="btn" onclick="exportCSV()">Export CSV</button>
+</div>
+
+<div style="overflow-x:auto;">
+  <table>
+    <thead>
+      <tr>
+        <th data-sort="date" class="sort-desc">Date</th>
+        <th data-sort="from">From</th>
+        <th data-sort="to">To</th>
+        <th data-sort="purpose">Purpose</th>
+        <th data-sort="miles" style="text-align:right">Miles</th>
+        <th style="text-align:right">Deduction</th>
+        <th>Notes</th>
+        <th style="width:60px"></th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+<div class="empty-state" id="empty-state" style="display:none;">
+  <div class="icon">🛣️</div>
+  <p>No trips logged yet. Click "+ Log Trip" to start tracking mileage!</p>
+</div>
+
+<!-- ═══ QUICK CALCULATOR ═══ -->
+<div class="quick-calc">
+  <h3>Quick Deduction Calculator</h3>
+  <div class="calc-row">
+    <input type="number" id="calc-miles" placeholder="Miles" oninput="quickCalc()">
+    <span>miles × $0.67 =</span>
+    <span class="calc-result" id="calc-result">$0.00</span>
+  </div>
+  <div class="calc-row" style="margin-top:10px;">
+    <input type="number" id="calc-round" placeholder="One way" oninput="quickCalcRound()">
+    <span>miles one way (round trip) =</span>
+    <span class="calc-result" id="calc-round-result">$0.00</span>
+  </div>
+</div>
+
+<!-- ═══ MONTHLY BREAKDOWN ═══ -->
+<div class="monthly">
+  <h3>Monthly Breakdown</h3>
+  <div class="month-grid" id="month-grid"></div>
+</div>
+
+</div><!-- /main -->
+
+<!-- ═══ TRIP MODAL ═══ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Log Trip</h2>
+    <input type="hidden" id="edit-id">
+    <label>Date</label>
+    <input type="date" id="inp-date">
+    <label>From (starting point)</label>
+    <input type="text" id="inp-from" placeholder="e.g., Home, Office">
+    <label>To (destination)</label>
+    <input type="text" id="inp-to" placeholder="e.g., Client - Miami Bakery">
+    <label>Purpose</label>
+    <select id="inp-purpose">
+      <option value="Client Visit">Client Visit</option>
+      <option value="New Setup">New Client Setup</option>
+      <option value="Supplies Run">Supplies / Equipment Run</option>
+      <option value="Meeting">Business Meeting</option>
+      <option value="Bank / Legal">Bank / Legal</option>
+      <option value="Other Business">Other Business</option>
+    </select>
+    <label>Miles (one way)</label>
+    <input type="number" id="inp-miles" step="0.1" min="0" placeholder="0.0">
+    <div style="margin-top:6px;">
+      <label style="margin:0;">
+        <input type="checkbox" id="inp-roundtrip" checked style="width:auto;margin-right:6px;">
+        Round trip (auto-double the miles)
+      </label>
+    </div>
+    <label>Notes (optional)</label>
+    <textarea id="inp-notes" placeholder="Client name, reason for trip, etc."></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveTrip()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const IRS_RATE = 0.67;
+
+const PURPOSES = ["Client Visit", "New Setup", "Supplies Run", "Meeting", "Bank / Legal", "Other Business"];
+const PURP_CLASSES = {
+  "Client Visit": "purp-client",
+  "New Setup": "purp-setup",
+  "Supplies Run": "purp-supplies",
+  "Meeting": "purp-meeting",
+  "Bank / Legal": "purp-bank",
+  "Other Business": "purp-other"
+};
+
+let trips = JSON.parse(localStorage.getItem('janovum_mileage') || '[]');
+let sortCol = 'date';
+let sortDir = -1;
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+function fmt(n) { return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function save() { localStorage.setItem('janovum_mileage', JSON.stringify(trips)); }
+
+// ══════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════
+function render() {
+  const search = document.getElementById('search').value.toLowerCase();
+  const filterPurp = document.getElementById('filter-purpose').value;
+
+  // Sort
+  let sorted = [...trips].sort((a, b) => {
+    let va = a[sortCol] || '', vb = b[sortCol] || '';
+    if (sortCol === 'miles') { va = a.miles; vb = b.miles; }
+    if (va < vb) return -1 * sortDir;
+    if (va > vb) return 1 * sortDir;
+    return 0;
+  });
+
+  // Filter
+  let filtered = sorted.filter(t => {
+    if (search && !t.from.toLowerCase().includes(search) && !t.to.toLowerCase().includes(search) && !(t.notes||'').toLowerCase().includes(search) && !t.purpose.toLowerCase().includes(search)) return false;
+    if (filterPurp && t.purpose !== filterPurp) return false;
+    return true;
+  });
+
+  // Table
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-state');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = filtered.map(t => {
+      const cls = PURP_CLASSES[t.purpose] || 'purp-other';
+      const ded = t.miles * IRS_RATE;
+      return `<tr>
+        <td class="date">${formatDate(t.date)}</td>
+        <td>${esc(t.from)}</td>
+        <td>${esc(t.to)}</td>
+        <td class="purpose"><span class="${cls}">${esc(t.purpose)}</span></td>
+        <td class="miles" style="text-align:right">${t.miles.toFixed(1)}</td>
+        <td class="deduction" style="text-align:right">${fmt(ded)}</td>
+        <td style="color:#666;font-size:0.82em">${esc(t.notes || '')}</td>
+        <td>
+          <button class="btn" style="padding:4px 8px;font-size:0.78em" onclick="editTrip('${t.id}')">✏</button>
+          <button class="btn btn-red" style="padding:4px 8px;font-size:0.78em" onclick="deleteTrip('${t.id}')">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Summary cards
+  let totalMiles = 0;
+  let thisMonth = new Date().toISOString().slice(0, 7);
+  let monthMiles = 0;
+  trips.forEach(t => {
+    totalMiles += t.miles;
+    if (t.date.startsWith(thisMonth)) monthMiles += t.miles;
+  });
+  const totalDed = totalMiles * IRS_RATE;
+  const avgMiles = trips.length > 0 ? totalMiles / trips.length : 0;
+
+  document.getElementById('card-miles').textContent = totalMiles.toFixed(1);
+  document.getElementById('card-trips').textContent = trips.length + ' trips';
+  document.getElementById('card-deduction').textContent = fmt(totalDed);
+  document.getElementById('card-month-miles').textContent = monthMiles.toFixed(1) + ' mi';
+  document.getElementById('card-month-ded').textContent = fmt(monthMiles * IRS_RATE) + ' deduction';
+  document.getElementById('card-avg').textContent = avgMiles.toFixed(1) + ' mi';
+  document.getElementById('card-avg-ded').textContent = fmt(avgMiles * IRS_RATE);
+
+  // Sort headers
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === sortCol) th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+  });
+
+  // Monthly breakdown
+  renderMonthly();
+}
+
+function renderMonthly() {
+  let months = {};
+  trips.forEach(t => {
+    const key = t.date.slice(0, 7); // YYYY-MM
+    if (!months[key]) months[key] = { miles: 0, trips: 0 };
+    months[key].miles += t.miles;
+    months[key].trips++;
+  });
+  const grid = document.getElementById('month-grid');
+  const entries = Object.entries(months).sort((a,b) => b[0].localeCompare(a[0]));
+  if (entries.length === 0) {
+    grid.innerHTML = '<p style="color:#444;padding:20px">No trips logged yet</p>';
+    return;
+  }
+  const maxMiles = Math.max(...entries.map(e => e[1].miles));
+  grid.innerHTML = entries.map(([key, data]) => {
+    const [y, m] = key.split('-');
+    const monthName = new Date(y, parseInt(m)-1).toLocaleString('default', { month: 'long', year: 'numeric' });
+    const pct = maxMiles > 0 ? (data.miles / maxMiles * 100) : 0;
+    return `<div class="month-card">
+      <div>
+        <div class="m-name">${monthName}</div>
+        <div class="month-bar" style="width:100px"><div class="month-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div style="text-align:right">
+        <div class="m-miles">${data.miles.toFixed(1)} mi</div>
+        <div class="m-ded">${fmt(data.miles * IRS_RATE)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  return `${m}/${day}/${y}`;
+}
+
+function esc(s) {
+  const el = document.createElement('span');
+  el.textContent = s;
+  return el.innerHTML;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════════
+function openModal(id) {
+  document.getElementById('modal').classList.add('show');
+  if (id) {
+    const t = trips.find(x => x.id === id);
+    if (!t) return;
+    document.getElementById('modal-title').textContent = 'Edit Trip';
+    document.getElementById('edit-id').value = t.id;
+    document.getElementById('inp-date').value = t.date;
+    document.getElementById('inp-from').value = t.from;
+    document.getElementById('inp-to').value = t.to;
+    document.getElementById('inp-purpose').value = t.purpose;
+    document.getElementById('inp-miles').value = t.miles;
+    document.getElementById('inp-roundtrip').checked = false; // editing total already
+    document.getElementById('inp-notes').value = t.notes || '';
+  } else {
+    document.getElementById('modal-title').textContent = 'Log Trip';
+    document.getElementById('edit-id').value = '';
+    document.getElementById('inp-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('inp-from').value = '';
+    document.getElementById('inp-to').value = '';
+    document.getElementById('inp-purpose').value = 'Client Visit';
+    document.getElementById('inp-miles').value = '';
+    document.getElementById('inp-roundtrip').checked = true;
+    document.getElementById('inp-notes').value = '';
+  }
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+function saveTrip() {
+  const id = document.getElementById('edit-id').value;
+  const date = document.getElementById('inp-date').value;
+  const from = document.getElementById('inp-from').value.trim();
+  const to = document.getElementById('inp-to').value.trim();
+  const purpose = document.getElementById('inp-purpose').value;
+  let miles = parseFloat(document.getElementById('inp-miles').value);
+  const roundtrip = document.getElementById('inp-roundtrip').checked;
+  const notes = document.getElementById('inp-notes').value.trim();
+
+  if (!date || !from || !to || isNaN(miles) || miles <= 0) {
+    alert('Fill in date, from, to, and miles.');
+    return;
+  }
+
+  if (roundtrip) miles *= 2;
+
+  if (id) {
+    const idx = trips.findIndex(t => t.id === id);
+    if (idx >= 0) trips[idx] = { ...trips[idx], date, from, to, purpose, miles, notes };
+  } else {
+    trips.push({ id: genId(), date, from, to, purpose, miles, notes });
+  }
+  save();
+  closeModal();
+  render();
+}
+
+function editTrip(id) { openModal(id); }
+
+function deleteTrip(id) {
+  if (!confirm('Delete this trip?')) return;
+  trips = trips.filter(t => t.id !== id);
+  save();
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════
+// QUICK CALC
+// ══════════════════════════════════════════════════════════════
+function quickCalc() {
+  const m = parseFloat(document.getElementById('calc-miles').value) || 0;
+  document.getElementById('calc-result').textContent = fmt(m * IRS_RATE);
+}
+function quickCalcRound() {
+  const m = parseFloat(document.getElementById('calc-round').value) || 0;
+  document.getElementById('calc-round-result').textContent = fmt(m * 2 * IRS_RATE) + ' (' + (m*2).toFixed(1) + ' mi)';
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORT
+// ══════════════════════════════════════════════════════════════
+function exportCSV() {
+  let csv = 'Date,From,To,Purpose,Miles,Deduction,Notes\n';
+  [...trips].sort((a,b) => a.date < b.date ? -1 : 1).forEach(t => {
+    csv += `"${t.date}","${t.from}","${t.to}","${t.purpose}","${t.miles}","${(t.miles*IRS_RATE).toFixed(2)}","${(t.notes||'').replace(/"/g,'""')}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'janovum_mileage_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ══════════════════════════════════════════════════════════════
+// SORT & FILTER
+// ══════════════════════════════════════════════════════════════
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = col === 'date' ? -1 : 1; }
+    render();
+  });
+});
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('filter-purpose').addEventListener('change', render);
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+
+// Populate filter
+const filterSel = document.getElementById('filter-purpose');
+filterSel.innerHTML = '<option value="">All Purposes</option>' + PURPOSES.map(p => `<option value="${p}">${p}</option>`).join('');
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+render();
+</script>
+</body>
+</html>

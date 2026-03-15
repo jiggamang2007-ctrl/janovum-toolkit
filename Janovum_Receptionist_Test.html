@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — AI Receptionist Test</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --bg:#0a0a0f; --card:#14141f; --border:#222238; --gold:#f7c948; --orange:#ff6b35; --green:#22c55e; --blue:#3b82f6; --red:#ef4444; --purple:#a855f7; --text:#e0e0e0; --muted:#888; --dim:#555; }
+  body { font-family:-apple-system,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+
+  .container { width:100%; max-width:600px; padding:20px; }
+
+  /* Header */
+  .header { text-align:center; margin-bottom:32px; }
+  .header h1 { font-size:1.4em; font-weight:800; margin-bottom:4px; }
+  .header h1 span { background:linear-gradient(135deg,var(--orange),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .header p { font-size:0.82em; color:var(--muted); }
+
+  /* Status */
+  .status-bar { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px; padding:10px; background:var(--card); border:1px solid var(--border); border-radius:10px; }
+  .status-dot { width:10px; height:10px; border-radius:50%; }
+  .status-dot.listening { background:var(--green); animation:pulse 1.5s infinite; }
+  .status-dot.thinking { background:var(--blue); animation:pulse 0.5s infinite; }
+  .status-dot.speaking { background:var(--purple); animation:pulse 0.8s infinite; }
+  .status-dot.idle { background:var(--dim); }
+  .status-text { font-size:0.82em; font-weight:600; }
+  .status-cost { font-size:0.7em; color:var(--green); margin-left:auto; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Waveform */
+  .waveform { display:flex; align-items:center; justify-content:center; gap:3px; height:60px; margin-bottom:24px; }
+  .wave-bar { width:4px; border-radius:2px; background:var(--dim); transition:height 0.1s; }
+  .wave-bar.active { background:var(--green); }
+  .wave-bar.speaking { background:var(--purple); }
+
+  /* Mic Button */
+  .mic-area { text-align:center; margin-bottom:24px; }
+  .mic-btn { width:80px; height:80px; border-radius:50%; border:3px solid var(--border); background:var(--card); color:var(--text); font-size:2em; cursor:pointer; transition:all 0.3s; display:inline-flex; align-items:center; justify-content:center; }
+  .mic-btn:hover { border-color:var(--green); background:#1a2a1a; }
+  .mic-btn.active { border-color:var(--green); background:rgba(34,197,94,0.15); animation:pulse 1.5s infinite; box-shadow:0 0 30px rgba(34,197,94,0.2); }
+  .mic-btn.speaking { border-color:var(--purple); background:rgba(168,85,247,0.15); }
+  .mic-hint { font-size:0.72em; color:var(--dim); margin-top:10px; }
+
+  /* Transcript */
+  .transcript { background:var(--card); border:1px solid var(--border); border-radius:12px; max-height:400px; overflow-y:auto; }
+  .transcript-header { padding:12px 16px; border-bottom:1px solid var(--border); font-size:0.78em; font-weight:700; color:var(--gold); display:flex; justify-content:space-between; }
+  .transcript-body { padding:12px 16px; }
+  .msg { margin-bottom:12px; display:flex; gap:10px; }
+  .msg-avatar { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.8em; flex-shrink:0; }
+  .msg-avatar.user { background:rgba(59,130,246,0.2); }
+  .msg-avatar.ai { background:rgba(168,85,247,0.2); }
+  .msg-bubble { font-size:0.82em; line-height:1.5; color:#ccc; }
+  .msg-bubble.user { color:var(--blue); }
+  .msg-bubble.ai { color:var(--text); }
+  .msg-time { font-size:0.65em; color:var(--dim); margin-top:2px; }
+  .msg-interim { color:var(--dim); font-style:italic; font-size:0.82em; padding:4px 0; }
+
+  /* Settings */
+  .settings-toggle { text-align:center; margin-top:16px; }
+  .settings-toggle a { font-size:0.75em; color:var(--dim); cursor:pointer; text-decoration:none; }
+  .settings-toggle a:hover { color:var(--gold); }
+  .settings-panel { display:none; margin-top:12px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .settings-panel.open { display:block; }
+  .settings-panel label { font-size:0.75em; color:var(--muted); display:block; margin-bottom:3px; }
+  .settings-panel input, .settings-panel select { width:100%; padding:8px; background:#0a0a0f; border:1px solid var(--border); border-radius:6px; color:var(--text); font-size:0.82em; margin-bottom:10px; }
+
+  .back-link { position:fixed; top:16px; left:16px; font-size:0.82em; color:var(--muted); text-decoration:none; }
+  .back-link:hover { color:var(--gold); }
+</style>
+</head>
+<body>
+
+<a class="back-link" href="Janovum_Platform_v5.html">&larr; Back to Toolkit</a>
+
+<div class="container">
+  <div class="header">
+    <h1><span>AI Receptionist</span> Test</h1>
+    <p>Talk to the receptionist like a real phone call. It listens, responds, and you can interrupt anytime.</p>
+  </div>
+
+  <div class="status-bar">
+    <span class="status-dot idle" id="statusDot"></span>
+    <span class="status-text" id="statusText">Press the mic to start</span>
+    <span class="status-cost" id="statusCost">Cost: $0.00 (free)</span>
+  </div>
+
+  <div class="waveform" id="waveform"></div>
+
+  <div class="mic-area">
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">&#127908;</button>
+    <div class="mic-hint" id="micHint">Click to start conversation</div>
+  </div>
+
+  <div class="transcript" id="transcript">
+    <div class="transcript-header">
+      <span>Conversation</span>
+      <span id="msgCount">0 messages</span>
+    </div>
+    <div class="transcript-body" id="transcriptBody">
+      <div style="text-align:center;color:var(--dim);padding:20px;font-size:0.85em">
+        Start talking and the conversation will appear here.
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-toggle">
+    <a onclick="document.getElementById('settingsPanel').classList.toggle('open')">&#9881; Settings</a>
+  </div>
+  <div class="settings-panel" id="settingsPanel">
+    <label>API Server URL</label>
+    <input id="apiUrl" value="http://localhost:5050">
+    <label>TTS Voice</label>
+    <select id="ttsVoice">
+      <option value="en-US-JennyNeural">Jenny (US Female)</option>
+      <option value="en-US-GuyNeural">Guy (US Male)</option>
+      <option value="en-US-AriaNeural">Aria (US Female)</option>
+      <option value="en-US-DavisNeural">Davis (US Male)</option>
+      <option value="en-GB-SoniaNeural">Sonia (UK Female)</option>
+      <option value="en-US-JaneNeural">Jane (US Female)</option>
+    </select>
+    <label>Speech Language</label>
+    <select id="sttLang">
+      <option value="en-US">English (US)</option>
+      <option value="en-GB">English (UK)</option>
+      <option value="es-ES">Spanish</option>
+      <option value="fr-FR">French</option>
+    </select>
+  </div>
+</div>
+
+<script>
+const API = () => document.getElementById('apiUrl').value;
+let isActive = false;
+let recognition = null;
+let synth = window.speechSynthesis;
+let conversationHistory = [];
+let currentUtterance = null;
+let isAISpeaking = false;
+let interimText = '';
+let messageCount = 0;
+let pendingSend = null;  // Debounce timer
+let isSending = false;   // Prevent overlapping requests
+let finalBuffer = '';     // Accumulate final results before sending
+
+// Create waveform bars
+const waveform = document.getElementById('waveform');
+for (let i = 0; i < 32; i++) {
+  const bar = document.createElement('div');
+  bar.className = 'wave-bar';
+  bar.style.height = '4px';
+  waveform.appendChild(bar);
+}
+const bars = waveform.querySelectorAll('.wave-bar');
+
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot ' + state;
+  txt.textContent = text;
+
+  const micBtn = document.getElementById('micBtn');
+  if (state === 'listening') { micBtn.className = 'mic-btn active'; }
+  else if (state === 'speaking') { micBtn.className = 'mic-btn speaking'; }
+  else { micBtn.className = 'mic-btn' + (isActive ? ' active' : ''); }
+}
+
+function animateWave(active, speaking) {
+  bars.forEach(bar => {
+    bar.classList.toggle('active', active && !speaking);
+    bar.classList.toggle('speaking', speaking);
+    if (active || speaking) {
+      bar.style.height = (4 + Math.random() * 36) + 'px';
+    } else {
+      bar.style.height = '4px';
+    }
+  });
+}
+let waveInterval = null;
+
+function addMessage(role, text) {
+  const body = document.getElementById('transcriptBody');
+  // Remove empty state
+  if (messageCount === 0) body.innerHTML = '';
+
+  const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  const avatarClass = role === 'user' ? 'user' : 'ai';
+  const avatarEmoji = role === 'user' ? '&#128100;' : '&#128222;';
+  const bubbleClass = role === 'user' ? 'user' : 'ai';
+  const label = role === 'user' ? 'You' : 'Receptionist';
+
+  body.innerHTML += `
+    <div class="msg">
+      <div class="msg-avatar ${avatarClass}">${avatarEmoji}</div>
+      <div>
+        <div class="msg-bubble ${bubbleClass}">${text}</div>
+        <div class="msg-time">${label} &middot; ${time}</div>
+      </div>
+    </div>`;
+  body.scrollTop = body.scrollHeight;
+
+  messageCount++;
+  document.getElementById('msgCount').textContent = messageCount + ' messages';
+
+  // Track history for API
+  conversationHistory.push({ role: role === 'user' ? 'user' : 'assistant', content: text });
+}
+
+function toggleMic() {
+  if (isActive) {
+    stopEverything();
+  } else {
+    startListening();
+  }
+}
+
+function startListening() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Speech recognition not supported in this browser. Use Chrome.');
+    return;
+  }
+
+  isActive = true;
+  document.getElementById('micHint').textContent = 'Listening... speak naturally. Click to stop.';
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = document.getElementById('sttLang').value;
+
+  recognition.onstart = () => {
+    setStatus('listening', 'Listening...');
+    waveInterval = setInterval(() => animateWave(true, false), 100);
+  };
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    let finalText = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        finalText += t;
+      } else {
+        interim += t;
+      }
+    }
+
+    // Show interim text — and interrupt AI if user starts talking
+    if (interim) {
+      interimText = interim;
+      if (isAISpeaking) {
+        stopSpeaking();
+        setStatus('listening', 'Listening... (interrupted AI)');
+      }
+    }
+
+    // Accumulate final results and debounce — wait for user to finish their thought
+    if (finalText.trim()) {
+      finalBuffer += ' ' + finalText.trim();
+      interimText = '';
+
+      // Clear previous timer and wait 1.5s of silence before sending
+      if (pendingSend) clearTimeout(pendingSend);
+      pendingSend = setTimeout(() => {
+        if (finalBuffer.trim() && !isSending) {
+          const toSend = finalBuffer.trim();
+          finalBuffer = '';
+          addMessage('user', toSend);
+          sendToReceptionist(toSend);
+        }
+      }, 1500);  // Wait 1.5 seconds after last word before sending
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech') return; // Normal, just waiting
+    if (e.error === 'network') {
+      // Retry
+      setTimeout(() => {
+        if (isActive && recognition) {
+          try { recognition.start(); } catch(ex) {}
+        }
+      }, 500);
+      return;
+    }
+    console.log('STT error:', e.error);
+  };
+
+  recognition.onend = () => {
+    // Auto-restart if still active
+    if (isActive) {
+      setTimeout(() => {
+        if (isActive) {
+          try { recognition.start(); } catch(ex) {}
+        }
+      }, 200);
+    }
+  };
+
+  try { recognition.start(); } catch(ex) {
+    // Request mic permission first
+    navigator.mediaDevices.getUserMedia({audio:true}).then(stream => {
+      stream.getTracks().forEach(t => t.stop());
+      recognition.start();
+    }).catch(() => {
+      alert('Mic access denied');
+      isActive = false;
+    });
+  }
+}
+
+function stopEverything() {
+  isActive = false;
+  if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+  stopSpeaking();
+  if (waveInterval) { clearInterval(waveInterval); waveInterval = null; }
+  animateWave(false, false);
+  setStatus('idle', 'Stopped. Click mic to restart.');
+  document.getElementById('micHint').textContent = 'Click to start conversation';
+}
+
+function stopSpeaking() {
+  isAISpeaking = false;
+  synth.cancel();
+  if (waveInterval) clearInterval(waveInterval);
+  waveInterval = setInterval(() => animateWave(true, false), 100);
+}
+
+async function sendToReceptionist(text) {
+  if (isSending) {
+    // Queue it — append to buffer and it'll send after current request
+    finalBuffer += ' ' + text;
+    return;
+  }
+  isSending = true;
+  setStatus('thinking', 'Thinking...');
+  if (waveInterval) clearInterval(waveInterval);
+  animateWave(false, false);
+
+  try {
+    const res = await fetch(API() + '/api/receptionist/test', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ message: text, history: conversationHistory.slice(-20) })
+    });
+    const data = await res.json();
+
+    if (data.response) {
+      addMessage('assistant', data.response);
+      speakResponse(data.response);
+    } else {
+      addMessage('assistant', '(Error: ' + (data.error || 'No response') + ')');
+      setStatus('listening', 'Listening...');
+      waveInterval = setInterval(() => animateWave(true, false), 100);
+    }
+  } catch(e) {
+    addMessage('assistant', '(Error connecting to server: ' + e.message + ')');
+    setStatus('listening', 'Listening...');
+    waveInterval = setInterval(() => animateWave(true, false), 100);
+  }
+  isSending = false;
+
+  // If more text queued while we were waiting, send it now
+  if (finalBuffer.trim()) {
+    const next = finalBuffer.trim();
+    finalBuffer = '';
+    addMessage('user', next);
+    sendToReceptionist(next);
+  }
+}
+
+function speakResponse(text) {
+  isAISpeaking = true;
+  setStatus('speaking', 'Receptionist speaking...');
+  if (waveInterval) clearInterval(waveInterval);
+  waveInterval = setInterval(() => animateWave(false, true), 100);
+
+  // Use browser TTS (Web Speech API)
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.05;
+  utter.pitch = 1.0;
+
+  // Try to pick a good voice
+  const voices = synth.getVoices();
+  const preferred = document.getElementById('ttsVoice').value;
+  const match = voices.find(v => v.name.includes('Jenny') || v.name.includes('Zira') || v.name.includes('Samantha') || v.lang.startsWith('en'));
+  if (match) utter.voice = match;
+
+  utter.onend = () => {
+    isAISpeaking = false;
+    if (isActive) {
+      setStatus('listening', 'Listening...');
+      if (waveInterval) clearInterval(waveInterval);
+      waveInterval = setInterval(() => animateWave(true, false), 100);
+    }
+  };
+
+  synth.speak(utter);
+}
+
+// Load voices
+if (synth.onvoiceschanged !== undefined) {
+  synth.onvoiceschanged = () => {};
+}
+</script>
+</body>
+</html>

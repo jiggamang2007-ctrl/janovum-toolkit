@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — Expense Tracker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0a; color: #e0e0e0; min-height: 100vh; }
+
+  /* ── NAV BAR ─────────────────────────────────────────── */
+  .topnav { background: #111; border-bottom: 1px solid #222; padding: 0 20px; display: flex; align-items: center; gap: 0; position: sticky; top: 0; z-index: 1000; }
+  .topnav-brand { font-size: 1.1em; font-weight: 700; background: linear-gradient(135deg, #ff6b35, #f7c948); -webkit-background-clip: text; -webkit-text-fill-color: transparent; padding: 12px 20px 12px 0; border-right: 1px solid #222; margin-right: 4px; white-space: nowrap; text-decoration: none; }
+  .topnav a.nav-link { display: flex; align-items: center; gap: 8px; padding: 14px 18px; color: #777; text-decoration: none; font-size: 0.88em; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .topnav a.nav-link:hover { color: #ccc; background: #1a1a1a; }
+  .topnav a.nav-link.active { color: #f7c948; border-bottom-color: #f7c948; }
+  .topnav a.nav-link svg { width: 16px; height: 16px; fill: currentColor; flex-shrink: 0; }
+
+  /* ── MAIN CONTENT ───────────────────────────────────── */
+  .main { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  h1 { text-align: center; font-size: 2em; background: linear-gradient(135deg, #ff6b35, #f7c948); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+  .subtitle { text-align: center; color: #888; font-size: 0.9em; margin-bottom: 20px; }
+
+  /* ── SUMMARY CARDS ──────────────────────────────────── */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .card { background: #141414; border: 1px solid #222; border-radius: 10px; padding: 16px 18px; }
+  .card-label { font-size: 0.78em; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .card-value { font-size: 1.5em; font-weight: 700; }
+  .card-value.green { color: #00c853; }
+  .card-value.red { color: #ff5252; }
+  .card-value.gold { color: #f7c948; }
+  .card-value.blue { color: #448aff; }
+  .card-sub { font-size: 0.75em; color: #555; margin-top: 2px; }
+
+  /* ── TABS ────────────────────────────────────────────── */
+  .tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 1px solid #222; }
+  .tab { padding: 10px 20px; color: #666; cursor: pointer; font-size: 0.88em; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; user-select: none; }
+  .tab:hover { color: #aaa; }
+  .tab.active { color: #f7c948; border-bottom-color: #f7c948; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── TABLE ───────────────────────────────────────────── */
+  .toolbar { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; flex-wrap: wrap; }
+  .toolbar input, .toolbar select { background: #1a1a1a; border: 1px solid #333; color: #ddd; padding: 7px 12px; border-radius: 6px; font-size: 0.85em; outline: none; }
+  .toolbar input:focus, .toolbar select:focus { border-color: #f7c948; }
+  .toolbar input[type="text"] { flex: 1; min-width: 150px; }
+  .btn { padding: 8px 16px; border-radius: 6px; border: 1px solid #333; background: #1a1a1a; color: #ddd; font-size: 0.85em; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .btn:hover { border-color: #555; background: #222; }
+  .btn-gold { border-color: #f7c948; color: #f7c948; }
+  .btn-gold:hover { background: #2a2200; }
+  .btn-green { border-color: #00c853; color: #00c853; }
+  .btn-green:hover { background: #002a10; }
+  .btn-red { border-color: #ff5252; color: #ff5252; }
+  .btn-red:hover { background: #2a0a0a; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #161620; color: #aaa; font-size: 0.78em; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 12px; text-align: left; border-bottom: 2px solid #f7c94833; position: sticky; top: 0; user-select: none; cursor: pointer; }
+  thead th:hover { color: #f7c948; }
+  thead th.sort-asc::after { content: ' ▲'; color: #f7c948; }
+  thead th.sort-desc::after { content: ' ▼'; color: #f7c948; }
+  tbody tr { border-bottom: 1px solid #1a1a1a; transition: background 0.15s; }
+  tbody tr:hover { background: #141420; }
+  tbody td { padding: 10px 12px; font-size: 0.88em; }
+  td.money-in { color: #00c853; font-weight: 600; }
+  td.money-out { color: #ff5252; font-weight: 600; }
+  td.balance { color: #f7c948; font-weight: 700; }
+  td.date { color: #aaa; white-space: nowrap; }
+  td.category span { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.82em; font-weight: 500; }
+  .cat-startup { background: #1a2a1a; color: #66bb6a; }
+  .cat-domain { background: #1a1a2a; color: #7986cb; }
+  .cat-software { background: #2a1a2a; color: #ba68c8; }
+  .cat-hardware { background: #2a2a1a; color: #ffd54f; }
+  .cat-marketing { background: #1a2a2a; color: #4dd0e1; }
+  .cat-gas { background: #2a1a1a; color: #ef9a9a; }
+  .cat-office { background: #1a1a1a; color: #aaa; }
+  .cat-client-setup { background: #1a2a1a; color: #81c784; }
+  .cat-service { background: #1a2a3a; color: #64b5f6; }
+  .cat-misc { background: #1a1a1a; color: #888; }
+  .cat-payment { background: #0a2a0a; color: #00e676; }
+  .cat-setup-fee { background: #0a2a1a; color: #69f0ae; }
+  .cat-other-income { background: #1a1a0a; color: #f7c948; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #444; }
+  .empty-state .icon { font-size: 3em; margin-bottom: 10px; }
+
+  /* ── MODAL ───────────────────────────────────────────── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: #000a; z-index: 2000; justify-content: center; align-items: center; }
+  .modal-overlay.show { display: flex; }
+  .modal { background: #141414; border: 1px solid #333; border-radius: 14px; padding: 28px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+  .modal h2 { font-size: 1.1em; color: #f7c948; margin-bottom: 18px; }
+  .modal label { display: block; font-size: 0.82em; color: #888; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select, .modal textarea { width: 100%; background: #0a0a0a; border: 1px solid #333; color: #ddd; padding: 9px 12px; border-radius: 6px; font-size: 0.9em; outline: none; font-family: inherit; }
+  .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: #f7c948; }
+  .modal textarea { resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+  .type-toggle { display: flex; gap: 0; margin-top: 6px; border-radius: 8px; overflow: hidden; border: 1px solid #333; }
+  .type-toggle button { flex: 1; padding: 8px; background: #0a0a0a; color: #888; border: none; cursor: pointer; font-size: 0.88em; font-weight: 500; transition: all 0.2s; }
+  .type-toggle button.active-income { background: #0a2a0a; color: #00c853; }
+  .type-toggle button.active-expense { background: #2a0a0a; color: #ff5252; }
+
+  /* ── CATEGORY BREAKDOWN ─────────────────────────────── */
+  .breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .breakdown-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #111; border-radius: 6px; }
+  .breakdown-item .cat-name { font-size: 0.85em; color: #aaa; }
+  .breakdown-item .cat-amount { font-size: 0.88em; font-weight: 600; color: #ff5252; }
+  .breakdown-bar { height: 3px; background: #222; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .breakdown-bar-fill { height: 100%; background: linear-gradient(90deg, #ff6b35, #f7c948); border-radius: 2px; transition: width 0.4s; }
+
+  /* ── RECEIPT LOG ─────────────────────────────────────── */
+  .receipt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 16px; }
+  .receipt-card { background: #141414; border: 1px solid #222; border-radius: 8px; padding: 14px; }
+  .receipt-card .r-date { font-size: 0.78em; color: #888; }
+  .receipt-card .r-vendor { font-weight: 600; margin: 4px 0; }
+  .receipt-card .r-amount { color: #ff5252; font-weight: 600; }
+  .receipt-card .r-type { font-size: 0.78em; color: #666; margin-top: 4px; }
+  .receipt-card .r-note { font-size: 0.82em; color: #555; margin-top: 4px; }
+
+  /* ── RESPONSIVE ──────────────────────────────────────── */
+  @media (max-width: 700px) {
+    .cards { grid-template-columns: 1fr 1fr; }
+    .breakdown { grid-template-columns: 1fr; }
+    .topnav { overflow-x: auto; }
+    .main { padding: 12px; }
+    table { font-size: 0.82em; }
+    td, th { padding: 8px 6px; }
+  }
+
+  /* ── SCROLLBAR ───────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #555; }
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV BAR ═══ -->
+<nav class="topnav">
+  <a class="topnav-brand" href="Janovum_Plan_v6.html">◈ Janovum</a>
+  <a class="nav-link" href="Janovum_Plan_v6.html">
+    <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Business Plan
+  </a>
+  <a class="nav-link active" href="Janovum_Expenses.html">
+    <svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    Expenses
+  </a>
+  <a class="nav-link" href="Janovum_Mileage.html">
+    <svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Mileage
+  </a>
+  <a class="nav-link" href="Janovum_Platform_v5.html">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    Toolkit
+  </a>
+  <a class="nav-link" href="Janovum_Agent_Viewer.html">
+    <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 21h8M12 17v4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    Agent Viewer
+  </a>
+</nav>
+
+<div class="main">
+<h1>Expense Tracker</h1>
+<p class="subtitle">Track every dollar in and out — save receipts — know your real numbers</p>
+
+<!-- ═══ SUMMARY CARDS ═══ -->
+<div class="cards">
+  <div class="card">
+    <div class="card-label">Current Balance</div>
+    <div class="card-value gold" id="card-balance">$0.00</div>
+    <div class="card-sub" id="card-balance-sub"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Total Income</div>
+    <div class="card-value green" id="card-income">$0.00</div>
+    <div class="card-sub" id="card-income-count"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Total Expenses</div>
+    <div class="card-value red" id="card-expenses">$0.00</div>
+    <div class="card-sub" id="card-expense-count"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Transactions</div>
+    <div class="card-value blue" id="card-transactions">0</div>
+    <div class="card-sub" id="card-this-month"></div>
+  </div>
+</div>
+
+<!-- ═══ TABS ═══ -->
+<div class="tabs">
+  <div class="tab active" data-tab="transactions">Transactions</div>
+  <div class="tab" data-tab="breakdown">Category Breakdown</div>
+  <div class="tab" data-tab="receipts">Receipt Log</div>
+</div>
+
+<!-- ═══ TRANSACTIONS TAB ═══ -->
+<div class="tab-panel active" id="tab-transactions">
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search transactions...">
+    <select id="filter-cat">
+      <option value="">All Categories</option>
+    </select>
+    <select id="filter-type">
+      <option value="">All Types</option>
+      <option value="income">Income Only</option>
+      <option value="expense">Expenses Only</option>
+    </select>
+    <button class="btn btn-green" onclick="openModal()">+ Add Transaction</button>
+    <button class="btn" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th data-sort="date" class="sort-desc">Date</th>
+          <th data-sort="description">Description</th>
+          <th data-sort="category">Category</th>
+          <th data-sort="amount" style="text-align:right">Amount</th>
+          <th style="text-align:right">Balance</th>
+          <th>Notes</th>
+          <th style="width:60px"></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="empty-state" id="empty-state" style="display:none;">
+    <div class="icon">📊</div>
+    <p>No transactions yet. Click "+ Add Transaction" to start tracking!</p>
+  </div>
+</div>
+
+<!-- ═══ BREAKDOWN TAB ═══ -->
+<div class="tab-panel" id="tab-breakdown">
+  <div style="margin-top:16px;">
+    <h3 style="font-size:0.95em; color:#ff5252; margin-bottom:6px;">Expenses by Category</h3>
+    <div class="breakdown" id="expense-breakdown"></div>
+    <h3 style="font-size:0.95em; color:#00c853; margin-top:24px; margin-bottom:6px;">Income by Category</h3>
+    <div class="breakdown" id="income-breakdown"></div>
+  </div>
+</div>
+
+<!-- ═══ RECEIPTS TAB ═══ -->
+<div class="tab-panel" id="tab-receipts">
+  <div class="toolbar">
+    <button class="btn btn-gold" onclick="openReceiptModal()">+ Log Receipt</button>
+  </div>
+  <div class="receipt-grid" id="receipt-grid"></div>
+  <div class="empty-state" id="receipt-empty" style="display:none;">
+    <div class="icon">🧾</div>
+    <p>No receipts logged. Click "+ Log Receipt" to track your receipts!</p>
+  </div>
+</div>
+
+<!-- ═══ TRANSACTION MODAL ═══ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h2 id="modal-title">Add Transaction</h2>
+    <input type="hidden" id="edit-id">
+    <label>Type</label>
+    <div class="type-toggle">
+      <button id="type-expense" class="active-expense" onclick="setType('expense')">Expense</button>
+      <button id="type-income" onclick="setType('income')">Income</button>
+    </div>
+    <label>Date</label>
+    <input type="date" id="inp-date">
+    <label>Description</label>
+    <input type="text" id="inp-desc" placeholder="e.g., LLC filing fee">
+    <label>Category</label>
+    <select id="inp-cat"></select>
+    <label>Amount ($)</label>
+    <input type="number" id="inp-amount" step="0.01" min="0" placeholder="0.00">
+    <label>Notes / Receipt Info</label>
+    <textarea id="inp-notes" placeholder="Optional — receipt location, details, etc."></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveTransaction()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RECEIPT MODAL ═══ -->
+<div class="modal-overlay" id="receipt-modal">
+  <div class="modal">
+    <h2>Log Receipt</h2>
+    <input type="hidden" id="receipt-edit-id">
+    <label>Date</label>
+    <input type="date" id="r-date">
+    <label>Vendor / Description</label>
+    <input type="text" id="r-vendor" placeholder="e.g., GoDaddy, Sunbiz.org">
+    <label>Amount ($)</label>
+    <input type="number" id="r-amount" step="0.01" min="0" placeholder="0.00">
+    <label>Receipt Type</label>
+    <select id="r-type">
+      <option value="Email">Email Confirmation</option>
+      <option value="Screenshot">Screenshot</option>
+      <option value="Photo">Photo</option>
+      <option value="PDF">PDF</option>
+      <option value="Paper">Paper Receipt</option>
+      <option value="Other">Other</option>
+    </select>
+    <label>File Name / Location / Notes</label>
+    <textarea id="r-notes" placeholder="Where is this receipt saved?"></textarea>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeReceiptModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveReceipt()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════
+const CATEGORIES = {
+  expense: [
+    "Startup/Filing", "Domain/Hosting", "Software/Subscriptions",
+    "Hardware", "Marketing", "Gas/Mileage", "Office Supplies",
+    "Client Setup", "Service Call", "Misc Expense"
+  ],
+  income: [
+    "Client Payment", "Setup Fee", "Other Income"
+  ]
+};
+
+const CAT_CLASSES = {
+  "Startup/Filing": "cat-startup",
+  "Domain/Hosting": "cat-domain",
+  "Software/Subscriptions": "cat-software",
+  "Hardware": "cat-hardware",
+  "Marketing": "cat-marketing",
+  "Gas/Mileage": "cat-gas",
+  "Office Supplies": "cat-office",
+  "Client Setup": "cat-client-setup",
+  "Service Call": "cat-service",
+  "Misc Expense": "cat-misc",
+  "Client Payment": "cat-payment",
+  "Setup Fee": "cat-setup-fee",
+  "Other Income": "cat-other-income"
+};
+
+// Load or init
+let transactions = JSON.parse(localStorage.getItem('janovum_transactions') || '[]');
+let receipts = JSON.parse(localStorage.getItem('janovum_receipts') || '[]');
+
+// Seed default data if empty
+if (transactions.length === 0) {
+  transactions = [
+    { id: genId(), date: "2026-03-01", desc: "Starting Capital", cat: "Other Income", type: "income", amount: 500, notes: "Initial $500 budget" },
+    { id: genId(), date: "2026-03-01", desc: "janovum.com domain purchase", cat: "Domain/Hosting", type: "expense", amount: 12, notes: "Purchased via registrar" },
+    { id: genId(), date: "2026-03-01", desc: "Florida LLC filing — Janovum LLC", cat: "Startup/Filing", type: "expense", amount: 125, notes: "Filed with FL Dept of State" },
+  ];
+  save();
+}
+
+let currentType = 'expense';
+let sortCol = 'date';
+let sortDir = -1; // -1 = desc
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+function fmt(n) { return '$' + Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function save() {
+  localStorage.setItem('janovum_transactions', JSON.stringify(transactions));
+  localStorage.setItem('janovum_receipts', JSON.stringify(receipts));
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════
+function render() {
+  // Filters
+  const search = document.getElementById('search').value.toLowerCase();
+  const filterCat = document.getElementById('filter-cat').value;
+  const filterType = document.getElementById('filter-type').value;
+
+  // Sort
+  let sorted = [...transactions].sort((a, b) => {
+    let va = a[sortCol] || '', vb = b[sortCol] || '';
+    if (sortCol === 'amount') { va = a.amount; vb = b.amount; }
+    if (sortCol === 'description') { va = a.desc; vb = b.desc; }
+    if (sortCol === 'category') { va = a.cat; vb = b.cat; }
+    if (va < vb) return -1 * sortDir;
+    if (va > vb) return 1 * sortDir;
+    return 0;
+  });
+
+  // Filter
+  let filtered = sorted.filter(t => {
+    if (search && !t.desc.toLowerCase().includes(search) && !t.cat.toLowerCase().includes(search) && !(t.notes||'').toLowerCase().includes(search)) return false;
+    if (filterCat && t.cat !== filterCat) return false;
+    if (filterType && t.type !== filterType) return false;
+    return true;
+  });
+
+  // Compute running balance on ALL sorted transactions (not filtered)
+  let balanceMap = {};
+  let bal = 0;
+  // Sort all by date asc for balance calc
+  let allByDate = [...transactions].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  allByDate.forEach(t => {
+    bal += t.type === 'income' ? t.amount : -t.amount;
+    balanceMap[t.id] = bal;
+  });
+
+  // Table
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty-state');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    tbody.innerHTML = filtered.map(t => {
+      const cls = CAT_CLASSES[t.cat] || 'cat-misc';
+      const isIncome = t.type === 'income';
+      return `<tr>
+        <td class="date">${formatDate(t.date)}</td>
+        <td>${esc(t.desc)}</td>
+        <td class="category"><span class="${cls}">${esc(t.cat)}</span></td>
+        <td style="text-align:right" class="${isIncome ? 'money-in' : 'money-out'}">${isIncome ? '+' : '-'}${fmt(t.amount)}</td>
+        <td style="text-align:right" class="balance">${fmt(balanceMap[t.id] || 0)}</td>
+        <td style="color:#666;font-size:0.82em">${esc(t.notes || '')}</td>
+        <td>
+          <button class="btn" style="padding:4px 8px;font-size:0.78em" onclick="editTransaction('${t.id}')">✏</button>
+          <button class="btn btn-red" style="padding:4px 8px;font-size:0.78em" onclick="deleteTransaction('${t.id}')">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Summary cards
+  let totalIn = 0, totalOut = 0, incomeCount = 0, expenseCount = 0;
+  let thisMonth = new Date().toISOString().slice(0, 7);
+  let monthCount = 0;
+  transactions.forEach(t => {
+    if (t.type === 'income') { totalIn += t.amount; incomeCount++; }
+    else { totalOut += t.amount; expenseCount++; }
+    if (t.date.startsWith(thisMonth)) monthCount++;
+  });
+  document.getElementById('card-balance').textContent = fmt(totalIn - totalOut);
+  document.getElementById('card-balance-sub').textContent = totalIn - totalOut >= 0 ? 'In the green' : 'Overspent!';
+  document.getElementById('card-income').textContent = '+' + fmt(totalIn);
+  document.getElementById('card-income-count').textContent = incomeCount + ' income entries';
+  document.getElementById('card-expenses').textContent = '-' + fmt(totalOut);
+  document.getElementById('card-expense-count').textContent = expenseCount + ' expenses';
+  document.getElementById('card-transactions').textContent = transactions.length;
+  document.getElementById('card-this-month').textContent = monthCount + ' this month';
+
+  // Sort headers
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.sort === sortCol) {
+      th.classList.add(sortDir === 1 ? 'sort-asc' : 'sort-desc');
+    }
+  });
+
+  // Breakdown
+  renderBreakdown();
+  renderReceipts();
+}
+
+function renderBreakdown() {
+  // Expense breakdown
+  let expTotals = {};
+  let maxExp = 0;
+  transactions.filter(t => t.type === 'expense').forEach(t => {
+    expTotals[t.cat] = (expTotals[t.cat] || 0) + t.amount;
+    if (expTotals[t.cat] > maxExp) maxExp = expTotals[t.cat];
+  });
+  const expDiv = document.getElementById('expense-breakdown');
+  let expHtml = '';
+  Object.entries(expTotals).sort((a,b) => b[1]-a[1]).forEach(([cat, amt]) => {
+    const pct = maxExp > 0 ? (amt / maxExp * 100) : 0;
+    expHtml += `<div class="breakdown-item">
+      <div><div class="cat-name">${esc(cat)}</div><div class="breakdown-bar" style="width:120px"><div class="breakdown-bar-fill" style="width:${pct}%"></div></div></div>
+      <div class="cat-amount">-${fmt(amt)}</div>
+    </div>`;
+  });
+  expDiv.innerHTML = expHtml || '<p style="color:#444;padding:20px">No expenses yet</p>';
+
+  // Income breakdown
+  let incTotals = {};
+  let maxInc = 0;
+  transactions.filter(t => t.type === 'income').forEach(t => {
+    incTotals[t.cat] = (incTotals[t.cat] || 0) + t.amount;
+    if (incTotals[t.cat] > maxInc) maxInc = incTotals[t.cat];
+  });
+  const incDiv = document.getElementById('income-breakdown');
+  let incHtml = '';
+  Object.entries(incTotals).sort((a,b) => b[1]-a[1]).forEach(([cat, amt]) => {
+    const pct = maxInc > 0 ? (amt / maxInc * 100) : 0;
+    incHtml += `<div class="breakdown-item">
+      <div><div class="cat-name">${esc(cat)}</div><div class="breakdown-bar" style="width:120px"><div class="breakdown-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#00c853,#69f0ae)"></div></div></div>
+      <div class="cat-amount" style="color:#00c853">+${fmt(amt)}</div>
+    </div>`;
+  });
+  incDiv.innerHTML = incHtml || '<p style="color:#444;padding:20px">No income yet</p>';
+}
+
+function renderReceipts() {
+  const grid = document.getElementById('receipt-grid');
+  const empty = document.getElementById('receipt-empty');
+  if (receipts.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = [...receipts].sort((a,b) => b.date > a.date ? 1 : -1).map(r => `
+    <div class="receipt-card">
+      <div class="r-date">${formatDate(r.date)}</div>
+      <div class="r-vendor">${esc(r.vendor)}</div>
+      <div class="r-amount">-${fmt(r.amount)}</div>
+      <div class="r-type">${esc(r.type)}</div>
+      ${r.notes ? `<div class="r-note">${esc(r.notes)}</div>` : ''}
+      <div style="margin-top:8px">
+        <button class="btn btn-red" style="padding:3px 8px;font-size:0.75em" onclick="deleteReceipt('${r.id}')">Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y, m, day] = d.split('-');
+  return `${m}/${day}/${y}`;
+}
+
+function esc(s) {
+  const el = document.createElement('span');
+  el.textContent = s;
+  return el.innerHTML;
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL — TRANSACTIONS
+// ══════════════════════════════════════════════════════════════
+function openModal(id) {
+  const modal = document.getElementById('modal');
+  modal.classList.add('show');
+  if (id) {
+    const t = transactions.find(x => x.id === id);
+    if (!t) return;
+    document.getElementById('modal-title').textContent = 'Edit Transaction';
+    document.getElementById('edit-id').value = t.id;
+    setType(t.type);
+    document.getElementById('inp-date').value = t.date;
+    document.getElementById('inp-desc').value = t.desc;
+    document.getElementById('inp-amount').value = t.amount;
+    document.getElementById('inp-notes').value = t.notes || '';
+    populateCatSelect();
+    document.getElementById('inp-cat').value = t.cat;
+  } else {
+    document.getElementById('modal-title').textContent = 'Add Transaction';
+    document.getElementById('edit-id').value = '';
+    setType('expense');
+    document.getElementById('inp-date').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('inp-desc').value = '';
+    document.getElementById('inp-amount').value = '';
+    document.getElementById('inp-notes').value = '';
+    populateCatSelect();
+  }
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+function setType(type) {
+  currentType = type;
+  const btnE = document.getElementById('type-expense');
+  const btnI = document.getElementById('type-income');
+  btnE.className = type === 'expense' ? 'active-expense' : '';
+  btnI.className = type === 'income' ? 'active-income' : '';
+  populateCatSelect();
+}
+
+function populateCatSelect() {
+  const sel = document.getElementById('inp-cat');
+  const cats = CATEGORIES[currentType];
+  sel.innerHTML = cats.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+function saveTransaction() {
+  const id = document.getElementById('edit-id').value;
+  const date = document.getElementById('inp-date').value;
+  const desc = document.getElementById('inp-desc').value.trim();
+  const cat = document.getElementById('inp-cat').value;
+  const amount = parseFloat(document.getElementById('inp-amount').value);
+  const notes = document.getElementById('inp-notes').value.trim();
+
+  if (!date || !desc || !cat || isNaN(amount) || amount <= 0) {
+    alert('Fill in all required fields (date, description, category, amount).');
+    return;
+  }
+
+  if (id) {
+    const idx = transactions.findIndex(t => t.id === id);
+    if (idx >= 0) {
+      transactions[idx] = { ...transactions[idx], date, desc, cat, type: currentType, amount, notes };
+    }
+  } else {
+    transactions.push({ id: genId(), date, desc, cat, type: currentType, amount, notes });
+  }
+  save();
+  closeModal();
+  render();
+}
+
+function editTransaction(id) { openModal(id); }
+
+function deleteTransaction(id) {
+  if (!confirm('Delete this transaction?')) return;
+  transactions = transactions.filter(t => t.id !== id);
+  save();
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL — RECEIPTS
+// ══════════════════════════════════════════════════════════════
+function openReceiptModal() {
+  document.getElementById('receipt-modal').classList.add('show');
+  document.getElementById('receipt-edit-id').value = '';
+  document.getElementById('r-date').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('r-vendor').value = '';
+  document.getElementById('r-amount').value = '';
+  document.getElementById('r-notes').value = '';
+}
+function closeReceiptModal() { document.getElementById('receipt-modal').classList.remove('show'); }
+
+function saveReceipt() {
+  const date = document.getElementById('r-date').value;
+  const vendor = document.getElementById('r-vendor').value.trim();
+  const amount = parseFloat(document.getElementById('r-amount').value);
+  const type = document.getElementById('r-type').value;
+  const notes = document.getElementById('r-notes').value.trim();
+  if (!date || !vendor || isNaN(amount)) { alert('Fill in date, vendor, and amount.'); return; }
+  receipts.push({ id: genId(), date, vendor, amount, type, notes });
+  save();
+  closeReceiptModal();
+  render();
+}
+
+function deleteReceipt(id) {
+  if (!confirm('Delete this receipt?')) return;
+  receipts = receipts.filter(r => r.id !== id);
+  save();
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════════════════════════
+function exportCSV() {
+  let csv = 'Date,Description,Category,Type,Amount,Notes\n';
+  let sorted = [...transactions].sort((a,b) => a.date < b.date ? -1 : 1);
+  sorted.forEach(t => {
+    csv += `"${t.date}","${t.desc.replace(/"/g,'""')}","${t.cat}","${t.type}","${t.amount}","${(t.notes||'').replace(/"/g,'""')}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'janovum_expenses_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABS & SORT
+// ══════════════════════════════════════════════════════════════
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+document.querySelectorAll('thead th[data-sort]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.sort;
+    if (sortCol === col) sortDir *= -1;
+    else { sortCol = col; sortDir = col === 'date' ? -1 : 1; }
+    render();
+  });
+});
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('filter-cat').addEventListener('change', render);
+document.getElementById('filter-type').addEventListener('change', render);
+
+// Close modals on overlay click
+document.getElementById('modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
+document.getElementById('receipt-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeReceiptModal(); });
+
+// Populate filter category dropdown
+function populateFilterCats() {
+  const sel = document.getElementById('filter-cat');
+  const all = [...CATEGORIES.expense, ...CATEGORIES.income];
+  sel.innerHTML = '<option value="">All Categories</option>' + all.map(c => `<option value="${c}">${c}</option>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+populateFilterCats();
+render();
+</script>
+</body>
+</html>

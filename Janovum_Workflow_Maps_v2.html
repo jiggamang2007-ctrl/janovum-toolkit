@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — Agent Workflow Maps</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f5f5f8; --bg-dark: #0f0f13; --card: #ffffff; --card-dark: #1a1a24;
+    --border: #e0e0e6; --border-dark: #2a2a3a;
+    --gold: #f7c948; --orange: #ff6b35; --green: #22c55e; --blue: #3b82f6;
+    --red: #ef4444; --purple: #a855f7; --cyan: #06b6d4; --pink: #ec4899;
+    --text: #1a1a2e; --text-dark: #e0e0e0; --muted: #6b7280; --dim: #9ca3af;
+    --radius: 12px;
+  }
+  body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+
+  /* ── TOPBAR ── */
+  .topbar { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .topbar-left { display: flex; align-items: center; gap: 16px; }
+  .topbar-brand { font-size: 1.1em; font-weight: 800; letter-spacing: 3px; background: linear-gradient(135deg, var(--orange), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .topbar-sep { width: 1px; height: 24px; background: var(--border); }
+  .topbar-title { font-size: 0.95em; font-weight: 600; color: var(--text); }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-btn { background: #fff; border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 8px; font-size: 0.8em; cursor: pointer; transition: all 0.2s; font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  .topbar-btn:hover { background: #f0f0f5; border-color: #ccc; }
+  .topbar-btn.primary { background: linear-gradient(135deg, var(--orange), #ff8f5e); color: #fff; border: none; }
+  .topbar-btn.primary:hover { opacity: 0.9; }
+  .back-btn { display: none; cursor: pointer; font-size: 1.2em; padding: 4px 8px; border-radius: 6px; transition: background 0.2s; }
+  .back-btn:hover { background: rgba(0,0,0,0.05); }
+  .back-btn.visible { display: flex; }
+
+  /* ── OVERVIEW PAGE ── */
+  #overviewPage { padding: 40px 32px; }
+  .overview-header { text-align: center; margin-bottom: 48px; }
+  .overview-header h2 { font-size: 1.8em; font-weight: 800; margin-bottom: 8px; }
+  .overview-header p { color: var(--muted); font-size: 0.95em; max-width: 600px; margin: 0 auto; }
+  .overview-stats { display: flex; justify-content: center; gap: 32px; margin-top: 20px; }
+  .overview-stat { text-align: center; }
+  .overview-stat .num { font-size: 1.6em; font-weight: 800; background: linear-gradient(135deg, var(--orange), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .overview-stat .lbl { font-size: 0.72em; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+
+  /* ── ORG CHART ── */
+  .org-canvas { position: relative; min-height: 1000px; max-width: 1200px; margin: 0 auto; background-image: radial-gradient(circle, #ddd 1px, transparent 1px); background-size: 20px 20px; border-radius: 16px; padding: 40px 20px; }
+  svg.org-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  svg.org-lines path, svg.org-lines line { fill: none; stroke: #c0c0cc; stroke-width: 1.5; }
+  svg.org-lines .dashed { stroke-dasharray: 6 4; stroke: #b0b0c0; }
+  .conn-label { position: absolute; background: var(--bg); padding: 2px 10px; font-size: 0.68em; color: var(--muted); border-radius: 10px; border: 1px solid var(--border); white-space: nowrap; z-index: 2; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .conn-label .conn-icon { font-size: 0.9em; }
+
+  /* ── AGENT CARDS (Overview) ── */
+  .agent-card { position: absolute; width: 260px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; cursor: pointer; transition: all 0.25s; z-index: 3; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .agent-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); border-color: #bbb; }
+  .agent-card-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.62em; font-weight: 700; padding: 3px 8px; border-radius: 6px; margin: 12px 14px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+  .agent-card-badge.core { background: rgba(255,107,53,0.12); color: var(--orange); }
+  .agent-card-badge.agent { background: rgba(34,197,94,0.12); color: var(--green); }
+  .agent-card-badge.tool { background: rgba(59,130,246,0.12); color: var(--blue); }
+  .agent-card-badge.trigger { background: rgba(168,85,247,0.12); color: var(--purple); }
+  .agent-card-top { display: flex; align-items: center; gap: 12px; padding: 10px 14px 8px; }
+  .agent-card-avatar { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.4em; flex-shrink: 0; }
+  .agent-card-info h3 { font-size: 0.85em; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .agent-card-info p { font-size: 0.7em; color: var(--muted); line-height: 1.4; margin-top: 2px; }
+  .agent-card-tools { display: flex; gap: 4px; padding: 0 14px 12px; flex-wrap: wrap; }
+  .agent-card-tools .tool-icon { width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.7em; background: #f0f0f5; border: 1px solid var(--border); }
+
+  /* ── DETAIL PAGE (Workflow Map) ── */
+  #detailPage { display: none; }
+  .detail-header { padding: 28px 32px; background: #fff; border-bottom: 1px solid var(--border); }
+  .detail-header-row { display: flex; align-items: center; gap: 16px; }
+  .detail-avatar { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8em; }
+  .detail-info h2 { font-size: 1.3em; font-weight: 800; }
+  .detail-info p { font-size: 0.85em; color: var(--muted); margin-top: 2px; }
+  .detail-meta { display: flex; gap: 20px; margin-top: 16px; }
+  .detail-meta-item { display: flex; align-items: center; gap: 6px; font-size: 0.78em; color: var(--muted); }
+  .detail-meta-item .meta-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ── WORKFLOW CANVAS (Dark) ── */
+  .wf-canvas-wrap { background: var(--bg-dark); min-height: calc(100vh - 200px); overflow: auto; position: relative; }
+  .wf-canvas { min-width: 1200px; min-height: 700px; padding: 40px; position: relative;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 24px 24px; }
+
+  /* ── WORKFLOW NODES ── */
+  .wf-node { position: absolute; min-width: 180px; max-width: 240px; background: var(--card-dark); border: 1px solid var(--border-dark); border-radius: var(--radius); z-index: 2; transition: box-shadow 0.2s, border-color 0.2s; }
+  .wf-node:hover { border-color: #3a3a4a; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+  .wf-node-header { padding: 10px 14px; border-bottom: 1px solid var(--border-dark); display: flex; align-items: center; gap: 10px; border-radius: var(--radius) var(--radius) 0 0; }
+  .wf-node-header .n-icon { font-size: 1.15em; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; flex-shrink: 0; }
+  .wf-node-header .n-title { font-size: 0.78em; font-weight: 700; color: #fff; }
+  .wf-node-body { padding: 10px 14px; font-size: 0.68em; color: #888; line-height: 1.5; }
+
+  .wf-node.trigger .wf-node-header { background: rgba(255,107,53,0.12); }
+  .wf-node.trigger .n-icon { background: rgba(255,107,53,0.2); color: var(--orange); }
+  .wf-node.trigger { border-color: rgba(255,107,53,0.3); }
+
+  .wf-node.process .wf-node-header { background: rgba(59,130,246,0.12); }
+  .wf-node.process .n-icon { background: rgba(59,130,246,0.2); color: var(--blue); }
+  .wf-node.process { border-color: rgba(59,130,246,0.3); }
+
+  .wf-node.decision .wf-node-header { background: rgba(168,85,247,0.12); }
+  .wf-node.decision .n-icon { background: rgba(168,85,247,0.2); color: var(--purple); }
+  .wf-node.decision { border-color: rgba(168,85,247,0.3); }
+
+  .wf-node.action .wf-node-header { background: rgba(34,197,94,0.12); }
+  .wf-node.action .n-icon { background: rgba(34,197,94,0.2); color: var(--green); }
+  .wf-node.action { border-color: rgba(34,197,94,0.3); }
+
+  .wf-node.output .wf-node-header { background: rgba(247,201,72,0.12); }
+  .wf-node.output .n-icon { background: rgba(247,201,72,0.2); color: var(--gold); }
+  .wf-node.output { border-color: rgba(247,201,72,0.3); }
+
+  .wf-node.api .wf-node-header { background: rgba(6,182,212,0.12); }
+  .wf-node.api .n-icon { background: rgba(6,182,212,0.2); color: var(--cyan); }
+  .wf-node.api { border-color: rgba(6,182,212,0.3); }
+
+  /* ── SVG CONNECTIONS ── */
+  svg.connections { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+  svg.connections path { fill: none; stroke-width: 2; opacity: 0.5; }
+  svg.connections path.animated { stroke-dasharray: 8 4; animation: flowDash 1s linear infinite; }
+  svg.connections .arrow { opacity: 0.7; }
+  @keyframes flowDash { to { stroke-dashoffset: -12; } }
+
+  /* ── LEGEND ── */
+  .wf-legend { position: fixed; bottom: 20px; right: 20px; background: var(--card-dark); border: 1px solid var(--border-dark); border-radius: var(--radius); padding: 16px; z-index: 50; font-size: 0.72em; display: none; }
+  .wf-legend.visible { display: block; }
+  .wf-legend-title { font-weight: 700; margin-bottom: 10px; color: #fff; font-size: 0.9em; }
+  .wf-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; color: #888; }
+  .wf-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── ZOOM ── */
+  .zoom-controls { position: fixed; bottom: 20px; left: 20px; display: none; gap: 4px; z-index: 50; }
+  .zoom-controls.visible { display: flex; }
+  .zoom-btn { width: 36px; height: 36px; background: var(--card-dark); border: 1px solid var(--border-dark); border-radius: 8px; color: var(--text-dark); font-size: 1.1em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .zoom-btn:hover { background: #252530; }
+  .zoom-level { padding: 0 10px; font-size: 0.75em; color: #888; display: flex; align-items: center; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <span class="back-btn" id="backBtn" onclick="goBack()">&#8592;</span>
+    <span class="topbar-brand">JANOVUM</span>
+    <span class="topbar-sep"></span>
+    <span class="topbar-title" id="pageTitle">Agent Workflow Maps</span>
+  </div>
+  <div class="topbar-right">
+    <a class="topbar-btn" href="Janovum_Platform_v5.html">&#8592; Platform Dashboard</a>
+    <span class="topbar-btn" style="cursor:default; font-size:0.75em; color:var(--muted);">12 Agents</span>
+  </div>
+</div>
+
+<!-- ════════════════ OVERVIEW PAGE ════════════════ -->
+<div id="overviewPage">
+  <div class="overview-header">
+    <h2>AI Agent Team</h2>
+    <p>Click on any agent to see its full workflow map — how it processes data, which AI it uses, and how each step connects.</p>
+    <div class="overview-stats">
+      <div class="overview-stat"><div class="num">12</div><div class="lbl">Agents</div></div>
+      <div class="overview-stat"><div class="num">4</div><div class="lbl">Categories</div></div>
+      <div class="overview-stat"><div class="num">6</div><div class="lbl">AI Models</div></div>
+      <div class="overview-stat"><div class="num">12</div><div class="lbl">API Integrations</div></div>
+    </div>
+  </div>
+
+  <div class="org-canvas" id="orgCanvas">
+    <svg class="org-lines" id="orgSvg"></svg>
+    <!-- Cards and connections rendered by JS -->
+  </div>
+</div>
+
+<!-- ════════════════ DETAIL PAGE ════════════════ -->
+<div id="detailPage">
+  <div class="detail-header" id="detailHeader"></div>
+  <div class="wf-canvas-wrap">
+    <div class="wf-canvas" id="wfCanvas"></div>
+  </div>
+</div>
+
+<!-- LEGEND (workflow detail view) -->
+<div class="wf-legend" id="wfLegend">
+  <div class="wf-legend-title">Node Types</div>
+  <div class="wf-legend-item"><span class="wf-legend-dot" style="background:var(--orange)"></span> Trigger</div>
+  <div class="wf-legend-item"><span class="wf-legend-dot" style="background:var(--blue)"></span> Process</div>
+  <div class="wf-legend-item"><span class="wf-legend-dot" style="background:var(--purple)"></span> Decision</div>
+  <div class="wf-legend-item"><span class="wf-legend-dot" style="background:var(--green)"></span> Action</div>
+  <div class="wf-legend-item"><span class="wf-legend-dot" style="background:var(--cyan)"></span> API / AI Call</div>
+  <div class="wf-legend-item"><span class="wf-legend-dot" style="background:var(--gold)"></span> Output</div>
+</div>
+
+<!-- ZOOM (workflow detail view) -->
+<div class="zoom-controls" id="zoomControls">
+  <button class="zoom-btn" onclick="zoomCanvas(-0.1)">-</button>
+  <span class="zoom-level" id="zoomLevel">100%</span>
+  <button class="zoom-btn" onclick="zoomCanvas(0.1)">+</button>
+  <button class="zoom-btn" onclick="zoomCanvas(0)" style="font-size:0.8em;">Reset</button>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+//  OVERVIEW — AGENT ORG CHART DATA
+// ═══════════════════════════════════════════
+
+const AGENTS = [
+  // Row 0: Director (center top)
+  { id: 'director', name: 'Director Router', desc: 'Routes all messages to the right agent using keyword matching + AI classification.', icon: '🎯', badge: 'core', badgeLabel: 'Core System',
+    bg: '#fff3e0', tools: ['🧠','📩','🔀','📋'], x: 470, y: 20 },
+
+  // Row 1: Category leads
+  { id: 're_lead_scraper', name: 'Lead Scraper', desc: 'Finds real estate leads from public listings and web sources.', icon: '🔍', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#e3f2fd', tools: ['🌐','🧠','📊','📧'], x: 60, y: 240 },
+  { id: 'lead_hunter', name: 'Lead Hunter', desc: 'Hunts for business leads across multiple online sources.', icon: '🎯', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#e8f5e9', tools: ['🌐','📧','🧠','💾'], x: 360, y: 240 },
+  { id: 'content_writer', name: 'Content Writer', desc: 'Writes blog posts, articles, and marketing copy with AI.', icon: '✍️', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#fce4ec', tools: ['🧠','🔍','📐','📤'], x: 660, y: 240 },
+  { id: 'web_monitor', name: 'Web Monitor', desc: 'Monitors websites for changes and sends alerts on updates.', icon: '🌐', badge: 'tool', badgeLabel: 'Tool',
+    bg: '#e0f7fa', tools: ['🌐','🧠','🔔','💾'], x: 900, y: 240 },
+
+  // Row 2: Sub-agents
+  { id: 're_auto_responder', name: 'Auto-Responder', desc: 'Drafts and sends personalized replies to real estate inquiries.', icon: '💬', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#e3f2fd', tools: ['🧠','📤','📧','✅'], x: 0, y: 480 },
+  { id: 're_market_analyzer', name: 'Market Analyzer', desc: 'Analyzes real estate market trends, pricing, and opportunities.', icon: '📊', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#e3f2fd', tools: ['🌐','🧠','📊','🔔'], x: 230, y: 480 },
+  { id: 'email_campaign', name: 'Email Campaign', desc: 'Runs personalized cold email campaigns with follow-up sequences.', icon: '📧', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#e8f5e9', tools: ['🧠','📤','📧','📊'], x: 460, y: 480 },
+  { id: 're_social_poster', name: 'Social Poster', desc: 'Creates and posts property listings to social media platforms.', icon: '📱', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#fff3e0', tools: ['🧠','🎨','📤','📊'], x: 690, y: 480 },
+
+  // Row 3: Support agents
+  { id: 'task_scheduler', name: 'Task Scheduler', desc: 'Schedules and runs recurring tasks across all agents.', icon: '⏰', badge: 'trigger', badgeLabel: 'Trigger',
+    bg: '#f3e5f5', tools: ['⏰','🚀','📋','🔄'], x: 200, y: 720 },
+  { id: 'discord_assistant', name: 'Discord Assistant', desc: 'AI-powered assistant for Discord server conversations.', icon: '🤖', badge: 'agent', badgeLabel: 'Agent',
+    bg: '#ede7f6', tools: ['🧠','💬','🔧','📋'], x: 520, y: 720 },
+
+  // Row 3 (right): AI Receptionist — client-facing product
+  { id: 'ai_receptionist', name: 'AI Receptionist', desc: 'Production voice receptionist — Telnyx + Cartesia + Whisper. Real phone, human voice, books appointments 24/7.', icon: '📞', badge: 'agent', badgeLabel: 'Client Product',
+    bg: '#fff8e1', tools: ['📞','🎙️','🔈','📅','🛡️'], x: 800, y: 720 },
+];
+
+// Connections between agents on the overview org chart
+const ORG_CONNECTIONS = [
+  // Director -> row 1
+  { from: 'director', to: 're_lead_scraper', label: 'Routes', dashed: false },
+  { from: 'director', to: 'lead_hunter', label: 'Routes', dashed: false },
+  { from: 'director', to: 'content_writer', label: 'Routes', dashed: false },
+  { from: 'director', to: 'web_monitor', label: 'Routes', dashed: false },
+  // Row 1 -> Row 2
+  { from: 're_lead_scraper', to: 're_auto_responder', label: 'Leads to', dashed: true },
+  { from: 're_lead_scraper', to: 're_market_analyzer', label: 'Data to', dashed: true },
+  { from: 'lead_hunter', to: 'email_campaign', label: 'Leads to', dashed: true },
+  { from: 'content_writer', to: 're_social_poster', label: 'Content to', dashed: true },
+  // Row 2 -> Row 3
+  { from: 'task_scheduler', to: 're_lead_scraper', label: 'Schedules', dashed: true },
+  { from: 'task_scheduler', to: 'email_campaign', label: 'Schedules', dashed: true },
+  { from: 'task_scheduler', to: 'web_monitor', label: 'Schedules', dashed: true },
+  { from: 'director', to: 'discord_assistant', label: 'AI conn', dashed: true },
+  { from: 'director', to: 'ai_receptionist', label: 'Routes', dashed: false },
+  { from: 'ai_receptionist', to: 'email_campaign', label: 'Follow-ups', dashed: true },
+];
+
+// ═══════════════════════════════════════════
+//  WORKFLOW DETAIL DATA (per agent)
+// ═══════════════════════════════════════════
+
+const WORKFLOWS = {
+
+director: {
+  title: 'Director Router', desc: 'Central message router that classifies and dispatches to the right agent.', icon: '🎯', bg: '#fff3e0',
+  ai: 'Claude Haiku / Pollinations', integrations: 'Telegram, Chat UI, API',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'📩', title:'Message Received', body:'Telegram, Chat UI, API\nendpoint, or webhook', x:80, y:50 },
+    { id:'parse', type:'process', icon:'🔍', title:'Parse & Classify', body:'Extract intent, keywords\nand urgency level', x:80, y:210 },
+    { id:'route', type:'decision', icon:'🔀', title:'Route Decision', body:'Keyword match = high confidence\nAI fallback = lower confidence', x:80, y:380 },
+    { id:'direct', type:'action', icon:'⚡', title:'Direct Command', body:'/start, /stop, /status, /list\nImmediate system response', x:400, y:120 },
+    { id:'keyword', type:'process', icon:'🏷️', title:'Keyword Router', body:'10 bots x keyword lists\nLongest match = highest score', x:400, y:290 },
+    { id:'ai', type:'api', icon:'🧠', title:'AI Classification', body:'Claude Haiku classifies intent\nFallback: Pollinations API', x:400, y:460 },
+    { id:'dispatch', type:'action', icon:'🚀', title:'Dispatch to Bot', body:'Dynamic module loading\nBackground thread execution', x:700, y:290 },
+    { id:'reply', type:'output', icon:'💬', title:'Send Reply', body:'Format and route response\nback to Telegram / Chat / API', x:700, y:460 },
+    { id:'log', type:'output', icon:'📋', title:'Activity Log', body:'Timestamp, bot, confidence\nFull audit trail', x:940, y:375 },
+  ],
+  connections: [
+    { from:'trig', to:'parse', color:'var(--orange)' },
+    { from:'parse', to:'route', color:'var(--blue)' },
+    { from:'route', to:'direct', color:'var(--purple)', label:'Command' },
+    { from:'route', to:'keyword', color:'var(--purple)', label:'Keywords' },
+    { from:'route', to:'ai', color:'var(--purple)', label:'No Match' },
+    { from:'keyword', to:'dispatch', color:'var(--blue)' },
+    { from:'ai', to:'dispatch', color:'var(--cyan)' },
+    { from:'dispatch', to:'reply', color:'var(--green)' },
+    { from:'dispatch', to:'log', color:'var(--green)' },
+    { from:'direct', to:'reply', color:'var(--green)' },
+  ]
+},
+
+re_lead_scraper: {
+  title: 'Real Estate Lead Scraper', desc: 'Automatically finds and scores real estate leads from public sources.', icon: '🔍', bg: '#e3f2fd',
+  ai: 'Claude Sonnet (scoring)', integrations: 'DuckDuckGo, Gmail SMTP',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'🎯', title:'Trigger', body:'Daily/weekly schedule\nor "find leads in Miami"', x:80, y:60 },
+    { id:'config', type:'process', icon:'⚙️', title:'Configure Search', body:'Location, price range\nProperty type, radius', x:80, y:220 },
+    { id:'scrape', type:'api', icon:'🌐', title:'Scrape Sources', body:'DuckDuckGo Search API\nPublic listing sites', x:80, y:380 },
+    { id:'parse', type:'process', icon:'📋', title:'Parse & Extract', body:'Address, price, sqft\nContact info, listing date', x:400, y:220 },
+    { id:'dedup', type:'decision', icon:'🔄', title:'Deduplicate', body:'Check existing leads DB\nMerge duplicate listings', x:400, y:380 },
+    { id:'score', type:'api', icon:'🧠', title:'AI Score & Rank', body:'Claude ranks by potential\nPrice-to-value scoring', x:700, y:300 },
+    { id:'output', type:'output', icon:'📊', title:'Report Output', body:'JSON + formatted report\nEmail summary to owner', x:940, y:300 },
+  ],
+  connections: [
+    { from:'trig', to:'config', color:'var(--orange)' },
+    { from:'config', to:'scrape', color:'var(--blue)' },
+    { from:'scrape', to:'parse', color:'var(--cyan)' },
+    { from:'parse', to:'dedup', color:'var(--blue)' },
+    { from:'dedup', to:'score', color:'var(--purple)' },
+    { from:'score', to:'output', color:'var(--green)' },
+  ]
+},
+
+re_auto_responder: {
+  title: 'Real Estate Auto-Responder', desc: 'Instantly responds to real estate inquiries with personalized AI-drafted messages.', icon: '💬', bg: '#e3f2fd',
+  ai: 'Claude Sonnet (drafting)', integrations: 'Gmail SMTP, SMS',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'📩', title:'Inquiry Received', body:'Email, form, or chat\nmessage from lead', x:80, y:60 },
+    { id:'classify', type:'process', icon:'🏷️', title:'Classify Inquiry', body:'Buyer/seller/renter/investor\nUrgency: hot/warm/cold', x:80, y:220 },
+    { id:'lookup', type:'api', icon:'🔍', title:'Lookup Context', body:'Match to existing leads\nPull property details', x:80, y:380 },
+    { id:'decide', type:'decision', icon:'🔀', title:'Response Strategy', body:'Hot = immediate personal\nWarm = template + personalize\nCold = nurture sequence', x:400, y:220 },
+    { id:'draft', type:'api', icon:'🧠', title:'AI Draft Response', body:'Claude generates personalized\nreply matching lead type', x:400, y:400 },
+    { id:'review', type:'decision', icon:'✅', title:'Approval Check', body:'Auto-send if confidence >90%\nQueue for review if lower', x:700, y:300 },
+    { id:'send', type:'action', icon:'📤', title:'Send Response', body:'Gmail SMTP or SMS\nvia configured provider', x:940, y:200 },
+    { id:'log', type:'output', icon:'📋', title:'CRM Log', body:'Record interaction\nSchedule follow-up', x:940, y:420 },
+  ],
+  connections: [
+    { from:'trig', to:'classify', color:'var(--orange)' },
+    { from:'classify', to:'lookup', color:'var(--blue)' },
+    { from:'lookup', to:'decide', color:'var(--cyan)' },
+    { from:'decide', to:'draft', color:'var(--purple)' },
+    { from:'draft', to:'review', color:'var(--cyan)' },
+    { from:'review', to:'send', color:'var(--green)', label:'Approved' },
+    { from:'review', to:'log', color:'var(--purple)', label:'Log All' },
+    { from:'send', to:'log', color:'var(--gold)' },
+  ]
+},
+
+re_market_analyzer: {
+  title: 'Real Estate Market Analyzer', desc: 'Analyzes market trends, pricing patterns, and identifies investment opportunities.', icon: '📊', bg: '#e3f2fd',
+  ai: 'Claude Sonnet (analysis)', integrations: 'DuckDuckGo, Gmail SMTP',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'📅', title:'Schedule / Request', body:'Weekly auto-run or\n"analyze market in Austin"', x:80, y:60 },
+    { id:'gather', type:'api', icon:'🌐', title:'Gather Market Data', body:'Scrape listing prices\nPublic records, recent sales', x:80, y:220 },
+    { id:'trends', type:'process', icon:'📈', title:'Trend Analysis', body:'Price trends, inventory\nDays on market, $/sqft', x:80, y:400 },
+    { id:'compare', type:'process', icon:'🔄', title:'Comparative Analysis', body:'Compare neighborhoods\nMonth-over-month changes', x:400, y:220 },
+    { id:'ai', type:'api', icon:'🧠', title:'AI Insights', body:'Claude analyzes patterns\nInvestment recommendations', x:400, y:400 },
+    { id:'report', type:'output', icon:'📊', title:'Market Report', body:'PDF report with charts\nKey metrics dashboard', x:700, y:300 },
+    { id:'alert', type:'action', icon:'🔔', title:'Opportunity Alerts', body:'Email underpriced listings\nFlag market shifts', x:940, y:300 },
+  ],
+  connections: [
+    { from:'trig', to:'gather', color:'var(--orange)' },
+    { from:'gather', to:'trends', color:'var(--cyan)' },
+    { from:'gather', to:'compare', color:'var(--cyan)' },
+    { from:'trends', to:'ai', color:'var(--blue)' },
+    { from:'compare', to:'ai', color:'var(--blue)' },
+    { from:'ai', to:'report', color:'var(--cyan)' },
+    { from:'report', to:'alert', color:'var(--gold)' },
+  ]
+},
+
+re_social_poster: {
+  title: 'Real Estate Social Poster', desc: 'Creates property listing posts with AI-generated copy and images for social media.', icon: '📱', bg: '#fff3e0',
+  ai: 'Claude (copy) + Pollinations (images)', integrations: 'Social APIs, Selenium',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'⏰', title:'Post Schedule', body:'Content calendar trigger\nor manual request', x:80, y:60 },
+    { id:'select', type:'process', icon:'🏠', title:'Select Listing', body:'Pick from active listings\nRotate featured properties', x:80, y:220 },
+    { id:'copy', type:'api', icon:'✍️', title:'Generate Copy', body:'AI writes caption, hashtags\nemojis, and CTA', x:80, y:400 },
+    { id:'image', type:'api', icon:'🎨', title:'Generate Image', body:'Pollinations AI visual\nor format listing photos', x:400, y:220 },
+    { id:'format', type:'process', icon:'📐', title:'Format per Platform', body:'IG: square + carousel\nFB: landscape, X: concise', x:400, y:400 },
+    { id:'review', type:'decision', icon:'✅', title:'Review Queue', body:'Auto-post if pre-approved\nOtherwise queue for review', x:700, y:300 },
+    { id:'post', type:'action', icon:'📤', title:'Publish Post', body:'Post to platforms via\nAPI or Selenium automation', x:940, y:200 },
+    { id:'track', type:'output', icon:'📊', title:'Track Engagement', body:'Monitor likes, shares, clicks\nWeekly performance report', x:940, y:420 },
+  ],
+  connections: [
+    { from:'trig', to:'select', color:'var(--orange)' },
+    { from:'select', to:'copy', color:'var(--blue)' },
+    { from:'select', to:'image', color:'var(--blue)' },
+    { from:'copy', to:'format', color:'var(--cyan)' },
+    { from:'image', to:'format', color:'var(--cyan)' },
+    { from:'format', to:'review', color:'var(--blue)' },
+    { from:'review', to:'post', color:'var(--green)', label:'Approved' },
+    { from:'post', to:'track', color:'var(--gold)' },
+  ]
+},
+
+lead_hunter: {
+  title: 'Lead Hunter', desc: 'Hunts for business leads across directories, search, and social platforms.', icon: '🎯', bg: '#e8f5e9',
+  ai: 'Claude Haiku (scoring)', integrations: 'DuckDuckGo, Google Maps',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'🎯', title:'Hunt Trigger', body:'Schedule or "find leads\nfor HVAC in Dallas"', x:80, y:60 },
+    { id:'define', type:'process', icon:'⚙️', title:'Define ICP', body:'Industry, location, size\nBudget signals, tech stack', x:80, y:220 },
+    { id:'search', type:'api', icon:'🌐', title:'Multi-Source Search', body:'DuckDuckGo, directories\nGoogle Maps, LinkedIn', x:80, y:400 },
+    { id:'enrich', type:'api', icon:'📧', title:'Enrich Contacts', body:'Find emails, phones\nCompany details, decision makers', x:400, y:300 },
+    { id:'qualify', type:'decision', icon:'⭐', title:'Qualify & Score', body:'AI scores quality 1-100\nFilter by min threshold', x:660, y:300 },
+    { id:'crm', type:'action', icon:'💾', title:'Add to Pipeline', body:'Save to leads database\nTag with source and score', x:920, y:200 },
+    { id:'notify', type:'output', icon:'🔔', title:'Notify Owner', body:'Email/Telegram summary\nTop leads highlighted', x:920, y:420 },
+  ],
+  connections: [
+    { from:'trig', to:'define', color:'var(--orange)' },
+    { from:'define', to:'search', color:'var(--blue)' },
+    { from:'search', to:'enrich', color:'var(--cyan)' },
+    { from:'enrich', to:'qualify', color:'var(--cyan)' },
+    { from:'qualify', to:'crm', color:'var(--green)', label:'Qualified' },
+    { from:'qualify', to:'notify', color:'var(--purple)', label:'Report' },
+  ]
+},
+
+email_campaign: {
+  title: 'Email Campaign Bot', desc: 'Runs personalized cold email campaigns with automated follow-up sequences.', icon: '📧', bg: '#e8f5e9',
+  ai: 'Claude Sonnet (drafting)', integrations: 'Gmail SMTP/IMAP',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'📧', title:'Campaign Trigger', body:'"Email HVAC leads" or\nscheduled drip sequence', x:80, y:60 },
+    { id:'segment', type:'process', icon:'👥', title:'Segment Audience', body:'Filter by criteria\nGroup by industry/stage', x:80, y:220 },
+    { id:'draft', type:'api', icon:'🧠', title:'AI Write Emails', body:'Claude drafts personalized\nSubject A/B variants', x:80, y:400 },
+    { id:'personalize', type:'process', icon:'✏️', title:'Personalize', body:'Merge name, company\nCustomize per lead data', x:400, y:220 },
+    { id:'schedule', type:'process', icon:'📅', title:'Schedule Sends', body:'Stagger for anti-spam\nOptimal time per timezone', x:400, y:400 },
+    { id:'send', type:'action', icon:'📤', title:'Send via SMTP', body:'Gmail with app password\nRate limited: 50/hr max', x:700, y:300 },
+    { id:'track', type:'process', icon:'📊', title:'Track Opens/Replies', body:'Monitor inbox for replies\nTrack bounce-backs', x:940, y:200 },
+    { id:'followup', type:'decision', icon:'🔄', title:'Follow-up Logic', body:'No reply 3d = follow up\nReply = notify, Bounce = remove', x:940, y:420 },
+  ],
+  connections: [
+    { from:'trig', to:'segment', color:'var(--orange)' },
+    { from:'segment', to:'draft', color:'var(--blue)' },
+    { from:'draft', to:'personalize', color:'var(--cyan)' },
+    { from:'personalize', to:'schedule', color:'var(--blue)' },
+    { from:'schedule', to:'send', color:'var(--blue)' },
+    { from:'send', to:'track', color:'var(--green)' },
+    { from:'track', to:'followup', color:'var(--blue)' },
+    { from:'followup', to:'send', color:'var(--purple)', label:'Retry' },
+  ]
+},
+
+web_monitor: {
+  title: 'Web Monitor', desc: 'Monitors websites for changes and sends intelligent alerts with AI-powered summaries.', icon: '🌐', bg: '#e0f7fa',
+  ai: 'Claude Haiku (summarize)', integrations: 'HTTP, BeautifulSoup, Gmail',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'⏰', title:'Check Interval', body:'Every 15min/hourly/daily\nor manual request', x:80, y:60 },
+    { id:'fetch', type:'api', icon:'🌐', title:'Fetch Page', body:'HTTP GET target URL\nStore HTML snapshot', x:80, y:220 },
+    { id:'parse', type:'process', icon:'📋', title:'Parse Content', body:'BeautifulSoup extraction\nCSS selector targeting', x:80, y:400 },
+    { id:'diff', type:'decision', icon:'🔄', title:'Detect Changes', body:'Compare to last snapshot\nText + structural diff', x:400, y:300 },
+    { id:'ai', type:'api', icon:'🧠', title:'AI Summarize', body:'Claude summarizes changes\nRates importance 1-10', x:660, y:200 },
+    { id:'alert', type:'action', icon:'🔔', title:'Send Alert', body:'Email + Telegram notification\nwith change summary', x:920, y:200 },
+    { id:'archive', type:'output', icon:'💾', title:'Archive Snapshot', body:'Timestamped snapshot saved\nFull change history log', x:920, y:400 },
+  ],
+  connections: [
+    { from:'trig', to:'fetch', color:'var(--orange)' },
+    { from:'fetch', to:'parse', color:'var(--cyan)' },
+    { from:'parse', to:'diff', color:'var(--blue)' },
+    { from:'diff', to:'ai', color:'var(--purple)', label:'Changed' },
+    { from:'diff', to:'archive', color:'var(--purple)', label:'Always' },
+    { from:'ai', to:'alert', color:'var(--cyan)' },
+  ]
+},
+
+task_scheduler: {
+  title: 'Task Scheduler Bot', desc: 'Manages recurring and one-time scheduled tasks across all agents.', icon: '⏰', bg: '#f3e5f5',
+  ai: 'Claude Haiku (parse)', integrations: 'Internal scheduler',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'📩', title:'Task Input', body:'"Schedule report Monday"\nor cron expression', x:80, y:60 },
+    { id:'parse', type:'api', icon:'🧠', title:'AI Parse Schedule', body:'Claude extracts: what, when\nConverts to cron expression', x:80, y:230 },
+    { id:'validate', type:'decision', icon:'✅', title:'Validate Task', body:'Valid action? Permissions?\nResources available?', x:80, y:400 },
+    { id:'store', type:'action', icon:'💾', title:'Save to Queue', body:'Persistent task queue\nSet next_run timestamp', x:400, y:230 },
+    { id:'tick', type:'trigger', icon:'⏰', title:'Scheduler Tick', body:'Every 60s: check pending\nCompare now vs next_run', x:400, y:400 },
+    { id:'execute', type:'action', icon:'🚀', title:'Execute Task', body:'Run scheduled action\nDispatch to target bot', x:700, y:300 },
+    { id:'report', type:'output', icon:'📊', title:'Execution Report', body:'Log success/failure\nReschedule if recurring', x:940, y:300 },
+  ],
+  connections: [
+    { from:'trig', to:'parse', color:'var(--orange)' },
+    { from:'parse', to:'validate', color:'var(--cyan)' },
+    { from:'validate', to:'store', color:'var(--green)', label:'Valid' },
+    { from:'tick', to:'execute', color:'var(--orange)', label:'Due' },
+    { from:'store', to:'tick', color:'var(--blue)' },
+    { from:'execute', to:'report', color:'var(--green)' },
+    { from:'report', to:'store', color:'var(--gold)', label:'Recurring' },
+  ]
+},
+
+content_writer: {
+  title: 'Content Writer', desc: 'Researches topics and writes SEO-optimized blog posts, articles, and marketing copy.', icon: '✍️', bg: '#fce4ec',
+  ai: 'Claude Sonnet (writing)', integrations: 'DuckDuckGo, Pollinations',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'✍️', title:'Content Request', body:'"Blog about AI in real estate"\nor content calendar', x:80, y:60 },
+    { id:'research', type:'api', icon:'🔍', title:'Research Topic', body:'DuckDuckGo for sources\nFacts, stats, quotes', x:80, y:230 },
+    { id:'outline', type:'api', icon:'🧠', title:'AI Generate Outline', body:'Claude creates structure\nHeadings, key points, flow', x:80, y:400 },
+    { id:'write', type:'api', icon:'📝', title:'Write Full Draft', body:'Claude writes content\nMatches soul personality', x:400, y:300 },
+    { id:'seo', type:'process', icon:'🔑', title:'SEO Optimize', body:'Keywords, meta description\nTitle tags, readability', x:660, y:200 },
+    { id:'format', type:'process', icon:'📐', title:'Format Output', body:'Markdown/HTML/plain text\nAI images via Pollinations', x:660, y:420 },
+    { id:'deliver', type:'output', icon:'📤', title:'Deliver Content', body:'Save to files, email owner\nReady for publishing', x:940, y:300 },
+  ],
+  connections: [
+    { from:'trig', to:'research', color:'var(--orange)' },
+    { from:'research', to:'outline', color:'var(--cyan)' },
+    { from:'outline', to:'write', color:'var(--cyan)' },
+    { from:'write', to:'seo', color:'var(--blue)' },
+    { from:'write', to:'format', color:'var(--blue)' },
+    { from:'seo', to:'deliver', color:'var(--green)' },
+    { from:'format', to:'deliver', color:'var(--green)' },
+  ]
+},
+
+discord_assistant: {
+  title: 'Discord Assistant', desc: 'AI-powered conversational assistant for Discord servers with tool access.', icon: '🤖', bg: '#ede7f6',
+  ai: 'Claude Sonnet (conversation)', integrations: 'Discord.py, Pollinations',
+  nodes: [
+    { id:'trig', type:'trigger', icon:'💬', title:'Discord Message', body:'User message in\nmonitored channel', x:80, y:100 },
+    { id:'filter', type:'decision', icon:'🔍', title:'Filter & Route', body:'Command? Mention? Bot?\nPermission check', x:80, y:280 },
+    { id:'ai', type:'api', icon:'🧠', title:'AI Process', body:'Claude generates response\nContext-aware conversation', x:400, y:180 },
+    { id:'tools', type:'action', icon:'🔧', title:'Execute Tools', body:'Image gen, web search\nfile ops, calculations', x:400, y:380 },
+    { id:'reply', type:'output', icon:'💬', title:'Send Reply', body:'Post to Discord channel\nEmbed formatting if needed', x:700, y:280 },
+    { id:'log', type:'output', icon:'📋', title:'Conversation Log', body:'Store history for context\nin future messages', x:940, y:280 },
+  ],
+  connections: [
+    { from:'trig', to:'filter', color:'var(--orange)' },
+    { from:'filter', to:'ai', color:'var(--purple)', label:'Chat' },
+    { from:'filter', to:'tools', color:'var(--purple)', label:'Command' },
+    { from:'ai', to:'reply', color:'var(--cyan)' },
+    { from:'tools', to:'reply', color:'var(--green)' },
+    { from:'reply', to:'log', color:'var(--gold)' },
+  ]
+},
+
+ai_receptionist: {
+  title: 'AI Receptionist', desc: 'Production voice receptionist — real phone number, human-sounding voice, 24/7. Books appointments, takes messages, notifies owner. Pipecat + Telnyx + Cartesia + Whisper.', icon: '📞', bg: '#fff8e1',
+  ai: 'Pollinations FREE + Cartesia Sonic TTS ($0.011/1K chars)', integrations: 'Telnyx (phone), Cartesia Sonic (voice), faster-whisper (STT), Gmail, Telegram',
+  nodes: [
+    { id:'phone_in', type:'trigger', icon:'📞', title:'Incoming Call (Telnyx)', body:'Real phone number via Telnyx\n$1/mo + $0.0035/min\nWebSocket to Pipecat on your PC', x:60, y:60 },
+    { id:'guard', type:'decision', icon:'🛡️', title:'Call Guards', body:'1 call at a time?\nCooldown check (30 min)?\nSilent/spam detection (3-5s)\nMax 5 min per call', x:60, y:230 },
+    { id:'stt', type:'api', icon:'🎙️', title:'faster-whisper STT', body:'Local on your PC — FREE\n4-5x faster than Whisper\nReal-time transcription', x:60, y:420 },
+    { id:'bargein', type:'decision', icon:'⚡', title:'Barge-In Detection', body:'Silero VAD detects speech\nCustomer interrupts?\nStop TTS, listen immediately', x:340, y:60 },
+    { id:'brain', type:'api', icon:'🧠', title:'AI Brain (Pollinations)', body:'FREE LLM — $0 cost\nUnderstands intent + context\nPersonality from client config\nTool calling for bookings', x:340, y:250 },
+    { id:'intent', type:'decision', icon:'🔀', title:'Intent Router', body:'FAQ? Answer from knowledge\nBooking? Check availability\nMessage? Take details\nUrgent? Escalate to owner', x:340, y:450 },
+    { id:'book', type:'action', icon:'📅', title:'Book Appointment', body:'Checks availability (no conflicts)\nSaves to appointments.json\nConversational: "You\'re all set\nfor Thursday at 2pm!"', x:620, y:100 },
+    { id:'tts', type:'api', icon:'🔈', title:'Cartesia Sonic TTS', body:'40ms latency — near instant\nSounds like a real person\n$0.011/1K chars\nStreaming via WebSocket', x:620, y:300 },
+    { id:'message', type:'action', icon:'💬', title:'Take Message', body:'Name, phone, message\nUrgency detection\nSaved to messages.json\nMarked unread for owner', x:620, y:490 },
+    { id:'confirm', type:'action', icon:'📤', title:'Send Confirmation', body:'Email (Gmail SMTP)\nTelegram notification\n24h reminder auto-set\nOwner gets instant alert', x:900, y:100 },
+    { id:'cache', type:'process', icon:'💾', title:'Audio Cache', body:'Greeting cached locally\nCommon phrases pre-generated\nSaves Cartesia credits\nReused across calls', x:900, y:300 },
+    { id:'log', type:'output', icon:'📋', title:'Call Log & Dashboard', body:'Full transcript saved\nCost tracked per call\nVisible in Receptionist tab\nDaily summary to owner', x:900, y:490 },
+  ],
+  connections: [
+    { from:'phone_in', to:'guard', color:'var(--orange)' },
+    { from:'guard', to:'stt', color:'var(--green)', label:'Allowed' },
+    { from:'stt', to:'bargein', color:'var(--cyan)' },
+    { from:'bargein', to:'brain', color:'var(--purple)', label:'New Input' },
+    { from:'brain', to:'intent', color:'var(--cyan)' },
+    { from:'intent', to:'book', color:'var(--blue)', label:'Booking' },
+    { from:'intent', to:'message', color:'var(--blue)', label:'Message' },
+    { from:'intent', to:'tts', color:'var(--blue)', label:'FAQ' },
+    { from:'book', to:'tts', color:'var(--green)' },
+    { from:'book', to:'confirm', color:'var(--gold)' },
+    { from:'message', to:'confirm', color:'var(--gold)' },
+    { from:'tts', to:'cache', color:'var(--purple)', label:'Cache hit?' },
+    { from:'tts', to:'bargein', color:'var(--red)', label:'Interrupted?' },
+    { from:'confirm', to:'log', color:'var(--gold)' },
+    { from:'cache', to:'log', color:'var(--purple)' },
+  ]
+},
+
+}; // end WORKFLOWS
+
+
+// ═══════════════════════════════════════════
+//  RENDER — OVERVIEW ORG CHART
+// ═══════════════════════════════════════════
+
+function renderOverview() {
+  const canvas = document.getElementById('orgCanvas');
+  const svg = document.getElementById('orgSvg');
+
+  // Clear existing cards (keep svg)
+  canvas.querySelectorAll('.agent-card, .conn-label').forEach(el => el.remove());
+  svg.innerHTML = '';
+
+  // Render agent cards
+  AGENTS.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'agent-card';
+    card.style.left = a.x + 'px';
+    card.style.top = a.y + 'px';
+    card.id = 'org-' + a.id;
+    card.onclick = () => openWorkflow(a.id);
+    card.innerHTML = `
+      <div class="agent-card-badge ${a.badge}">${a.badgeLabel}</div>
+      <div class="agent-card-top">
+        <div class="agent-card-avatar" style="background:${a.bg}">${a.icon}</div>
+        <div class="agent-card-info">
+          <h3>${a.name}</h3>
+          <p>${a.desc}</p>
+        </div>
+      </div>
+      <div class="agent-card-tools">
+        ${a.tools.map(t => `<span class="tool-icon">${t}</span>`).join('')}
+      </div>
+    `;
+    canvas.appendChild(card);
+  });
+
+  // Set canvas height
+  let maxY = 0;
+  AGENTS.forEach(a => { maxY = Math.max(maxY, a.y + 180); });
+  canvas.style.minHeight = (maxY + 60) + 'px';
+  svg.setAttribute('height', maxY + 60);
+  svg.setAttribute('width', '100%');
+
+  // Draw connections after layout
+  requestAnimationFrame(() => {
+    const canvasRect = canvas.getBoundingClientRect();
+    ORG_CONNECTIONS.forEach(conn => {
+      const fromEl = document.getElementById('org-' + conn.from);
+      const toEl = document.getElementById('org-' + conn.to);
+      if (!fromEl || !toEl) return;
+
+      const fr = fromEl.getBoundingClientRect();
+      const tr = toEl.getBoundingClientRect();
+
+      // Center bottom of from, center top of to
+      let x1 = fr.left + fr.width/2 - canvasRect.left;
+      let y1 = fr.bottom - canvasRect.top;
+      let x2 = tr.left + tr.width/2 - canvasRect.left;
+      let y2 = tr.top - canvasRect.top;
+
+      // If same row or going up, use side connections
+      if (y2 <= y1 + 20) {
+        // Horizontal-ish connection
+        if (x2 > x1) {
+          x1 = fr.right - canvasRect.left;
+          y1 = fr.top + fr.height/2 - canvasRect.top;
+          x2 = tr.left - canvasRect.left;
+          y2 = tr.top + tr.height/2 - canvasRect.top;
+        } else {
+          x1 = fr.left - canvasRect.left;
+          y1 = fr.top + fr.height/2 - canvasRect.top;
+          x2 = tr.right - canvasRect.left;
+          y2 = tr.top + tr.height/2 - canvasRect.top;
+        }
+      }
+
+      const midY = (y1 + y2) / 2;
+      const d = `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      if (conn.dashed) path.classList.add('dashed');
+      svg.appendChild(path);
+
+      // Arrow
+      const angle = Math.atan2(y2 - midY, x2 - x2);
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      arrow.setAttribute('points', `${x2},${y2} ${x2-5},${y2-8} ${x2+5},${y2-8}`);
+      arrow.setAttribute('fill', '#b0b0c0');
+      svg.appendChild(arrow);
+
+      // Label
+      if (conn.label) {
+        const lbl = document.createElement('div');
+        lbl.className = 'conn-label';
+        lbl.innerHTML = `<span class="conn-icon">${conn.dashed ? '🔗' : '↓'}</span> ${conn.label}`;
+        lbl.style.left = ((x1+x2)/2 - 40) + 'px';
+        lbl.style.top = (midY - 10) + 'px';
+        canvas.appendChild(lbl);
+      }
+    });
+  });
+}
+
+
+// ═══════════════════════════════════════════
+//  RENDER — WORKFLOW DETAIL
+// ═══════════════════════════════════════════
+
+let currentZoom = 1;
+
+function openWorkflow(id) {
+  const wf = WORKFLOWS[id];
+  if (!wf) return;
+
+  document.getElementById('overviewPage').style.display = 'none';
+  document.getElementById('detailPage').style.display = 'block';
+  document.getElementById('backBtn').classList.add('visible');
+  document.getElementById('pageTitle').textContent = wf.title;
+  document.getElementById('wfLegend').classList.add('visible');
+  document.getElementById('zoomControls').classList.add('visible');
+
+  // Render detail header
+  const header = document.getElementById('detailHeader');
+  header.innerHTML = `
+    <div class="detail-header-row">
+      <div class="detail-avatar" style="background:${wf.bg}">${wf.icon}</div>
+      <div class="detail-info">
+        <h2>${wf.title}</h2>
+        <p>${wf.desc}</p>
+      </div>
+    </div>
+    <div class="detail-meta">
+      <div class="detail-meta-item"><span class="meta-dot" style="background:var(--cyan)"></span> AI: ${wf.ai}</div>
+      <div class="detail-meta-item"><span class="meta-dot" style="background:var(--green)"></span> Integrations: ${wf.integrations}</div>
+      <div class="detail-meta-item"><span class="meta-dot" style="background:var(--purple)"></span> ${wf.nodes.length} workflow nodes</div>
+    </div>
+  `;
+
+  // Render workflow canvas
+  const canvas = document.getElementById('wfCanvas');
+  canvas.innerHTML = '';
+  canvas.style.transform = 'scale(1)';
+  currentZoom = 1;
+  document.getElementById('zoomLevel').textContent = '100%';
+
+  let maxX = 0, maxY = 0;
+  wf.nodes.forEach(n => { maxX = Math.max(maxX, n.x + 260); maxY = Math.max(maxY, n.y + 180); });
+  canvas.style.minWidth = (maxX + 80) + 'px';
+  canvas.style.minHeight = (maxY + 80) + 'px';
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.classList.add('connections');
+  svg.setAttribute('width', maxX + 80);
+  svg.setAttribute('height', maxY + 80);
+
+  wf.nodes.forEach(n => {
+    const div = document.createElement('div');
+    div.className = `wf-node ${n.type}`;
+    div.id = `wn-${n.id}`;
+    div.style.left = n.x + 'px';
+    div.style.top = n.y + 'px';
+    div.innerHTML = `
+      <div class="wf-node-header">
+        <span class="n-icon">${n.icon}</span>
+        <span class="n-title">${n.title}</span>
+      </div>
+      <div class="wf-node-body">${n.body.replace(/\n/g, '<br>')}</div>
+    `;
+    canvas.appendChild(div);
+  });
+
+  canvas.appendChild(svg);
+
+  requestAnimationFrame(() => drawConnections(wf, svg, canvas));
+}
+
+function drawConnections(wf, svg, canvas) {
+  const canvasRect = canvas.getBoundingClientRect();
+  const z = currentZoom;
+
+  wf.connections.forEach(conn => {
+    const fromEl = document.getElementById(`wn-${conn.from}`);
+    const toEl = document.getElementById(`wn-${conn.to}`);
+    if (!fromEl || !toEl) return;
+
+    const fr = fromEl.getBoundingClientRect();
+    const tr = toEl.getBoundingClientRect();
+
+    const fromCX = (fr.left + fr.width/2 - canvasRect.left) / z;
+    const fromCY = (fr.top + fr.height/2 - canvasRect.top) / z;
+    const toCX = (tr.left + tr.width/2 - canvasRect.left) / z;
+    const toCY = (tr.top + tr.height/2 - canvasRect.top) / z;
+
+    const dx = toCX - fromCX;
+    const dy = toCY - fromCY;
+    let x1, y1, x2, y2;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (dx > 0) {
+        x1 = (fr.right - canvasRect.left) / z; y1 = fromCY;
+        x2 = (tr.left - canvasRect.left) / z; y2 = toCY;
+      } else {
+        x1 = (fr.left - canvasRect.left) / z; y1 = fromCY;
+        x2 = (tr.right - canvasRect.left) / z; y2 = toCY;
+      }
+    } else {
+      if (dy > 0) {
+        x1 = fromCX; y1 = (fr.bottom - canvasRect.top) / z;
+        x2 = toCX; y2 = (tr.top - canvasRect.top) / z;
+      } else {
+        x1 = fromCX; y1 = (fr.top - canvasRect.top) / z;
+        x2 = toCX; y2 = (tr.bottom - canvasRect.top) / z;
+      }
+    }
+
+    const midX = (x1+x2)/2, midY = (y1+y2)/2;
+    let cp1x, cp1y, cp2x, cp2y;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      cp1x = midX; cp1y = y1; cp2x = midX; cp2y = y2;
+    } else {
+      cp1x = x1; cp1y = midY; cp2x = x2; cp2y = midY;
+    }
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M ${x1} ${y1} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${x2} ${y2}`);
+    path.setAttribute('stroke', conn.color || '#888');
+    path.classList.add('animated');
+    svg.appendChild(path);
+
+    // Arrow
+    const angle = Math.atan2(y2 - cp2y, x2 - cp2x);
+    const s = 8;
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    arrow.setAttribute('points', `${x2},${y2} ${x2-s*Math.cos(angle-0.4)},${y2-s*Math.sin(angle-0.4)} ${x2-s*Math.cos(angle+0.4)},${y2-s*Math.sin(angle+0.4)}`);
+    arrow.setAttribute('fill', conn.color || '#888');
+    arrow.classList.add('arrow');
+    svg.appendChild(arrow);
+
+    // Label
+    if (conn.label) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', midX);
+      text.setAttribute('y', midY - 8);
+      text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('fill', conn.color || '#888');
+      text.setAttribute('font-size', '11');
+      text.setAttribute('font-weight', '600');
+      text.setAttribute('font-family', '-apple-system, Segoe UI, sans-serif');
+      text.textContent = conn.label;
+      svg.appendChild(text);
+      const bbox = text.getBBox();
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      bg.setAttribute('x', bbox.x - 4); bg.setAttribute('y', bbox.y - 2);
+      bg.setAttribute('width', bbox.width + 8); bg.setAttribute('height', bbox.height + 4);
+      bg.setAttribute('fill', '#0f0f13'); bg.setAttribute('rx', '4');
+      svg.insertBefore(bg, text);
+    }
+  });
+}
+
+function goBack() {
+  document.getElementById('overviewPage').style.display = 'block';
+  document.getElementById('detailPage').style.display = 'none';
+  document.getElementById('backBtn').classList.remove('visible');
+  document.getElementById('pageTitle').textContent = 'Agent Workflow Maps';
+  document.getElementById('wfLegend').classList.remove('visible');
+  document.getElementById('zoomControls').classList.remove('visible');
+  // Re-render overview to fix connection positions
+  renderOverview();
+}
+
+function zoomCanvas(delta) {
+  const canvas = document.getElementById('wfCanvas');
+  if (delta === 0) currentZoom = 1;
+  else currentZoom = Math.max(0.4, Math.min(2, currentZoom + delta));
+  canvas.style.transform = `scale(${currentZoom})`;
+  canvas.style.transformOrigin = 'top left';
+  document.getElementById('zoomLevel').textContent = Math.round(currentZoom * 100) + '%';
+}
+
+// ── INIT ──
+renderOverview();
+</script>
+</body>
+</html>

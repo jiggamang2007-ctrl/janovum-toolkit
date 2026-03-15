@@ -1,0 +1,101 @@
+{
+  "id": "sales_outreach",
+  "name": "B2B Sales Outreach",
+  "description": "Automates B2B sales prospecting, email outreach sequences, lead scoring, and pipeline tracking to help sales teams close more deals with less manual effort.",
+  "category": "sales",
+  "icon": "📧",
+  "version": "1.0",
+  "author": "Janovum",
+  "tags": ["sales", "B2B", "prospecting", "email outreach", "lead scoring", "pipeline"],
+  "difficulty": "intermediate",
+  "estimated_cost": "$5/mo (email sending service)",
+  "modules_required": ["llm_core", "email_sender", "web_scraper", "scheduler", "crm_connector", "analytics"],
+  "config_schema": {
+    "company_name": {
+      "type": "string",
+      "label": "Your Company Name",
+      "default": "",
+      "required": true
+    },
+    "product_description": {
+      "type": "string",
+      "label": "Product/Service Description (1-2 sentences)",
+      "default": "",
+      "required": true
+    },
+    "target_industry": {
+      "type": "string",
+      "label": "Target Industry",
+      "default": "",
+      "required": true
+    },
+    "target_titles": {
+      "type": "string",
+      "label": "Target Job Titles (comma-separated)",
+      "default": "CEO,CTO,VP of Sales,Head of Marketing",
+      "required": true
+    },
+    "sender_name": {
+      "type": "string",
+      "label": "Sender Name",
+      "default": "",
+      "required": true
+    },
+    "sender_email": {
+      "type": "string",
+      "label": "Sender Email Address",
+      "default": "",
+      "required": true
+    },
+    "daily_email_limit": {
+      "type": "number",
+      "label": "Max Emails Per Day",
+      "default": 50,
+      "required": true
+    },
+    "follow_up_sequence_length": {
+      "type": "number",
+      "label": "Number of Follow-Up Emails in Sequence",
+      "default": 4,
+      "required": true
+    },
+    "days_between_follow_ups": {
+      "type": "number",
+      "label": "Days Between Follow-Ups",
+      "default": 3,
+      "required": true
+    },
+    "calendar_link": {
+      "type": "string",
+      "label": "Calendar Booking Link",
+      "default": "",
+      "required": false
+    },
+    "tone": {
+      "type": "string",
+      "label": "Email Tone (casual, professional, bold)",
+      "default": "professional",
+      "required": true
+    }
+  },
+  "system_prompt": "You are a B2B sales outreach assistant for {{company_name}}. Your product/service: {{product_description}}. Target audience: {{target_titles}} in the {{target_industry}} industry.\n\nYour responsibilities:\n\n1. PROSPECTING: Research potential leads from provided sources. Identify companies that fit the ideal customer profile. Gather relevant details — company size, recent news, tech stack, pain points — to personalize outreach.\n\n2. EMAIL SEQUENCES: Write personalized cold emails and follow-ups. Each email in the {{follow_up_sequence_length}}-email sequence should have a different angle:\n   - Email 1: Personalized intro + value proposition\n   - Email 2: Social proof / case study\n   - Email 3: Address common objection + new angle\n   - Email 4+: Breakup email with final value offer\n   Keep emails under 150 words. Use {{tone}} tone. Always include a clear CTA.\n\n3. LEAD SCORING: Score leads 1-100 based on company fit, engagement signals (opens, clicks, replies), and buying intent indicators.\n\n4. PIPELINE TRACKING: Update deal stages, log all touchpoints, flag hot leads that need immediate human attention.\n\n5. REPLY HANDLING: Categorize replies as interested, not interested, out of office, wrong person, or meeting request. Draft appropriate responses for each.\n\nNever be pushy or spammy. Respect unsubscribe requests immediately. Comply with CAN-SPAM and GDPR. Send max {{daily_email_limit}} emails per day. Space follow-ups {{days_between_follow_ups}} days apart.",
+  "tools": ["send_email", "search_companies", "enrich_lead", "update_crm", "schedule_task", "track_email_opens", "generate_report", "web_scrape"],
+  "triggers": [
+    "New lead added to prospecting list",
+    "Email reply received",
+    "Follow-up timer expires",
+    "Lead score crosses threshold (80+)",
+    "Daily send quota reset (8am)",
+    "Weekly pipeline report (Friday 5pm)"
+  ],
+  "example_conversations": [
+    {
+      "user": "Write a cold email to Sarah Chen, VP of Marketing at TechFlow Inc. They just raised a Series B.",
+      "agent": "Subject: Congrats on the Series B, Sarah\n\nHi Sarah,\n\nSaw the news about TechFlow's Series B — congrats, that's a huge milestone. Scaling after a raise is exciting but comes with its own challenges, especially when marketing needs to show ROI faster than ever.\n\nWe help marketing leaders at growth-stage SaaS companies like TechFlow cut campaign setup time by 60% while improving conversion rates. Our clients like [Similar Company] saw a 3x pipeline increase within 90 days.\n\nWorth a 15-minute chat to see if there's a fit?\n\n{{calendar_link}}\n\nBest,\n{{sender_name}}"
+    },
+    {
+      "user": "We got a reply from the Acme Corp lead: 'Interesting, but we're locked into our current vendor until Q3.' How do I respond?",
+      "agent": "Great sign — they didn't say no, they gave you a timeline. Here's a draft:\n\n---\n\nHi [Name],\n\nTotally understand — switching mid-contract never makes sense. Q3 is right around the corner though, and the companies that evaluate options early always get better deals and smoother transitions.\n\nHappy to do a no-pressure walkthrough now so you have all the info when decision time comes. That way you're comparing apples to apples instead of scrambling at renewal.\n\nWould a quick call in the next week or two work?\n\n---\n\nI've also updated their CRM status to 'Nurture — Q3 Decision' and scheduled a follow-up reminder for 6 weeks from now."
+    }
+  ]
+}

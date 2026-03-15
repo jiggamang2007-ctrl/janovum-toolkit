@@ -898,9 +898,18 @@
               <div class="panel-title" style="margin-bottom:12px">Voice & Personality</div>
               <div id="clDetailVoice"></div>
             </div>
-            <div class="panel">
+            <div class="panel" style="margin-bottom:16px">
               <div class="panel-title" style="margin-bottom:12px">Webhook</div>
               <div id="clDetailWebhook"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-title" style="margin-bottom:12px">Knowledge <span style="font-size:0.7em;color:var(--dim);font-weight:400">— things the AI remembers</span></div>
+              <div id="clDetailKnowledge"></div>
+              <div style="display:flex;gap:8px;margin-top:10px">
+                <input id="clKnowledgeInput" type="text" placeholder="e.g. Haircuts are $30, we accept walk-ins..." style="flex:1;padding:8px 12px;border-radius:6px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.82em">
+                <button onclick="clAddKnowledge()" style="padding:8px 14px;border-radius:6px;border:none;background:var(--blue);color:#fff;font-weight:700;font-size:0.78em;cursor:pointer">Add</button>
+              </div>
+              <div id="clKnowledgeResult" style="margin-top:6px"></div>
             </div>
           </div>
         </div>
@@ -3842,6 +3851,12 @@ async function clShowClient(clientId) {
       ['Greeting', p.greeting || 'Auto-generated'],
     ].map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #151515;font-size:0.84em"><span style="color:var(--muted)">${k}</span><span style="font-weight:600;max-width:65%;text-align:right">${v}</span></div>`).join('');
 
+    // Knowledge
+    const knowledge = cfg.knowledge || [];
+    document.getElementById('clDetailKnowledge').innerHTML = knowledge.length > 0
+      ? knowledge.map((item, i) => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:4px;background:#0a0a0a;border-radius:6px;font-size:0.82em"><span style="flex:1">${esc(item)}</span><button onclick="clRemoveKnowledge(${i})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.9em;padding:2px 6px">✕</button></div>`).join('')
+      : '<span style="font-size:0.82em;color:var(--dim)">No knowledge added yet. Add facts the AI should remember during calls.</span>';
+
     // Webhook — show actual domain if configured
     try {
       const tkRes = await fetch(API + '/api/toolkit/config');
@@ -3888,6 +3903,41 @@ function clShowList() {
   document.getElementById('clDetailView').style.display = 'none';
   clSelectedClient = null;
   clLoadClients();
+}
+
+async function clAddKnowledge() {
+  if (!clSelectedClient) return;
+  const input = document.getElementById('clKnowledgeInput');
+  const text = input.value.trim();
+  if (!text) return;
+  const result = document.getElementById('clKnowledgeResult');
+  result.innerHTML = '<span style="color:var(--muted);font-size:0.78em">Saving...</span>';
+  const knowledge = clSelectedClient.knowledge || [];
+  knowledge.push(text);
+  try {
+    const res = await fetch(API + '/api/receptionist/clients/' + clSelectedClient.client_id, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ knowledge })
+    });
+    const r = await res.json();
+    if (r.error) { result.innerHTML = `<span style="color:var(--red);font-size:0.78em">${r.error}</span>`; return; }
+    input.value = '';
+    result.innerHTML = '<span style="color:var(--green);font-size:0.78em">Added!</span>';
+    setTimeout(() => result.innerHTML = '', 2000);
+    clShowClient(clSelectedClient.client_id);
+  } catch(e) { result.innerHTML = '<span style="color:var(--red);font-size:0.78em">Failed to save</span>'; }
+}
+
+async function clRemoveKnowledge(index) {
+  if (!clSelectedClient) return;
+  const knowledge = (clSelectedClient.knowledge || []).filter((_, i) => i !== index);
+  try {
+    await fetch(API + '/api/receptionist/clients/' + clSelectedClient.client_id, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ knowledge })
+    });
+    clShowClient(clSelectedClient.client_id);
+  } catch(e) { toast('Failed to remove', 'error'); }
 }
 
 async function clToggleClient() {

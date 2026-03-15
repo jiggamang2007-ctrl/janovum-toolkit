@@ -344,6 +344,14 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     if staff_text:
         system_prompt += f"Staff: {staff_text} "
 
+    # Knowledge — custom facts the business owner added
+    knowledge = CLIENT_CONFIG.get("knowledge", [])
+    if knowledge:
+        system_prompt += "Important things to remember: "
+        for item in knowledge:
+            system_prompt += f"- {item} "
+
+
     system_prompt += (
         "To book: get their name, what service, and when. Check availability with check_time_slot, then book with book_appointment. "
         "After booking, ask if they want confirmation by text or email. "

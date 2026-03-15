@@ -57,6 +57,17 @@ def _read_tunnel_url():
                 return url
         except Exception:
             pass
+    # Check toolkit_config.json for domain (VPS deployment)
+    try:
+        import json as _json
+        tk_path = Path(__file__).parent / "data" / "toolkit_config.json"
+        if tk_path.exists():
+            tk = _json.loads(tk_path.read_text())
+            domain = tk.get("domain", "")
+            if domain:
+                return domain
+    except Exception:
+        pass
     return os.environ.get("PUBLIC_URL", f"localhost:{PORT}")
 
 PUBLIC_URL = _read_tunnel_url()

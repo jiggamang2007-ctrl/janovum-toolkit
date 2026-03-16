@@ -488,6 +488,16 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
             await result_callback({"status": "conflict", "message": "That time slot is already booked."})
             return
         import uuid as _uuid
+        # Calculate potential income from service price in config
+        service_name = args.get("service", "")
+        potential = CLIENT_CONFIG.get("default_potential_income", 1000)
+        for svc in CLIENT_CONFIG.get("services", []):
+            if svc.get("name", "").lower() in service_name.lower() or service_name.lower() in svc.get("name", "").lower():
+                p = svc.get("potential_income")
+                if p:
+                    potential = p
+                    break
+
         appointment = {
             "id": str(_uuid.uuid4())[:8],
             "client_id": CLIENT_ID,
@@ -499,6 +509,8 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
             "service": args.get("service", ""),
             "notes": args.get("notes", ""),
             "status": "confirmed",
+            "payment_status": "pending",
+            "potential_income": potential,
             "booked_at": datetime.now().isoformat(),
             "booked_by": "AI Receptionist",
         }
@@ -626,6 +638,12 @@ body {{ font-family: -apple-system, 'Segoe UI', sans-serif; background: #0f0f13;
 </div>
 <div class="day-tabs" id="dayTabs"></div>
 <div class="stats">
+  <div class="stat"><div class="num" id="potentialIncome" style="color:#f59e0b">$0</div><div class="lbl">Potential</div></div>
+  <div class="stat"><div class="num" id="earnedIncome" style="color:#22c55e">$0</div><div class="lbl">Earned</div></div>
+  <div class="stat"><div class="num" id="recurringIncome" style="color:#8b5cf6">$0</div><div class="lbl">/Month</div></div>
+  <div class="stat"><div class="num" id="activeClients" style="color:#3b82f6">0</div><div class="lbl">Clients</div></div>
+</div>
+<div class="stats" style="padding-top:0">
   <div class="stat"><div class="num" id="todayCount">-</div><div class="lbl">Today</div></div>
   <div class="stat"><div class="num" id="tomorrowCount">-</div><div class="lbl">Tomorrow</div></div>
   <div class="stat"><div class="num" id="weekCount">-</div><div class="lbl">This Week</div></div>
@@ -686,7 +704,13 @@ function renderAppts() {{
     container.innerHTML = '<div class="empty">' + (isToday ? 'No appointments today.' : 'No appointments for this day.') + '</div>';
     return;
   }}
-  container.innerHTML = filtered.map(a => '<div class="card' + (isToday ? ' today-card' : '') + '"><div class="top"><span class="name">' + (a.name||'Unknown') + '</span><span class="time-badge">' + (a.time||'TBD') + '</span></div><div class="top" style="margin-bottom:0"><span style="font-size:0.78em;color:#999">' + (a.service||'') + '</span><span class="badge confirmed">CONFIRMED</span></div><div class="details" style="margin-top:6px">' + (a.phone ? '<div>&#128222; <span>' + a.phone + '</span></div>' : '') + (a.notes ? '<div>&#128221; <span>' + a.notes + '</span></div>' : '') + '</div></div>').join('');
+  container.innerHTML = filtered.map(a => {{
+    const ps = a.payment_status || 'pending';
+    const pot = a.potential_income || 0;
+    const paidBadge = ps === 'paid' ? '<span class="badge" style="background:rgba(34,197,94,0.12);color:#22c55e">PAID</span>' : ps === 'rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.12);color:#ef4444">DECLINED</span>' : '<span class="badge" style="background:rgba(245,158,11,0.12);color:#f59e0b">PENDING</span>';
+    const actions = ps === 'pending' ? '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="confirmAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:700;font-size:0.82em;cursor:pointer">Paid</button><button onclick="rejectAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:700;font-size:0.82em;cursor:pointer">Didn\\'t Go Through</button></div>' : '';
+    return '<div class="card' + (isToday ? ' today-card' : '') + '"><div class="top"><span class="name">' + (a.name||'Unknown') + '</span><span class="time-badge">' + (a.time||'TBD') + '</span></div><div class="top" style="margin-bottom:0"><span style="font-size:0.78em;color:#999">' + (a.service||'') + '</span>' + paidBadge + '</div><div style="margin-top:6px;font-size:0.9em;font-weight:700;color:#f59e0b">Potential: $' + pot.toLocaleString() + '</div><div class="details" style="margin-top:4px">' + (a.phone ? '<div>&#128222; <span>' + a.phone + '</span></div>' : '') + (a.notes ? '<div>&#128221; <span>' + a.notes + '</span></div>' : '') + '</div>' + actions + '</div>';
+  }}).join('');
 }}
 
 async function loadData() {{
@@ -710,8 +734,27 @@ async function loadData() {{
     document.getElementById('apptList').innerHTML = '<div class="empty">Could not load. Is the server running?</div>';
   }}
 }}
+async function confirmAppt(id) {{
+  await fetch('/appointments/' + id + '/confirm', {{method: 'POST'}});
+  loadData();
+}}
+async function rejectAppt(id) {{
+  await fetch('/appointments/' + id + '/reject', {{method: 'POST'}});
+  loadData();
+}}
+async function loadRevenue() {{
+  try {{
+    const r = await fetch('/revenue');
+    const rev = await r.json();
+    document.getElementById('potentialIncome').textContent = '$' + (rev.potential_income || 0).toLocaleString();
+    document.getElementById('earnedIncome').textContent = '$' + (rev.earned_income || 0).toLocaleString();
+    document.getElementById('recurringIncome').textContent = '$' + (rev.monthly_recurring || 0).toLocaleString();
+    document.getElementById('activeClients').textContent = rev.active_clients || 0;
+  }} catch(e) {{}}
+}}
 loadData();
-setInterval(loadData, 15000);
+loadRevenue();
+setInterval(() => {{ loadData(); loadRevenue(); }}, 15000);
 </script>
 </body>
 </html>"""
@@ -725,6 +768,102 @@ async def get_appointments():
     else:
         appts = []
     return {"client_id": CLIENT_ID, "total": len(appts), "appointments": appts}
+
+@app.post("/appointments/{appt_id}/confirm")
+async def confirm_appointment(appt_id: str):
+    """Mark appointment as paid — adds to earned income and starts recurring."""
+    if not APPTS_PATH.exists():
+        return {"error": "No appointments"}
+    with open(APPTS_PATH, "r", encoding="utf-8") as f:
+        appts = json.load(f)
+    for a in appts:
+        if a.get("id") == appt_id:
+            a["payment_status"] = "paid"
+            a["confirmed_at"] = datetime.now().isoformat()
+            # Add to active clients for recurring revenue
+            clients_file = APPTS_PATH.parent / f"{CLIENT_ID}_active_clients.json"
+            active = []
+            if clients_file.exists():
+                try:
+                    active = json.loads(clients_file.read_text())
+                except Exception:
+                    active = []
+            # Check if already tracked
+            if not any(c.get("appt_id") == appt_id for c in active):
+                active.append({
+                    "appt_id": appt_id,
+                    "name": a.get("name", "Unknown"),
+                    "phone": a.get("phone", ""),
+                    "service": a.get("service", ""),
+                    "monthly_recurring": CLIENT_CONFIG.get("monthly_recurring", 500),
+                    "initial_payment": a.get("potential_income", 1000),
+                    "started_at": datetime.now().isoformat(),
+                    "active": True,
+                })
+                clients_file.write_text(json.dumps(active, indent=2))
+            break
+    with open(APPTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(appts, f, indent=2)
+    return {"status": "confirmed", "id": appt_id}
+
+@app.post("/appointments/{appt_id}/reject")
+async def reject_appointment(appt_id: str):
+    """Mark appointment as didn't go through."""
+    if not APPTS_PATH.exists():
+        return {"error": "No appointments"}
+    with open(APPTS_PATH, "r", encoding="utf-8") as f:
+        appts = json.load(f)
+    for a in appts:
+        if a.get("id") == appt_id:
+            a["payment_status"] = "rejected"
+            break
+    with open(APPTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(appts, f, indent=2)
+    return {"status": "rejected", "id": appt_id}
+
+@app.post("/clients/{client_name}/deactivate")
+async def deactivate_client(client_name: str):
+    """Remove a client from recurring revenue."""
+    clients_file = APPTS_PATH.parent / f"{CLIENT_ID}_active_clients.json"
+    if not clients_file.exists():
+        return {"error": "No active clients"}
+    active = json.loads(clients_file.read_text())
+    for c in active:
+        if c.get("name", "").lower() == client_name.lower():
+            c["active"] = False
+            c["deactivated_at"] = datetime.now().isoformat()
+    clients_file.write_text(json.dumps(active, indent=2))
+    return {"status": "deactivated", "name": client_name}
+
+@app.get("/revenue")
+async def get_revenue():
+    """Get income summary: potential, earned, recurring."""
+    appts = []
+    if APPTS_PATH.exists():
+        try:
+            appts = json.loads(APPTS_PATH.read_text())
+        except Exception:
+            appts = []
+    clients_file = APPTS_PATH.parent / f"{CLIENT_ID}_active_clients.json"
+    active_clients = []
+    if clients_file.exists():
+        try:
+            active_clients = json.loads(clients_file.read_text())
+        except Exception:
+            active_clients = []
+
+    potential = sum(a.get("potential_income", 0) for a in appts if a.get("payment_status") == "pending")
+    earned = sum(a.get("potential_income", 0) for a in appts if a.get("payment_status") == "paid")
+    active_count = sum(1 for c in active_clients if c.get("active", False))
+    monthly_recurring = active_count * CLIENT_CONFIG.get("monthly_recurring", 500)
+
+    return {
+        "potential_income": potential,
+        "earned_income": earned,
+        "active_clients": active_count,
+        "monthly_recurring": monthly_recurring,
+        "clients": [c for c in active_clients if c.get("active", False)],
+    }
 
 @app.get("/appointments/today")
 async def get_today_appointments():

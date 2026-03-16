@@ -720,7 +720,21 @@ body {{ font-family: -apple-system, 'Segoe UI', sans-serif; background: #0f0f13;
   </div>
   <div id="apptList"><div class="empty">Loading...</div></div>
 </div>
-<button class="refresh" onclick="loadData()">&#8635;</button>
+<div id="addModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:100;padding:20px;overflow-y:auto">
+  <div style="max-width:400px;margin:40px auto;background:#1a1a24;border:1px solid #2a2a3a;border-radius:16px;padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h2 style="font-size:1.1em;font-weight:800">Add Appointment</h2><button onclick="document.getElementById('addModal').style.display='none'" style="background:none;border:none;color:#888;font-size:1.4em;cursor:pointer">&#10005;</button></div>
+    <input id="addName" placeholder="Client Name" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
+    <input id="addPhone" placeholder="Phone Number" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
+    <input id="addService" placeholder="Service" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
+    <input id="addDate" type="date" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
+    <input id="addTime" type="time" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
+    <input id="addNotes" placeholder="Notes (optional)" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:14px">
+    <button onclick="submitAppt()" style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#ff6b35,#f7c948);color:#fff;font-weight:700;font-size:0.95em;cursor:pointer">Add Appointment</button>
+    <div id="addResult" style="margin-top:8px;font-size:0.82em;text-align:center"></div>
+  </div>
+</div>
+<button class="refresh" onclick="loadData()" style="bottom:20px;right:20px">&#8635;</button>
+<button onclick="document.getElementById('addModal').style.display='block'" style="position:fixed;bottom:20px;left:20px;width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);border:none;color:#fff;font-size:1.6em;cursor:pointer;box-shadow:0 4px 15px rgba(34,197,94,0.3);z-index:10">+</button>
 <script>
 let allAppts = [];
 let selectedDate = null;
@@ -772,7 +786,8 @@ function renderAppts() {{
     const ps = a.payment_status || 'pending';
     const pot = a.potential_income || 0;
     const paidBadge = ps === 'paid' ? '<span class="badge" style="background:rgba(34,197,94,0.12);color:#22c55e">PAID</span>' : ps === 'rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.12);color:#ef4444">DECLINED</span>' : '<span class="badge" style="background:rgba(245,158,11,0.12);color:#f59e0b">PENDING</span>';
-    const actions = ps === 'pending' ? '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="confirmAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:700;font-size:0.82em;cursor:pointer">Paid</button><button onclick="rejectAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:700;font-size:0.82em;cursor:pointer">Didn\\'t Go Through</button></div>' : '';
+    const removeBtn = '<button onclick="removeAppt(\\'' + a.id + '\\')" style="padding:8px;border-radius:8px;border:none;background:rgba(100,100,100,0.15);color:#888;font-weight:700;font-size:0.82em;cursor:pointer">Remove</button>';
+    const actions = ps === 'pending' ? '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="confirmAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:700;font-size:0.82em;cursor:pointer">Paid</button><button onclick="rejectAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:700;font-size:0.82em;cursor:pointer">Didn\\'t Go Through</button>' + removeBtn + '</div>' : '<div style="margin-top:8px">' + removeBtn + '</div>';
     return '<div class="card' + (isToday ? ' today-card' : '') + '"><div class="top"><span class="name">' + (a.name||'Unknown') + '</span><span class="time-badge">' + (a.time||'TBD') + '</span></div><div class="top" style="margin-bottom:0"><span style="font-size:0.78em;color:#999">' + (a.service||'') + '</span>' + paidBadge + '</div><div style="margin-top:6px;font-size:0.9em;font-weight:700;color:#f59e0b">Potential: $' + pot.toLocaleString() + '</div><div class="details" style="margin-top:4px">' + (a.phone ? '<div>&#128222; <span>' + a.phone + '</span></div>' : '') + (a.notes ? '<div>&#128221; <span>' + a.notes + '</span></div>' : '') + '</div>' + actions + '</div>';
   }}).join('');
 }}
@@ -798,13 +813,40 @@ async function loadData() {{
     document.getElementById('apptList').innerHTML = '<div class="empty">Could not load. Is the server running?</div>';
   }}
 }}
+async function submitAppt() {{
+  const name = document.getElementById('addName').value.trim();
+  const phone = document.getElementById('addPhone').value.trim();
+  const service = document.getElementById('addService').value.trim();
+  const date = document.getElementById('addDate').value;
+  const time = document.getElementById('addTime').value;
+  const notes = document.getElementById('addNotes').value.trim();
+  const result = document.getElementById('addResult');
+  if (!name || !date || !time) {{ result.innerHTML = '<span style="color:#ef4444">Name, date, and time are required</span>'; return; }}
+  result.innerHTML = '<span style="color:#888">Adding...</span>';
+  try {{
+    const r = await fetch('/appointments/add', {{method:'POST', headers:{{'Content-Type':'application/json'}}, body:JSON.stringify({{name, phone, service, date, time, notes}})}});
+    const d = await r.json();
+    if (d.error) {{ result.innerHTML = '<span style="color:#ef4444">' + d.error + '</span>'; return; }}
+    result.innerHTML = '<span style="color:#22c55e">Added!</span>';
+    document.getElementById('addName').value = '';
+    document.getElementById('addPhone').value = '';
+    document.getElementById('addService').value = '';
+    document.getElementById('addNotes').value = '';
+    setTimeout(() => {{ document.getElementById('addModal').style.display='none'; result.innerHTML=''; loadData(); loadRevenue(); }}, 1000);
+  }} catch(e) {{ result.innerHTML = '<span style="color:#ef4444">Failed</span>'; }}
+}}
 async function confirmAppt(id) {{
   await fetch('/appointments/' + id + '/confirm', {{method: 'POST'}});
-  loadData();
+  loadData(); loadRevenue();
 }}
 async function rejectAppt(id) {{
   await fetch('/appointments/' + id + '/reject', {{method: 'POST'}});
-  loadData();
+  loadData(); loadRevenue();
+}}
+async function removeAppt(id) {{
+  if (!confirm('Remove this appointment?')) return;
+  await fetch('/appointments/' + id + '/remove', {{method: 'POST'}});
+  loadData(); loadRevenue();
 }}
 async function loadRevenue() {{
   try {{
@@ -885,6 +927,27 @@ async def reject_appointment(appt_id: str):
         json.dump(appts, f, indent=2)
     return {"status": "rejected", "id": appt_id}
 
+@app.post("/appointments/{appt_id}/remove")
+async def remove_appointment(appt_id: str):
+    """Remove an appointment entirely."""
+    if not APPTS_PATH.exists():
+        return {"error": "No appointments"}
+    with open(APPTS_PATH, "r", encoding="utf-8") as f:
+        appts = json.load(f)
+    appts = [a for a in appts if a.get("id") != appt_id]
+    with open(APPTS_PATH, "w", encoding="utf-8") as f:
+        json.dump(appts, f, indent=2)
+    # Also remove from active clients if they were there
+    clients_file = APPTS_PATH.parent / f"{CLIENT_ID}_active_clients.json"
+    if clients_file.exists():
+        try:
+            active = json.loads(clients_file.read_text())
+            active = [c for c in active if c.get("appt_id") != appt_id]
+            clients_file.write_text(json.dumps(active, indent=2))
+        except Exception:
+            pass
+    return {"status": "removed", "id": appt_id}
+
 @app.post("/clients/{client_name}/deactivate")
 async def deactivate_client(client_name: str):
     """Remove a client from recurring revenue."""
@@ -928,6 +991,33 @@ async def get_revenue():
         "monthly_recurring": monthly_recurring,
         "clients": [c for c in active_clients if c.get("active", False)],
     }
+
+@app.post("/appointments/add")
+async def add_appointment_manual(request: Request):
+    """Manually add an appointment from the app."""
+    import uuid as _uuid
+    data = await request.json()
+    name = data.get("name", "").strip()
+    if not name:
+        return {"error": "Name is required"}
+    appointment = {
+        "id": str(_uuid.uuid4())[:8],
+        "client_id": CLIENT_ID,
+        "business_name": BUSINESS_NAME,
+        "name": name,
+        "phone": data.get("phone", ""),
+        "date": data.get("date", ""),
+        "time": data.get("time", ""),
+        "service": data.get("service", ""),
+        "notes": data.get("notes", ""),
+        "status": "confirmed",
+        "payment_status": "pending",
+        "potential_income": CLIENT_CONFIG.get("default_potential_income", 1000),
+        "booked_at": datetime.now().isoformat(),
+        "booked_by": "Manual Entry",
+    }
+    save_appointment(appointment)
+    return {"status": "added", "id": appointment["id"]}
 
 @app.get("/appointments/today")
 async def get_today_appointments():

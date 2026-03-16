@@ -835,7 +835,7 @@ function renderAppts() {{
   const todayStr = dateStr(new Date());
   const isToday = selectedDate === todayStr;
   const filtered = allAppts.filter(a => a.status === 'confirmed' && matchDate(a.date, selectedDate));
-  const d = new Date(selectedDate + 'T12:00:00');
+  const parts = selectedDate.split('-'); const d = new Date(parts[0], parts[1]-1, parts[2]);
   document.getElementById('dateLabel').textContent = d.toLocaleDateString('en-US', {{ weekday: 'long', month: 'long', day: 'numeric' }});
   document.getElementById('sectionLabel').textContent = isToday ? "Today's Schedule" : d.toLocaleDateString('en-US', {{weekday: 'long'}}) + "'s Schedule";
   if (filtered.length === 0) {{

@@ -132,6 +132,11 @@ class DailyTracker:
 
 daily_tracker = DailyTracker()
 
+# Call cooldown tracker — prevents spam calls from same number
+_call_cooldown = {}  # phone -> last_call_timestamp
+COOLDOWN_SECONDS = 1800  # 30 minutes
+EXEMPT_NUMBERS = CLIENT_CONFIG.get("exempt_numbers", ["+13059988807", "13059988807", "+18339589975"])
+
 
 @app.post("/")
 @app.post("/incoming")
@@ -143,6 +148,22 @@ async def incoming_call(request: Request):
     except Exception as e:
         logger.error(f"[{CLIENT_ID}] Failed to parse form data: {e}")
         from_number = "unknown"
+
+    # Cooldown check — same number can only call every 30 min (except exempt numbers)
+    clean_number = from_number.replace("+", "").replace("-", "").replace(" ", "")
+    is_exempt = any(clean_number.endswith(ex.replace("+", "").replace("-", "")) for ex in EXEMPT_NUMBERS)
+    if not is_exempt and clean_number != "unknown":
+        last_call = _call_cooldown.get(clean_number, 0)
+        if time.time() - last_call < COOLDOWN_SECONDS:
+            wait_min = int((COOLDOWN_SECONDS - (time.time() - last_call)) / 60)
+            logger.warning(f"[{CLIENT_ID}] Cooldown: {from_number} called too soon, {wait_min}min left")
+            twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna">Thanks for calling {BUSINESS_NAME}. Please try again in about {wait_min} minutes. Goodbye!</Say>
+  <Hangup/>
+</Response>"""
+            return Response(content=twiml, media_type="application/xml")
+        _call_cooldown[clean_number] = time.time()
 
     can_accept, reason = daily_tracker.can_accept()
     if not can_accept:
@@ -371,7 +392,9 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         f"Caller's phone is {from_number}. Use send_confirmation_sms for text, send_confirmation_email for email. "
         "NEVER say underscores, function names, tool names, or any technical terms out loud. "
         "NEVER say words like send underscore confirmation or book underscore appointment. Those are internal tool names the caller should never hear. "
-        "If you can't help, offer to take a message. Be warm, natural, and brief."
+        "If you can't help, offer to take a message. Be warm, natural, and brief. "
+        "IMPORTANT: Only say goodbye and use the end_call tool AFTER you have confirmed all appointment details with the caller and sent their confirmation (text or email). "
+        "Make sure they have everything they need before ending. Once done, say a brief friendly goodbye and use end_call immediately. Do NOT stay on the line after goodbye."
     )
 
     tools = [
@@ -445,6 +468,17 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
                 },
             },
         },
+        {
+            "type": "function",
+            "function": {
+                "name": "end_call",
+                "description": "End the phone call. Use this after saying goodbye when the conversation is done.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                },
+            },
+        },
     ]
 
     async def handle_send_sms(function_name, tool_call_id, arguments, llm, context, result_callback):
@@ -483,6 +517,17 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
 
     async def handle_book_appointment(function_name, tool_call_id, arguments, llm, context, result_callback):
         args = arguments
+        # Check for duplicate phone number
+        caller_phone = args.get("phone", from_number).replace("+", "").replace("-", "").replace(" ", "")
+        if caller_phone and caller_phone != "unknown" and APPTS_PATH.exists():
+            try:
+                existing = json.loads(APPTS_PATH.read_text())
+                dup = [a for a in existing if a.get("status") == "confirmed" and a.get("payment_status") != "rejected" and a.get("phone", "").replace("+", "").replace("-", "").replace(" ", "") == caller_phone]
+                if dup:
+                    await result_callback({"status": "duplicate", "message": f"This phone number already has an appointment on {dup[0].get('date')} at {dup[0].get('time')}. They can cancel that one first if they want to rebook."})
+                    return
+            except Exception:
+                pass
         available, conflicts = check_availability(args.get("date", ""), args.get("time", ""))
         if not available:
             await result_callback({"status": "conflict", "message": "That time slot is already booked."})
@@ -517,10 +562,19 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         save_appointment(appointment)
         await result_callback({"status": "booked", "id": appointment["id"]})
 
+    async def handle_end_call(function_name, tool_call_id, arguments, llm, context, result_callback):
+        logger.info(f"[{CLIENT_ID}] AI initiated hangup")
+        await result_callback({"status": "hanging_up"})
+        # Give TTS time to finish saying goodbye, then cancel
+        import asyncio
+        await asyncio.sleep(3)
+        await task.cancel()
+
     llm.register_function("check_time_slot", handle_check_time_slot)
     llm.register_function("book_appointment", handle_book_appointment)
     llm.register_function("send_confirmation_sms", handle_send_sms)
     llm.register_function("send_confirmation_email", handle_send_email)
+    llm.register_function("end_call", handle_end_call)
 
     messages = [{"role": "system", "content": system_prompt}]
     context = OpenAILLMContext(messages, tools)
@@ -550,6 +604,15 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         logger.info(f"[{CLIENT_ID}] Client connected — greeting")
         messages.append({"role": "system", "content": f"Greet the caller. Say something like: {greeting}"})
         await task.queue_frames([context_aggregator.user().get_context_frame()])
+
+        # 5-minute max call timer
+        import asyncio
+        async def max_call_timer():
+            await asyncio.sleep(300)  # 5 minutes
+            logger.info(f"[{CLIENT_ID}] 5-minute call limit reached — hanging up")
+            messages.append({"role": "system", "content": "The call has been going on for 5 minutes. Wrap up now — briefly confirm any details and say goodbye, then use end_call."})
+            await task.queue_frames([context_aggregator.user().get_context_frame()])
+        asyncio.create_task(max_call_timer())
 
     @transport.event_handler("on_client_disconnected")
     async def on_client_disconnected(transport, client):

@@ -820,8 +820,8 @@ body {{ font-family: -apple-system, 'Segoe UI', sans-serif; background: #0f0f13;
     <input id="addName" placeholder="Client Name" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
     <input id="addPhone" placeholder="Phone Number" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
     <input id="addService" placeholder="Service" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
-    <input id="addDate" type="date" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
-    <input id="addTime" type="time" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px">
+    <select id="addDate" onchange="loadAddSlots()" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px"><option value="">Pick a Day</option></select>
+    <select id="addTime" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:8px"><option value="">Pick a Time (EST)</option></select>
     <input id="addNotes" placeholder="Notes (optional)" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:14px">
     <button onclick="submitAppt()" style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#ff6b35,#f7c948);color:#fff;font-weight:700;font-size:0.95em;cursor:pointer">Add Appointment</button>
     <div id="addResult" style="margin-top:8px;font-size:0.82em;text-align:center"></div>
@@ -921,6 +921,40 @@ async function loadData() {{
     document.getElementById('apptList').innerHTML = '<div class="empty">Could not load. Is the server running?</div>';
   }}
 }}
+// Populate add appointment day picker
+(function() {{
+  const sel = document.getElementById('addDate');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const now = new Date();
+  for (let i = 0; i <= 14; i++) {{
+    const d = new Date(now); d.setDate(now.getDate() + i);
+    const label = (i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : days[d.getDay()]) + ', ' + d.toLocaleDateString('en-US', {{month:'long', day:'numeric'}});
+    const val = dateStr(d);
+    const opt = document.createElement('option'); opt.value = val; opt.textContent = label;
+    sel.appendChild(opt);
+  }}
+}})();
+
+function loadAddSlots() {{
+  const day = document.getElementById('addDate').value;
+  const timeSel = document.getElementById('addTime');
+  timeSel.innerHTML = '<option value="">Pick a Time (EST)</option>';
+  if (!day) return;
+  const booked = allAppts.filter(a => a.status === 'confirmed' && matchDate(a.date, day)).map(a => (a.time || '').toLowerCase());
+  for (let h = 9; h < 17; h++) {{
+    for (let m = 0; m < 60; m += 30) {{
+      const hour12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const label = hour12 + ':' + String(m).padStart(2,'0') + ' ' + ampm + ' EST';
+      const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
+      const o = document.createElement('option');
+      if (taken) {{ o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#555'; }}
+      else {{ o.value = label; o.textContent = label + ' — Available'; o.style.fontWeight = '700'; o.style.color = '#e0e0e0'; }}
+      timeSel.appendChild(o);
+    }}
+  }}
+}}
+
 async function submitAppt() {{
   const name = document.getElementById('addName').value.trim();
   const phone = document.getElementById('addPhone').value.trim();

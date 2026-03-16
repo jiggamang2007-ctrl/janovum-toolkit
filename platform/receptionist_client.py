@@ -857,7 +857,7 @@ function matchDate(apptDate, targetDate) {{
     }}
   }}
   try {{ const parsed = new Date(appt); if (!isNaN(parsed)) return dateStr(parsed) === target; }} catch(e) {{}}
-  return appt.includes(target);
+  return appt === target;
 }}
 function countForDate(date) {{ const ds = dateStr(date); return allAppts.filter(a => a.status === 'confirmed' && matchDate(a.date, ds)).length; }}
 

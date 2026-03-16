@@ -944,11 +944,13 @@ function loadAddSlots() {{
   for (let h = 9; h < 17; h++) {{
     const hour12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
     const ampm = h >= 12 ? 'PM' : 'AM';
-    const label = hour12 + ':00 ' + ampm + ' EST';
+    const nextH = h + 1 > 12 ? h + 1 - 12 : h + 1;
+    const nextAmpm = (h + 1) >= 12 ? 'PM' : 'AM';
+    const label = hour12 + ':00 ' + ampm + ' - ' + nextH + ':00 ' + nextAmpm + ' EST';
     const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
     const o = document.createElement('option');
     if (taken) {{ o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#555'; }}
-    else {{ o.value = label; o.textContent = label + ' — Available'; o.style.fontWeight = '700'; o.style.color = '#e0e0e0'; }}
+    else {{ o.value = hour12 + ':00 ' + ampm + ' EST'; o.textContent = label + ' — Available'; o.style.fontWeight = '700'; o.style.color = '#e0e0e0'; }}
     timeSel.appendChild(o);
   }}
 }}

@@ -80,23 +80,30 @@ nav.scrolled { padding: 12px 40px; background: rgba(6,6,11,0.95); }
 .btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(99,102,241,0.4); color: #fff; }
 .hero-sub { font-size: 0.78em; color: #555; margin-top: 8px; }
 
-/* Terminal */
-.terminal {
-  margin-top: 50px; max-width: 520px; width: 90%; background: rgba(12,12,20,0.95);
-  border: 1px solid rgba(99,102,241,0.15); border-radius: 14px; overflow: hidden;
-  box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 40px rgba(99,102,241,0.05);
+/* Phone demo */
+.phone-demo { margin-top: 50px; display: flex; justify-content: center; }
+.phone-frame {
+  width: 300px; background: #111118; border-radius: 32px; padding: 12px;
+  border: 2px solid rgba(255,255,255,0.08);
+  box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 40px rgba(99,102,241,0.05), inset 0 0 30px rgba(0,0,0,0.3);
 }
-.terminal-bar { display: flex; align-items: center; gap: 6px; padding: 14px 18px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.04); }
-.td { width: 10px; height: 10px; border-radius: 50%; }
-.td.r { background: #ef4444; } .td.y { background: #f59e0b; } .td.g { background: #22c55e; }
-.terminal-title { margin-left: 10px; font-size: 0.7em; color: #444; font-family: 'Courier New', monospace; }
-.terminal-body { padding: 20px; font-family: 'Courier New', monospace; font-size: 0.8em; line-height: 2.1; }
-.terminal-body .line { opacity: 0; animation: typeLine 0.3s forwards; }
-.prompt { color: #818cf8; } .output { color: #22c55e; } .dim { color: #444; }
-.line:nth-child(1) { animation-delay: 0.5s; } .line:nth-child(2) { animation-delay: 1.3s; }
-.line:nth-child(3) { animation-delay: 2.2s; } .line:nth-child(4) { animation-delay: 3s; }
-.line:nth-child(5) { animation-delay: 3.8s; } .line:nth-child(6) { animation-delay: 4.6s; }
-.line:nth-child(7) { animation-delay: 5.4s; }
+.phone-notch { width: 100px; height: 6px; background: #1a1a24; border-radius: 3px; margin: 0 auto 12px; }
+.phone-screen { background: #0a0a12; border-radius: 22px; padding: 20px 16px; min-height: 340px; }
+.call-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.call-icon { font-size: 1.4em; width: 40px; height: 40px; border-radius: 50%; background: rgba(34,197,94,0.15); display: flex; align-items: center; justify-content: center; }
+.call-name { font-weight: 700; font-size: 0.9em; }
+.call-status { font-size: 0.7em; color: #22c55e; margin-top: 2px; }
+.chat-bubbles { display: flex; flex-direction: column; gap: 8px; }
+.bubble {
+  padding: 10px 14px; border-radius: 12px; font-size: 0.78em; line-height: 1.5;
+  max-width: 90%; opacity: 0; animation: typeLine 0.3s forwards;
+}
+.bubble.ai { background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.15); color: #c4b5fd; align-self: flex-start; }
+.bubble.caller { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); color: #999; align-self: flex-end; }
+.bubble.status { background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.15); color: #22c55e; font-size: 0.7em; font-weight: 600; align-self: center; text-align: center; }
+.line:nth-child(1) { animation-delay: 0.5s; } .line:nth-child(2) { animation-delay: 1.5s; }
+.line:nth-child(3) { animation-delay: 2.8s; } .line:nth-child(4) { animation-delay: 4s; }
+.line:nth-child(5) { animation-delay: 5.2s; } .line:nth-child(6) { animation-delay: 6.2s; }
 @keyframes typeLine { to { opacity: 1; } }
 
 /* Stats bar */
@@ -213,19 +220,26 @@ footer {
   </div>
   <div class="hero-sub">No credit card required. Hear it live in 10 seconds.</div>
 
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="td r"></div><div class="td y"></div><div class="td g"></div>
-      <span class="terminal-title">janovum_receptionist.py &mdash; live</span>
-    </div>
-    <div class="terminal-body">
-      <div class="line"><span class="dim">// incoming call +1 (305) ***-****</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> Hey, thanks for calling! How can I help?</div>
-      <div class="line"><span class="dim">// "I need a haircut Thursday at 2"</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">check_schedule(Thu, 2PM) -> available</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> Thursday at 2 PM works. Booking you in now.</div>
-      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">booked + sms_confirmation_sent</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> All set! You'll get a text shortly. Have a great day!</div>
+  <div class="phone-demo">
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="call-header">
+          <div class="call-icon">&#9742;</div>
+          <div class="call-info">
+            <div class="call-name">Incoming Call</div>
+            <div class="call-status">AI Receptionist Answering...</div>
+          </div>
+        </div>
+        <div class="chat-bubbles">
+          <div class="bubble ai line"><strong>AI:</strong> Hey, thanks for calling! How can I help you today?</div>
+          <div class="bubble caller line">I need a haircut for Thursday at 2.</div>
+          <div class="bubble ai line"><strong>AI:</strong> Thursday at 2 PM is open. Want me to book that for you?</div>
+          <div class="bubble caller line">Yeah, and send me a text to confirm.</div>
+          <div class="bubble ai line"><strong>AI:</strong> All set! You'll get a confirmation text shortly. Have a great day!</div>
+          <div class="bubble status line">&#10003; Appointment booked &bull; Confirmation sent</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>

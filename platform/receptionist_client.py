@@ -561,6 +561,7 @@ async def status():
         "daily_limits": daily_tracker.get_status(),
     }
 
+@app.get("/app/view")
 @app.get("/app")
 async def appointments_app():
     """Mobile-friendly appointments dashboard for the client."""

@@ -213,6 +213,10 @@ def add_cors(response):
 
 @app.route("/")
 def index():
+    return send_from_directory(PARENT_DIR, "Janovum_Landing.html")
+
+@app.route("/toolkit")
+def toolkit():
     return send_from_directory(PARENT_DIR, "Janovum_Platform.html")
 
 @app.route("/<path:filename>")

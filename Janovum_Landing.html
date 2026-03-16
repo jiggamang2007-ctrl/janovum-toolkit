@@ -396,18 +396,19 @@ async function loadSlots() {
     const data = await r.json();
     booked = (data.appointments || []).filter(a => a.status === 'confirmed').map(a => (a.time || '').toLowerCase());
   } catch(e) {}
-  const slots = [];
+  timeSel.innerHTML = '<option value="">Pick a Time</option>';
   for (let h = 9; h < 17; h++) {
     for (let m = 0; m < 60; m += 30) {
       const hour12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
       const ampm = h >= 12 ? 'PM' : 'AM';
       const label = hour12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
       const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
-      if (!taken) slots.push(label);
+      const o = document.createElement('option');
+      if (taken) { o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#ef4444'; }
+      else { o.value = label; o.textContent = label; }
+      timeSel.appendChild(o);
     }
   }
-  timeSel.innerHTML = '<option value="">Pick a Time</option>';
-  slots.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; timeSel.appendChild(o); });
 }
 
 async function submitDemo(e) {

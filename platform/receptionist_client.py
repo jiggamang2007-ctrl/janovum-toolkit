@@ -368,6 +368,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         "NEVER repeat information the caller already told you. "
         "When using tools, do NOT tell the caller you're using a tool or checking a system. Just pause briefly and respond with the result naturally. "
         "NEVER read back raw data, IDs, or technical info. "
+        "When saying times, say them naturally like 'three PM' or 'two thirty PM'. NEVER say '300 p' or '1400'. Always use 12-hour format with AM or PM. "
         f"Your job: greet callers, book appointments, answer questions about {BUSINESS_NAME}. "
     )
 

@@ -4,51 +4,52 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Janovum — AI That Runs Your Front Desk</title>
+<meta name="description" content="AI receptionist that answers your business calls 24/7. Books appointments, answers questions, sends confirmations.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body { font-family: 'Inter', -apple-system, sans-serif; background: #06060b; color: #e0e0e0; overflow-x: hidden; }
 
-/* Animated grid background */
+/* Grid bg */
 .grid-bg {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
-  background-image:
-    linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 .grid-bg::after {
   content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.1) 0%, transparent 60%);
 }
 
-/* Floating orbs */
-.orb {
-  position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: 0; pointer-events: none;
-  animation: float 20s ease-in-out infinite;
-}
-.orb-1 { width: 400px; height: 400px; background: #6366f1; top: -100px; right: -100px; }
-.orb-2 { width: 300px; height: 300px; background: #8b5cf6; bottom: 10%; left: -80px; animation-delay: -7s; }
-.orb-3 { width: 200px; height: 200px; background: #06b6d4; top: 50%; right: 10%; animation-delay: -13s; }
-@keyframes float {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-30px) scale(1.05); }
-}
+/* Orbs */
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.2; z-index: 0; pointer-events: none; animation: float 25s ease-in-out infinite; }
+.orb-1 { width: 500px; height: 500px; background: #6366f1; top: -150px; right: -150px; }
+.orb-2 { width: 350px; height: 350px; background: #8b5cf6; bottom: 5%; left: -100px; animation-delay: -8s; }
+.orb-3 { width: 250px; height: 250px; background: #06b6d4; top: 40%; right: 5%; animation-delay: -15s; }
+@keyframes float { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-25px) scale(1.03); } }
 
 section { position: relative; z-index: 1; }
 
 /* Nav */
 nav {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 20px 40px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(6,6,11,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(99,102,241,0.1);
+  padding: 18px 40px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(6,6,11,0.85); backdrop-filter: blur(24px); border-bottom: 1px solid rgba(99,102,241,0.08);
+  transition: all 0.3s;
 }
-nav .brand { font-size: 1.2em; font-weight: 900; letter-spacing: 4px; color: #a78bfa; }
-nav a {
-  padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.85em;
+nav.scrolled { padding: 12px 40px; background: rgba(6,6,11,0.95); }
+.nav-left { display: flex; align-items: center; gap: 32px; }
+.brand { font-size: 1.15em; font-weight: 900; letter-spacing: 4px; color: #a78bfa; }
+.nav-links { display: flex; gap: 24px; }
+.nav-links a { color: #777; text-decoration: none; font-size: 0.82em; font-weight: 500; transition: color 0.3s; }
+.nav-links a:hover { color: #e0e0e0; }
+.nav-cta {
+  padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.82em;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; transition: all 0.3s;
 }
-nav a:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
 
 /* Hero */
 .hero {
@@ -56,121 +57,130 @@ nav a:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,24
   text-align: center; padding: 120px 20px 80px;
 }
 .hero-badge {
-  display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.75em; font-weight: 600;
-  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); color: #a78bfa;
-  margin-bottom: 24px; letter-spacing: 1px;
+  display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 20px; font-size: 0.72em; font-weight: 600;
+  background: rgba(99,102,241,0.08); border: 1px solid rgba(99,102,241,0.2); color: #a78bfa;
+  margin-bottom: 28px; letter-spacing: 1.5px;
 }
-.hero h1 {
-  font-size: clamp(2.5em, 6vw, 4.5em); font-weight: 900; line-height: 1.1; max-width: 800px; margin-bottom: 24px;
-}
-.hero h1 .gradient {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.hero p {
-  font-size: 1.15em; color: #888; max-width: 550px; line-height: 1.7; margin-bottom: 40px;
-}
-.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.hero-badge .pulse { width: 6px; height: 6px; border-radius: 50%; background: #22c55e; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.hero h1 { font-size: clamp(2.5em, 6vw, 4.2em); font-weight: 900; line-height: 1.1; max-width: 780px; margin-bottom: 20px; letter-spacing: -1px; }
+.hero h1 .gradient { background: linear-gradient(135deg, #818cf8, #a78bfa, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero p { font-size: 1.1em; color: #777; max-width: 520px; line-height: 1.7; margin-bottom: 36px; }
+.hero-cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px; }
 .btn-primary {
-  padding: 16px 36px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1em;
+  padding: 15px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.95em;
   background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; transition: all 0.3s;
-  box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+  box-shadow: 0 4px 20px rgba(99,102,241,0.25);
 }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.5); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.45); }
 .btn-secondary {
-  padding: 16px 36px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1em;
-  background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s;
+  padding: 15px 32px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.95em;
+  background: rgba(255,255,255,0.04); color: #bbb; border: 1px solid rgba(255,255,255,0.08); transition: all 0.3s;
 }
-.btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(99,102,241,0.5); }
+.btn-secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(99,102,241,0.4); color: #fff; }
+.hero-sub { font-size: 0.78em; color: #555; margin-top: 8px; }
 
-/* Terminal demo */
+/* Terminal */
 .terminal {
-  margin-top: 60px; max-width: 550px; width: 90%; background: rgba(15,15,25,0.9);
-  border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  margin-top: 50px; max-width: 520px; width: 90%; background: rgba(12,12,20,0.95);
+  border: 1px solid rgba(99,102,241,0.15); border-radius: 14px; overflow: hidden;
+  box-shadow: 0 25px 80px rgba(0,0,0,0.6), 0 0 40px rgba(99,102,241,0.05);
 }
-.terminal-bar {
-  display: flex; align-items: center; gap: 6px; padding: 12px 16px;
-  background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
-.terminal-dot.r { background: #ef4444; } .terminal-dot.y { background: #f59e0b; } .terminal-dot.g { background: #22c55e; }
-.terminal-title { margin-left: 8px; font-size: 0.72em; color: #555; }
-.terminal-body { padding: 20px; font-family: 'Courier New', monospace; font-size: 0.82em; line-height: 2; }
+.terminal-bar { display: flex; align-items: center; gap: 6px; padding: 14px 18px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.04); }
+.td { width: 10px; height: 10px; border-radius: 50%; }
+.td.r { background: #ef4444; } .td.y { background: #f59e0b; } .td.g { background: #22c55e; }
+.terminal-title { margin-left: 10px; font-size: 0.7em; color: #444; font-family: 'Courier New', monospace; }
+.terminal-body { padding: 20px; font-family: 'Courier New', monospace; font-size: 0.8em; line-height: 2.1; }
 .terminal-body .line { opacity: 0; animation: typeLine 0.3s forwards; }
-.terminal-body .prompt { color: #6366f1; }
-.terminal-body .output { color: #22c55e; }
-.terminal-body .dim { color: #555; }
-.line:nth-child(1) { animation-delay: 0.5s; }
-.line:nth-child(2) { animation-delay: 1.2s; }
-.line:nth-child(3) { animation-delay: 2s; }
-.line:nth-child(4) { animation-delay: 2.8s; }
-.line:nth-child(5) { animation-delay: 3.6s; }
-.line:nth-child(6) { animation-delay: 4.4s; }
-.line:nth-child(7) { animation-delay: 5.2s; }
+.prompt { color: #818cf8; } .output { color: #22c55e; } .dim { color: #444; }
+.line:nth-child(1) { animation-delay: 0.5s; } .line:nth-child(2) { animation-delay: 1.3s; }
+.line:nth-child(3) { animation-delay: 2.2s; } .line:nth-child(4) { animation-delay: 3s; }
+.line:nth-child(5) { animation-delay: 3.8s; } .line:nth-child(6) { animation-delay: 4.6s; }
+.line:nth-child(7) { animation-delay: 5.4s; }
 @keyframes typeLine { to { opacity: 1; } }
+
+/* Stats bar */
+.stats-bar { padding: 60px 20px; border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03); }
+.stats-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; text-align: center; }
+.stat-num { font-size: 2.2em; font-weight: 900; background: linear-gradient(135deg, #818cf8, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-label { font-size: 0.78em; color: #555; margin-top: 4px; font-weight: 500; }
+
+/* Section styling */
+.section-label { font-size: 0.72em; font-weight: 700; letter-spacing: 3px; color: #6366f1; text-transform: uppercase; margin-bottom: 12px; text-align: center; }
+.section-title { font-size: 2.2em; font-weight: 900; text-align: center; margin-bottom: 16px; letter-spacing: -0.5px; }
+.section-sub { text-align: center; color: #666; font-size: 0.95em; max-width: 500px; margin: 0 auto 50px; line-height: 1.6; }
 
 /* How it works */
 .how-it-works { padding: 100px 20px; max-width: 1000px; margin: 0 auto; }
-.section-label {
-  font-size: 0.75em; font-weight: 700; letter-spacing: 3px; color: #6366f1;
-  text-transform: uppercase; margin-bottom: 12px; text-align: center;
-}
-.section-title {
-  font-size: 2.2em; font-weight: 900; text-align: center; margin-bottom: 60px;
-}
-.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; }
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 24px; }
 .step {
-  position: relative; padding: 32px 24px; border-radius: 16px;
-  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
-  transition: all 0.3s;
+  position: relative; padding: 30px 22px; border-radius: 14px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: all 0.4s;
 }
-.step:hover { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.04); transform: translateY(-4px); }
-.step-num {
-  font-size: 2.5em; font-weight: 900; color: rgba(99,102,241,0.15); margin-bottom: 12px; line-height: 1;
+.step:hover { border-color: rgba(99,102,241,0.25); background: rgba(99,102,241,0.03); transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+.step-num { font-size: 2.2em; font-weight: 900; background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(6,182,212,0.2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; line-height: 1; }
+.step h3 { font-size: 1em; margin-bottom: 8px; color: #c4b5fd; font-weight: 700; }
+.step p { font-size: 0.82em; color: #555; line-height: 1.6; }
+
+/* Who it's for */
+.who-section { padding: 80px 20px; max-width: 900px; margin: 0 auto; }
+.who-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.who-card {
+  padding: 24px 20px; border-radius: 12px; text-align: center;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); transition: all 0.3s;
 }
-.step h3 { font-size: 1.05em; margin-bottom: 8px; color: #c4b5fd; }
-.step p { font-size: 0.85em; color: #666; line-height: 1.6; }
+.who-card:hover { border-color: rgba(99,102,241,0.2); transform: translateY(-3px); }
+.who-icon { font-size: 1.8em; margin-bottom: 10px; }
+.who-card h3 { font-size: 0.88em; font-weight: 700; color: #ccc; }
 
 /* Features */
 .features-section { padding: 80px 20px; max-width: 1000px; margin: 0 auto; }
-.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
 .feat {
-  padding: 28px 24px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);
-  background: rgba(255,255,255,0.02); transition: all 0.3s;
+  padding: 26px 22px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.015); transition: all 0.3s;
 }
-.feat:hover { border-color: rgba(99,102,241,0.2); }
-.feat-icon { font-size: 1.6em; margin-bottom: 12px; }
-.feat h3 { font-size: 1em; margin-bottom: 6px; color: #e0e0e0; }
-.feat p { font-size: 0.82em; color: #666; line-height: 1.6; }
+.feat:hover { border-color: rgba(99,102,241,0.15); background: rgba(99,102,241,0.02); }
+.feat-icon { font-size: 1.4em; margin-bottom: 10px; display: inline-block; padding: 8px; border-radius: 8px; background: rgba(99,102,241,0.08); }
+.feat h3 { font-size: 0.95em; margin-bottom: 6px; color: #ddd; font-weight: 700; }
+.feat p { font-size: 0.8em; color: #555; line-height: 1.6; }
 
-/* CTA */
-.cta-section {
-  padding: 100px 20px; text-align: center;
-  background: linear-gradient(180deg, transparent, rgba(99,102,241,0.05));
+/* CTA / Demo form */
+.cta-section { padding: 100px 20px; text-align: center; background: linear-gradient(180deg, transparent, rgba(99,102,241,0.04)); }
+.cta-section h2 { font-size: 2.2em; font-weight: 900; margin-bottom: 12px; }
+.cta-section > p { color: #666; font-size: 1em; margin-bottom: 32px; }
+.form-wrap { max-width: 460px; margin: 0 auto; text-align: left; }
+.form-divider { text-align: center; margin-bottom: 24px; color: #444; font-size: 0.82em; font-weight: 500; }
+.form-input {
+  width: 100%; padding: 13px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03); color: #e0e0e0; font-size: 0.9em; margin-bottom: 10px;
+  font-family: inherit; transition: border-color 0.3s;
 }
-.cta-section h2 { font-size: 2.2em; font-weight: 900; margin-bottom: 16px; }
-.cta-section p { color: #888; font-size: 1.05em; margin-bottom: 32px; }
-.cta-phone {
-  display: inline-block; margin-top: 16px; font-size: 1.1em; color: #6366f1; font-weight: 600;
-  text-decoration: none;
+.form-input:focus { outline: none; border-color: rgba(99,102,241,0.4); }
+.form-input::placeholder { color: #444; }
+.form-btn {
+  width: 100%; padding: 15px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+  font-weight: 700; font-size: 0.95em; cursor: pointer; font-family: inherit; transition: all 0.3s;
 }
-.cta-phone:hover { color: #a78bfa; }
+.form-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 25px rgba(99,102,241,0.4); }
 
 /* Footer */
 footer {
-  padding: 30px 40px; text-align: center; font-size: 0.75em; color: #333;
-  border-top: 1px solid rgba(255,255,255,0.03);
+  padding: 40px; text-align: center; border-top: 1px solid rgba(255,255,255,0.03);
 }
+.footer-brand { font-size: 0.9em; font-weight: 800; letter-spacing: 3px; color: #333; margin-bottom: 8px; }
+.footer-text { font-size: 0.72em; color: #2a2a2a; }
 
 /* Responsive */
-@media (max-width: 600px) {
-  nav { padding: 16px 20px; }
-  nav .brand { font-size: 1em; letter-spacing: 3px; }
+@media (max-width: 768px) {
+  nav { padding: 14px 20px; }
+  .nav-links { display: none; }
   .hero { padding: 100px 16px 60px; }
-  .hero h1 { font-size: 2.2em; }
-  .terminal { margin-top: 40px; }
+  .hero h1 { font-size: 2em; }
+  .stats-inner { grid-template-columns: repeat(2, 1fr); }
   .section-title { font-size: 1.6em; }
+  .stat-num { font-size: 1.6em; }
 }
 </style>
 </head>
@@ -181,134 +191,179 @@ footer {
 <div class="orb orb-2"></div>
 <div class="orb orb-3"></div>
 
-<nav>
-  <div class="brand">JANOVUM</div>
-  <a href="tel:+18339589975">Try the Demo</a>
+<nav id="nav">
+  <div class="nav-left">
+    <div class="brand">JANOVUM</div>
+    <div class="nav-links">
+      <a href="#how">How It Works</a>
+      <a href="#features">Features</a>
+      <a href="#demo">Book Demo</a>
+    </div>
+  </div>
+  <a href="#demo" class="nav-cta">Get Started</a>
 </nav>
 
 <section class="hero">
-  <div class="hero-badge">AI-POWERED AUTOMATION</div>
+  <div class="hero-badge"><div class="pulse"></div> AI-POWERED RECEPTIONIST</div>
   <h1>Your Business.<br><span class="gradient">Never Misses a Call.</span></h1>
-  <p>An AI receptionist that answers calls, books appointments, and handles your front desk 24/7 — so you never lose a customer again.</p>
+  <p>An AI receptionist that picks up every call, books appointments, and handles your front desk — so you can focus on what matters.</p>
   <div class="hero-cta">
     <a href="tel:+18339589975" class="btn-primary">Call the AI Now</a>
-    <a href="#how" class="btn-secondary">See How It Works</a>
+    <a href="#demo" class="btn-secondary">Book a Demo</a>
   </div>
+  <div class="hero-sub">No credit card required. Hear it live in 10 seconds.</div>
 
   <div class="terminal">
     <div class="terminal-bar">
-      <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
-      <span class="terminal-title">janovum_receptionist.py</span>
+      <div class="td r"></div><div class="td y"></div><div class="td g"></div>
+      <span class="terminal-title">janovum_receptionist.py &mdash; live</span>
     </div>
     <div class="terminal-body">
-      <div class="line"><span class="dim">// incoming call from +1 (305) ***-****</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> Hey, thanks for calling! How can I help you?</div>
-      <div class="line"><span class="dim">// caller: "I need to book a haircut for Thursday"</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">checking_schedule(Thursday)...</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> Thursday at 2 PM is open. Want me to book that?</div>
-      <div class="line"><span class="dim">// caller: "Yes, send me a text"</span></div>
-      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">booked + confirmation_sent</span></div>
+      <div class="line"><span class="dim">// incoming call +1 (305) ***-****</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> Hey, thanks for calling! How can I help?</div>
+      <div class="line"><span class="dim">// "I need a haircut Thursday at 2"</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">check_schedule(Thu, 2PM) -> available</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> Thursday at 2 PM works. Booking you in now.</div>
+      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">booked + sms_confirmation_sent</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> All set! You'll get a text shortly. Have a great day!</div>
     </div>
+  </div>
+</section>
+
+<section class="stats-bar">
+  <div class="stats-inner">
+    <div><div class="stat-num">24/7</div><div class="stat-label">Always Available</div></div>
+    <div><div class="stat-num">&lt;1s</div><div class="stat-label">Pickup Speed</div></div>
+    <div><div class="stat-num">$0.02</div><div class="stat-label">Per Minute</div></div>
+    <div><div class="stat-num">100%</div><div class="stat-label">Calls Answered</div></div>
   </div>
 </section>
 
 <section class="how-it-works" id="how">
   <div class="section-label">How It Works</div>
-  <div class="section-title">Live in 24 Hours. Zero Tech Skills.</div>
+  <div class="section-title">Live in 24 Hours</div>
+  <div class="section-sub">No tech skills needed. We handle everything from setup to launch.</div>
   <div class="steps">
     <div class="step">
       <div class="step-num">01</div>
-      <h3>Tell Us About Your Business</h3>
-      <p>Services, hours, staff, prices — we configure everything for you.</p>
+      <h3>Tell Us Your Business</h3>
+      <p>Share your services, hours, staff, and how you want your receptionist to sound.</p>
     </div>
     <div class="step">
       <div class="step-num">02</div>
       <h3>We Build Your AI</h3>
-      <p>Your receptionist learns your business inside and out. Sounds natural, knows your schedule.</p>
+      <p>Custom-trained on your business. Knows your prices, schedule, and answers like a real employee.</p>
     </div>
     <div class="step">
       <div class="step-num">03</div>
-      <h3>Connect Your Phone</h3>
-      <p>Forward your business line or get a new number. Calls route to your AI automatically.</p>
+      <h3>Connect Your Line</h3>
+      <p>Forward your existing number or get a new one. Calls route to your AI instantly.</p>
     </div>
     <div class="step">
       <div class="step-num">04</div>
-      <h3>Watch It Work</h3>
-      <p>Track appointments, revenue, and calls from your dashboard. You stay in control.</p>
+      <h3>Track Everything</h3>
+      <p>See appointments, revenue, and call logs from your mobile dashboard.</p>
     </div>
   </div>
 </section>
 
-<section class="features-section">
-  <div class="section-label">Built for Real Businesses</div>
+<section class="who-section">
+  <div class="section-label">Built For</div>
+  <div class="section-title">Any Business That Takes Calls</div>
+  <div class="section-sub">If your phone rings, we can answer it.</div>
+  <div class="who-grid">
+    <div class="who-card"><div class="who-icon">&#9986;</div><h3>Barber Shops</h3></div>
+    <div class="who-card"><div class="who-icon">&#127968;</div><h3>Real Estate</h3></div>
+    <div class="who-card"><div class="who-icon">&#9881;</div><h3>Auto Shops</h3></div>
+    <div class="who-card"><div class="who-icon">&#128137;</div><h3>Dental Offices</h3></div>
+    <div class="who-card"><div class="who-icon">&#127860;</div><h3>Restaurants</h3></div>
+    <div class="who-card"><div class="who-icon">&#128170;</div><h3>Gyms & Studios</h3></div>
+    <div class="who-card"><div class="who-icon">&#9878;</div><h3>Law Firms</h3></div>
+    <div class="who-card"><div class="who-icon">&#128736;</div><h3>Contractors</h3></div>
+  </div>
+</section>
+
+<section class="features-section" id="features">
+  <div class="section-label">Features</div>
   <div class="section-title">Everything You Need</div>
+  <div class="section-sub">One AI that replaces your front desk — and never calls in sick.</div>
   <div class="features-grid">
     <div class="feat">
       <div class="feat-icon">&#9742;</div>
-      <h3>24/7 Call Handling</h3>
-      <p>Never miss a lead. Your AI picks up instantly, even at 3 AM.</p>
+      <h3>Instant Pickup</h3>
+      <p>Answers every call in under a second. No hold music, no voicemail, no missed leads.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128197;</div>
       <h3>Smart Scheduling</h3>
-      <p>Checks availability, avoids double-bookings, and confirms with the caller.</p>
+      <p>Checks your real-time availability and books without conflicts.</p>
     </div>
     <div class="feat">
-      <div class="feat-icon">&#128172;</div>
-      <h3>Natural Conversation</h3>
-      <p>Real voice, real tone. Handles interruptions, follow-ups, and questions naturally.</p>
+      <div class="feat-icon">&#127908;</div>
+      <h3>Natural Voice</h3>
+      <p>Sounds like a real person. Handles interruptions, follow-ups, and small talk.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128233;</div>
       <h3>Auto Confirmations</h3>
-      <p>Sends appointment details by text or email — automatically after booking.</p>
+      <p>Texts or emails appointment details to the caller right after booking.</p>
     </div>
     <div class="feat">
       <div class="feat-icon">&#128200;</div>
-      <h3>Revenue Dashboard</h3>
-      <p>Track potential income, confirmed payments, and active clients in real time.</p>
+      <h3>Revenue Tracking</h3>
+      <p>See potential income, confirmed payments, and recurring revenue on your dashboard.</p>
     </div>
     <div class="feat">
-      <div class="feat-icon">&#128274;</div>
-      <h3>Your Business, Your Rules</h3>
-      <p>Custom knowledge, pricing, hours, and personality. Fully tailored to you.</p>
+      <div class="feat-icon">&#128736;</div>
+      <h3>Fully Customizable</h3>
+      <p>Add knowledge, set prices, change personality — make it yours.</p>
     </div>
   </div>
 </section>
 
 <section class="cta-section" id="demo">
-  <h2>Book a Free Demo</h2>
-  <p>Call us or fill out the form below — we'll show you exactly how it works for your business.</p>
+  <h2>See It In Action</h2>
+  <p>Call our AI right now, or book a free demo below.</p>
   <a href="tel:+18339589975" class="btn-primary" style="margin-bottom:40px">Call +1 (833) 958-9975</a>
 
-  <div style="max-width:480px;margin:0 auto;text-align:left">
-    <div style="text-align:center;margin-bottom:24px;color:#666;font-size:0.9em">or schedule a demo online</div>
+  <div class="form-wrap">
+    <div class="form-divider">or book a demo online</div>
     <form id="demoForm" onsubmit="submitDemo(event)">
-      <input id="demoName" placeholder="Your Name" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
-      <input id="demoBusiness" placeholder="Business Name" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
-      <input id="demoPhone" placeholder="Phone Number" type="tel" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
-      <input id="demoEmail" placeholder="Email" type="email" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
-      <select id="demoDay" required onchange="loadSlots()" style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(15,15,25,0.9);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
+      <input id="demoName" class="form-input" placeholder="Your Name" required>
+      <input id="demoBusiness" class="form-input" placeholder="Business Name" required>
+      <input id="demoPhone" class="form-input" placeholder="Phone Number" type="tel" required>
+      <input id="demoEmail" class="form-input" placeholder="Email" type="email" required>
+      <select id="demoDay" class="form-input" required onchange="loadSlots()">
         <option value="">Pick a Day</option>
       </select>
-      <select id="demoTime" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(15,15,25,0.9);color:#e0e0e0;font-size:0.95em;margin-bottom:16px;font-family:inherit">
+      <select id="demoTime" class="form-input" required>
         <option value="">Pick a Time</option>
       </select>
-      <button type="submit" style="width:100%;padding:16px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;font-size:1em;cursor:pointer;font-family:inherit;transition:all 0.3s">Request Demo</button>
+      <button type="submit" class="form-btn">Request Free Demo</button>
     </form>
-    <div id="demoResult" style="text-align:center;margin-top:16px;font-size:0.9em"></div>
+    <div id="demoResult" style="text-align:center;margin-top:14px;font-size:0.88em"></div>
   </div>
 </section>
 
+<footer>
+  <div class="footer-brand">JANOVUM</div>
+  <div class="footer-text">&copy; 2026 Janovum LLC. All rights reserved.</div>
+</footer>
+
 <script>
-// Populate day picker with next 5 weekdays
+// Nav scroll effect
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Populate day picker
 (function() {
   const sel = document.getElementById('demoDay');
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const now = new Date();
-  for (let i = 1; i <= 10; i++) {
+  for (let i = 1; i <= 14; i++) {
     const d = new Date(now); d.setDate(now.getDate() + i);
-    if (d.getDay() === 0 || d.getDay() === 6) continue; // skip weekends
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
     const label = days[d.getDay()] + ', ' + d.toLocaleDateString('en-US', {month:'long', day:'numeric'});
     const val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
     const opt = document.createElement('option'); opt.value = val; opt.textContent = label;
@@ -321,27 +376,22 @@ async function loadSlots() {
   const timeSel = document.getElementById('demoTime');
   timeSel.innerHTML = '<option value="">Loading...</option>';
   if (!day) { timeSel.innerHTML = '<option value="">Pick a Time</option>'; return; }
-
-  // Get existing appointments to exclude booked slots
   let booked = [];
   try {
     const r = await fetch('/appointments');
     const data = await r.json();
     booked = (data.appointments || []).filter(a => a.status === 'confirmed').map(a => (a.time || '').toLowerCase());
   } catch(e) {}
-
-  // Generate 30-min slots from 9am to 5pm
   const slots = [];
   for (let h = 9; h < 17; h++) {
     for (let m = 0; m < 60; m += 30) {
-      const hour12 = h > 12 ? h - 12 : h;
+      const hour12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
       const ampm = h >= 12 ? 'PM' : 'AM';
       const label = hour12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
       const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
       if (!taken) slots.push(label);
     }
   }
-
   timeSel.innerHTML = '<option value="">Pick a Time</option>';
   slots.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; timeSel.appendChild(o); });
 }
@@ -372,10 +422,6 @@ async function submitDemo(e) {
   }
 }
 </script>
-
-<footer>
-  &copy; 2026 Janovum LLC. All rights reserved.
-</footer>
 
 </body>
 </html>

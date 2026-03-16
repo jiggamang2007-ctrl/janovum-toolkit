@@ -805,7 +805,7 @@ function getWeekDates() {{
   for (let i = 0; i < 7; i++) {{ const d = new Date(now); d.setDate(now.getDate() + i); dates.push(d); }}
   return dates;
 }}
-function dateStr(d) {{ return d.toISOString().split('T')[0]; }}
+function dateStr(d) {{ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }}
 function matchDate(apptDate, targetDate) {{
   if (!apptDate) return false;
   const target = targetDate.toLowerCase(), appt = apptDate.toLowerCase();

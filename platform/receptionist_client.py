@@ -51,6 +51,7 @@ except Exception:
 TWILIO_AUTH_TOKEN = _tk_auth or CLIENT_CONFIG.get("twilio_auth_token", "")
 DEEPGRAM_KEY = CLIENT_CONFIG.get("deepgram_api_key", "6e304c8a16d16deae3ec7694e60212c4f610ba96")
 GROQ_KEY = CLIENT_CONFIG.get("groq_api_key", "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")
+CEREBRAS_KEY = CLIENT_CONFIG.get("cerebras_api_key", "csk-449rv3mvf9d4m4c5d5w9hx3vd33fjx3em5ht8nvmdvrv448y")
 CARTESIA_KEY = CLIENT_CONFIG.get("cartesia_api_key", "sk_car_7QqSF9RbebzaELHtggdw3E")
 CARTESIA_VOICE = CLIENT_CONFIG.get("cartesia_voice_id", "9626c31c-bec5-4cca-baa8-f8ba9e84c8bc")
 
@@ -327,11 +328,28 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     from pipecat.services.deepgram.stt import DeepgramSTTService
     stt = DeepgramSTTService(api_key=DEEPGRAM_KEY, audio_passthrough=True, encoding="mulaw", sample_rate=8000)
 
-    llm = OpenAILLMService(
-        api_key=GROQ_KEY,
-        model="llama-3.3-70b-versatile",
-        base_url="https://api.groq.com/openai/v1",
-    )
+    # Try Groq first, fall back to Cerebras if rate limited
+    try:
+        import httpx
+        test = httpx.post("https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {GROQ_KEY}"},
+            json={"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": "hi"}], "max_tokens": 5},
+            timeout=5)
+        if test.status_code == 429:
+            raise Exception("Groq rate limited")
+        logger.info(f"[{CLIENT_ID}] Using Groq LLM")
+        llm = OpenAILLMService(
+            api_key=GROQ_KEY,
+            model="llama-3.3-70b-versatile",
+            base_url="https://api.groq.com/openai/v1",
+        )
+    except Exception as e:
+        logger.warning(f"[{CLIENT_ID}] Groq unavailable ({e}), falling back to Cerebras")
+        llm = OpenAILLMService(
+            api_key=CEREBRAS_KEY,
+            model="llama-3.3-70b",
+            base_url="https://api.cerebras.ai/v1",
+        )
 
     tts = CartesiaTTSService(api_key=CARTESIA_KEY, voice_id=CARTESIA_VOICE)
 

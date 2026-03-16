@@ -329,22 +329,30 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     stt = DeepgramSTTService(api_key=DEEPGRAM_KEY, audio_passthrough=True, encoding="mulaw", sample_rate=8000)
 
     # Try Groq first, fall back to Cerebras if rate limited
+    _use_groq = True
     try:
         import httpx
-        test = httpx.post("https://api.groq.com/openai/v1/chat/completions",
+        test = httpx.get("https://api.groq.com/openai/v1/models",
             headers={"Authorization": f"Bearer {GROQ_KEY}"},
-            json={"model": "llama-3.3-70b-versatile", "messages": [{"role": "user", "content": "hi"}], "max_tokens": 5},
             timeout=5)
         if test.status_code == 429:
-            raise Exception("Groq rate limited")
+            _use_groq = False
+        # Also check remaining tokens from rate limit headers
+        remaining = test.headers.get("x-ratelimit-remaining-tokens", "999999")
+        if int(remaining) < 5000:
+            _use_groq = False
+    except Exception:
+        _use_groq = False
+
+    if _use_groq:
         logger.info(f"[{CLIENT_ID}] Using Groq LLM")
         llm = OpenAILLMService(
             api_key=GROQ_KEY,
             model="llama-3.3-70b-versatile",
             base_url="https://api.groq.com/openai/v1",
         )
-    except Exception as e:
-        logger.warning(f"[{CLIENT_ID}] Groq unavailable ({e}), falling back to Cerebras")
+    else:
+        logger.info(f"[{CLIENT_ID}] Using Cerebras LLM (Groq unavailable)")
         llm = OpenAILLMService(
             api_key=CEREBRAS_KEY,
             model="llama-3.3-70b",

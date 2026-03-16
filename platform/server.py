@@ -263,10 +263,12 @@ def demo_request():
     with open(appts_path, "w") as f:
         json.dump(appts, f, indent=2)
 
-    # Email notification to Jaden
+    # Email notifications
     try:
         smtp_user = "myfriendlyagent12@gmail.com"
         smtp_pass = "pdcvjroclstugncx"
+
+        # 1. Notify Jaden
         msg = MIMEText(
             f"New Demo Request!\n\n"
             f"Name: {name}\n"
@@ -284,8 +286,41 @@ def demo_request():
             s.starttls()
             s.login(smtp_user, smtp_pass)
             s.send_message(msg)
+
+        # 2. Send confirmation to the customer
+        if email:
+            cust_msg = MIMEText(
+                f"Hi {name},\n\n"
+                f"Your Janovum AI Receptionist demo is confirmed!\n\n"
+                f"Date: {date}\n"
+                f"Time: {time_slot}\n\n"
+                f"We'll show you exactly how an AI receptionist can handle calls, book appointments, and grow {business}.\n\n"
+                f"If you need to reschedule, just call us at +1 (833) 958-9975.\n\n"
+                f"See you soon!\n"
+                f"— Jaden, Janovum"
+            )
+            cust_msg["Subject"] = f"Your Janovum Demo is Confirmed — {date} at {time_slot}"
+            cust_msg["From"] = smtp_user
+            cust_msg["To"] = email
+            with smtplib.SMTP("smtp.gmail.com", 587) as s:
+                s.starttls()
+                s.login(smtp_user, smtp_pass)
+                s.send_message(msg)
+                s.send_message(cust_msg)
+
+        # 3. Send SMS confirmation to customer
+        if phone:
+            import requests as _req
+            tk_path = os.path.join(PLATFORM_DIR, "data", "toolkit_config.json")
+            with open(tk_path) as f:
+                tk = json.load(f)
+            _req.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{tk['twilio_account_sid']}/Messages.json",
+                auth=(tk["twilio_account_sid"], tk["twilio_auth_token"]),
+                data={"From": "18339589975", "To": phone, "Body": f"Hey {name}! Your Janovum demo is confirmed for {date} at {time_slot}. See you then! - Janovum"}
+            )
     except Exception as e:
-        print(f"Email notification failed: {e}")
+        print(f"Notification failed: {e}")
 
     return jsonify({"status": "ok", "id": appt["id"]})
 

@@ -235,13 +235,20 @@ def demo_request():
     if not name or not phone or not date or not time_slot:
         return jsonify({"error": "Please fill out all fields"}), 400
 
-    # Save as appointment
+    # Save as appointment — auto-replace if same phone or email already exists
     appts_path = os.path.join(PLATFORM_DIR, "data", "clients", "janovum_appointments.json")
     try:
         with open(appts_path, "r") as f:
             appts = json.load(f)
     except Exception:
         appts = []
+
+    # Remove old appointment with same phone or email
+    clean_phone = phone.replace("+", "").replace("-", "").replace(" ", "").replace("(", "").replace(")", "")
+    appts = [a for a in appts if not (
+        (clean_phone and a.get("phone", "").replace("+", "").replace("-", "").replace(" ", "").replace("(", "").replace(")", "") == clean_phone) or
+        (email and email.lower() in (a.get("notes", "") + a.get("email", "")).lower())
+    )]
 
     appt = {
         "id": str(uuid.uuid4())[:8],

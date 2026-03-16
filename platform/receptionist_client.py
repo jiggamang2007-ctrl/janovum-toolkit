@@ -551,15 +551,16 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
 
     async def handle_book_appointment(function_name, tool_call_id, arguments, llm, context, result_callback):
         args = arguments
-        # Check for duplicate phone number
+        # Auto-replace if same phone number already has an appointment
         caller_phone = args.get("phone", from_number).replace("+", "").replace("-", "").replace(" ", "")
         if caller_phone and caller_phone != "unknown" and APPTS_PATH.exists():
             try:
                 existing = json.loads(APPTS_PATH.read_text())
-                dup = [a for a in existing if a.get("status") == "confirmed" and a.get("payment_status") != "rejected" and a.get("phone", "").replace("+", "").replace("-", "").replace(" ", "") == caller_phone]
-                if dup:
-                    await result_callback({"status": "duplicate", "message": f"This phone number already has an appointment on {dup[0].get('date')} at {dup[0].get('time')}. They can cancel that one first if they want to rebook."})
-                    return
+                cleaned = [a for a in existing if not (a.get("status") == "confirmed" and a.get("payment_status") != "rejected" and a.get("phone", "").replace("+", "").replace("-", "").replace(" ", "") == caller_phone)]
+                if len(cleaned) < len(existing):
+                    with open(APPTS_PATH, "w", encoding="utf-8") as f:
+                        json.dump(cleaned, f, indent=2)
+                    logger.info(f"[{CLIENT_ID}] Replaced old appointment for {caller_phone}")
             except Exception:
                 pass
         available, conflicts = check_availability(args.get("date", ""), args.get("time", ""))

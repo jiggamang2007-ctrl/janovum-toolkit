@@ -428,9 +428,15 @@ def start_client(client_id):
     if sys.platform == "win32":
         creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
 
+    # Use venv python on Linux if available
+    python_exe = sys.executable
+    venv_python = Path("/root/janovum-venv/bin/python")
+    if sys.platform != "win32" and venv_python.exists():
+        python_exe = str(venv_python)
+
     try:
         proc = subprocess.Popen(
-            [sys.executable, str(receptionist_script), str(config_path)],
+            [python_exe, str(receptionist_script), str(config_path)],
             cwd=str(PLATFORM_DIR),
             stdout=log_file,
             stderr=log_file,

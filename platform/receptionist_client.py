@@ -836,7 +836,7 @@ let selectedDate = null;
 function getWeekDates() {{
   const dates = [];
   const now = new Date();
-  for (let i = 1; i <= 7; i++) {{ const d = new Date(now); d.setDate(now.getDate() + i); dates.push(d); }}
+  for (let i = 0; i < 7; i++) {{ const d = new Date(now); d.setDate(now.getDate() + i); dates.push(d); }}
   return dates;
 }}
 function dateStr(d) {{ return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }}
@@ -901,7 +901,7 @@ async function loadData() {{
   try {{
     const [appts, status] = await Promise.all([fetch('/appointments').then(r => r.json()), fetch('/status').then(r => r.json())]);
     allAppts = appts.appointments || [];
-    if (!selectedDate) {{ const tom = new Date(); tom.setDate(tom.getDate()+1); selectedDate = dateStr(tom); }}
+    if (!selectedDate) selectedDate = dateStr(new Date());
     const todayStr = dateStr(new Date()), tomStr = dateStr(new Date(Date.now() + 86400000));
     document.getElementById('todayCount').textContent = allAppts.filter(a => a.status==='confirmed' && matchDate(a.date, todayStr)).length;
     document.getElementById('tomorrowCount').textContent = allAppts.filter(a => a.status==='confirmed' && matchDate(a.date, tomStr)).length;

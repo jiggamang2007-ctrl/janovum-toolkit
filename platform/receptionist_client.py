@@ -11,8 +11,8 @@ import asyncio
 from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, WebSocket, Request
-from fastapi.responses import Response, HTMLResponse
+from fastapi import FastAPI, WebSocket, Request, Cookie
+from fastapi.responses import Response, HTMLResponse, RedirectResponse
 from loguru import logger
 
 logger.remove(0)
@@ -637,11 +637,71 @@ async def status():
         "daily_limits": daily_tracker.get_status(),
     }
 
+# Auth settings
+APP_USERNAME = CLIENT_CONFIG.get("app_username", "jaden")
+APP_PASSWORD = CLIENT_CONFIG.get("app_password", "Janovum2026!")
+AUTH_COOKIE = f"{CLIENT_ID}_auth"
+import hashlib
+AUTH_TOKEN = hashlib.sha256(f"{APP_USERNAME}:{APP_PASSWORD}:{CLIENT_ID}".encode()).hexdigest()[:32]
+
+@app.get("/app/login")
+async def app_login_page():
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{BUSINESS_NAME} — Login</title>
+<style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:-apple-system,'Segoe UI',sans-serif;background:#0f0f13;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center}}
+.login{{background:#1a1a24;border:1px solid #2a2a3a;border-radius:16px;padding:32px;width:90%;max-width:360px}}
+h1{{font-size:1.3em;font-weight:800;text-align:center;margin-bottom:24px;background:linear-gradient(135deg,#ff6b35,#f7c948);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+input{{width:100%;padding:12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:12px}}
+button{{width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#ff6b35,#f7c948);color:#fff;font-weight:700;font-size:1em;cursor:pointer}}
+.err{{color:#ef4444;font-size:0.82em;text-align:center;margin-top:8px}}</style></head>
+<body><div class="login"><h1>{BUSINESS_NAME.upper()}</h1>
+<form method="POST" action="/app/login"><input name="username" placeholder="Username" autocomplete="username" required>
+<input name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+<button type="submit">Log In</button></form>
+<div class="err" id="err"></div></div></body></html>"""
+    return HTMLResponse(content=html)
+
+@app.post("/app/login")
+async def app_login_submit(request: Request):
+    form = await request.form()
+    username = form.get("username", "")
+    password = form.get("password", "")
+    if username == APP_USERNAME and password == APP_PASSWORD:
+        response = RedirectResponse(url="/app", status_code=303)
+        response.set_cookie(AUTH_COOKIE, AUTH_TOKEN, max_age=60*60*24*30, httponly=True, samesite="lax")
+        return response
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>{BUSINESS_NAME} — Login</title>
+<style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:-apple-system,'Segoe UI',sans-serif;background:#0f0f13;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center}}
+.login{{background:#1a1a24;border:1px solid #2a2a3a;border-radius:16px;padding:32px;width:90%;max-width:360px}}
+h1{{font-size:1.3em;font-weight:800;text-align:center;margin-bottom:24px;background:linear-gradient(135deg,#ff6b35,#f7c948);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+input{{width:100%;padding:12px;border-radius:8px;border:1px solid #2a2a3a;background:#0a0a0a;color:#e0e0e0;font-size:0.9em;margin-bottom:12px}}
+button{{width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#ff6b35,#f7c948);color:#fff;font-weight:700;font-size:1em;cursor:pointer}}
+.err{{color:#ef4444;font-size:0.82em;text-align:center;margin-top:8px}}</style></head>
+<body><div class="login"><h1>{BUSINESS_NAME.upper()}</h1>
+<form method="POST" action="/app/login"><input name="username" placeholder="Username" autocomplete="username" required>
+<input name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+<button type="submit">Log In</button></form>
+<div class="err">Wrong username or password</div></div></body></html>"""
+    return HTMLResponse(content=html)
+
 @app.get("/app/view")
+async def appointments_view():
+    """Public view — no login needed."""
+    return await appointments_app_page()
+
 @app.get("/app")
-async def appointments_app():
+async def appointments_app(request: Request):
+    """Admin view — needs login cookie."""
+    token = request.cookies.get(AUTH_COOKIE, "")
+    if token != AUTH_TOKEN:
+        return RedirectResponse(url="/app/login")
+    return await appointments_app_page()
+
+async def appointments_app_page():
     """Mobile-friendly appointments dashboard for the client."""
-    from fastapi.responses import HTMLResponse
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>

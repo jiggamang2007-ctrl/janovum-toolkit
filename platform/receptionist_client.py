@@ -942,16 +942,14 @@ function loadAddSlots() {{
   if (!day) return;
   const booked = allAppts.filter(a => a.status === 'confirmed' && matchDate(a.date, day)).map(a => (a.time || '').toLowerCase());
   for (let h = 9; h < 17; h++) {{
-    for (let m = 0; m < 60; m += 30) {{
-      const hour12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const label = hour12 + ':' + String(m).padStart(2,'0') + ' ' + ampm + ' EST';
-      const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
-      const o = document.createElement('option');
-      if (taken) {{ o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#555'; }}
-      else {{ o.value = label; o.textContent = label + ' — Available'; o.style.fontWeight = '700'; o.style.color = '#e0e0e0'; }}
-      timeSel.appendChild(o);
-    }}
+    const hour12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const label = hour12 + ':00 ' + ampm + ' EST';
+    const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
+    const o = document.createElement('option');
+    if (taken) {{ o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#555'; }}
+    else {{ o.value = label; o.textContent = label + ' — Available'; o.style.fontWeight = '700'; o.style.color = '#e0e0e0'; }}
+    timeSel.appendChild(o);
   }}
 }}
 

@@ -41,7 +41,14 @@ TWILIO_PHONE = CLIENT_CONFIG["twilio_phone_number"]
 
 # Shared API keys (loaded from config or fallback)
 TWILIO_ACCOUNT_SID = CLIENT_CONFIG.get("twilio_account_sid", "AC2d50767d64e32c3b57b56a57c11c3849")
-TWILIO_AUTH_TOKEN = CLIENT_CONFIG.get("twilio_auth_token", "94c74007b62652b5b14c7bea70a5792c")
+# Read Twilio auth from toolkit config first, then client config, then fallback
+_tk_auth = ""
+try:
+    _tk_cfg = json.loads((Path(__file__).parent / "data" / "toolkit_config.json").read_text())
+    _tk_auth = _tk_cfg.get("twilio_auth_token", "")
+except Exception:
+    pass
+TWILIO_AUTH_TOKEN = _tk_auth or CLIENT_CONFIG.get("twilio_auth_token", "")
 DEEPGRAM_KEY = CLIENT_CONFIG.get("deepgram_api_key", "6e304c8a16d16deae3ec7694e60212c4f610ba96")
 GROQ_KEY = CLIENT_CONFIG.get("groq_api_key", "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")
 CARTESIA_KEY = CLIENT_CONFIG.get("cartesia_api_key", "sk_car_7QqSF9RbebzaELHtggdw3E")
@@ -812,6 +819,16 @@ function matchDate(apptDate, targetDate) {{
   if (appt === target) return true;
   if (appt.includes('today') && target === dateStr(new Date())) return true;
   if (appt.includes('tomorrow')) {{ const tom = new Date(); tom.setDate(tom.getDate()+1); return target === dateStr(tom); }}
+  // Handle day names like "Monday", "Thursday", etc.
+  const dayNames = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const dayIdx = dayNames.indexOf(appt.trim());
+  if (dayIdx !== -1) {{
+    const now = new Date();
+    for (let i = 0; i < 7; i++) {{
+      const d = new Date(now); d.setDate(now.getDate() + i);
+      if (d.getDay() === dayIdx) return dateStr(d) === target;
+    }}
+  }}
   try {{ const parsed = new Date(appt); if (!isNaN(parsed)) return dateStr(parsed) === target; }} catch(e) {{}}
   return appt.includes(target);
 }}

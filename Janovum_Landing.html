@@ -3,155 +3,379 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Janovum — AI Receptionist for Your Business</title>
+<title>Janovum — AI That Runs Your Front Desk</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, 'Segoe UI', sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: #06060b; color: #e0e0e0; overflow-x: hidden; }
 
+/* Animated grid background */
+.grid-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(99,102,241,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,102,241,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.grid-bg::after {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%);
+}
+
+/* Floating orbs */
+.orb {
+  position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: 0; pointer-events: none;
+  animation: float 20s ease-in-out infinite;
+}
+.orb-1 { width: 400px; height: 400px; background: #6366f1; top: -100px; right: -100px; }
+.orb-2 { width: 300px; height: 300px; background: #8b5cf6; bottom: 10%; left: -80px; animation-delay: -7s; }
+.orb-3 { width: 200px; height: 200px; background: #06b6d4; top: 50%; right: 10%; animation-delay: -13s; }
+@keyframes float {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+section { position: relative; z-index: 1; }
+
+/* Nav */
+nav {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 40px; position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  background: rgba(6,6,11,0.8); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(99,102,241,0.1);
+}
+nav .brand { font-size: 1.2em; font-weight: 900; letter-spacing: 4px; color: #a78bfa; }
+nav a {
+  padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.85em;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; transition: all 0.3s;
+}
+nav a:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(99,102,241,0.4); }
+
+/* Hero */
 .hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 40px 20px;
-  background: radial-gradient(ellipse at 50% 30%, rgba(99,102,241,0.12) 0%, transparent 70%);
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 120px 20px 80px;
 }
-
-.logo {
-  font-size: 3.5em;
-  font-weight: 900;
-  letter-spacing: 6px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 16px;
+.hero-badge {
+  display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.75em; font-weight: 600;
+  background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); color: #a78bfa;
+  margin-bottom: 24px; letter-spacing: 1px;
 }
-
-.tagline {
-  font-size: 1.4em;
-  color: #a0a0b0;
-  max-width: 600px;
-  line-height: 1.6;
-  margin-bottom: 40px;
+.hero h1 {
+  font-size: clamp(2.5em, 6vw, 4.5em); font-weight: 900; line-height: 1.1; max-width: 800px; margin-bottom: 24px;
 }
-
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-  max-width: 900px;
-  margin-bottom: 50px;
+.hero h1 .gradient {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-
-.feature {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
-  padding: 28px 24px;
-  text-align: left;
+.hero p {
+  font-size: 1.15em; color: #888; max-width: 550px; line-height: 1.7; margin-bottom: 40px;
 }
-
-.feature h3 {
-  font-size: 1.1em;
-  margin-bottom: 8px;
-  color: #c4b5fd;
+.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+.btn-primary {
+  padding: 16px 36px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1em;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.3);
 }
-
-.feature p {
-  font-size: 0.9em;
-  color: #888;
-  line-height: 1.5;
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(99,102,241,0.5); }
+.btn-secondary {
+  padding: 16px 36px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1em;
+  background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s;
 }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: rgba(99,102,241,0.5); }
 
-.cta-btn {
-  display: inline-block;
-  padding: 16px 40px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
-  font-size: 1.1em;
-  font-weight: 700;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
+/* Terminal demo */
+.terminal {
+  margin-top: 60px; max-width: 550px; width: 90%; background: rgba(15,15,25,0.9);
+  border: 1px solid rgba(99,102,241,0.2); border-radius: 12px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.terminal-bar {
+  display: flex; align-items: center; gap: 6px; padding: 12px 16px;
+  background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+.terminal-dot.r { background: #ef4444; } .terminal-dot.y { background: #f59e0b; } .terminal-dot.g { background: #22c55e; }
+.terminal-title { margin-left: 8px; font-size: 0.72em; color: #555; }
+.terminal-body { padding: 20px; font-family: 'Courier New', monospace; font-size: 0.82em; line-height: 2; }
+.terminal-body .line { opacity: 0; animation: typeLine 0.3s forwards; }
+.terminal-body .prompt { color: #6366f1; }
+.terminal-body .output { color: #22c55e; }
+.terminal-body .dim { color: #555; }
+.line:nth-child(1) { animation-delay: 0.5s; }
+.line:nth-child(2) { animation-delay: 1.2s; }
+.line:nth-child(3) { animation-delay: 2s; }
+.line:nth-child(4) { animation-delay: 2.8s; }
+.line:nth-child(5) { animation-delay: 3.6s; }
+.line:nth-child(6) { animation-delay: 4.4s; }
+.line:nth-child(7) { animation-delay: 5.2s; }
+@keyframes typeLine { to { opacity: 1; } }
+
+/* How it works */
+.how-it-works { padding: 100px 20px; max-width: 1000px; margin: 0 auto; }
+.section-label {
+  font-size: 0.75em; font-weight: 700; letter-spacing: 3px; color: #6366f1;
+  text-transform: uppercase; margin-bottom: 12px; text-align: center;
+}
+.section-title {
+  font-size: 2.2em; font-weight: 900; text-align: center; margin-bottom: 60px;
+}
+.steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; }
+.step {
+  position: relative; padding: 32px 24px; border-radius: 16px;
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
+  transition: all 0.3s;
+}
+.step:hover { border-color: rgba(99,102,241,0.3); background: rgba(99,102,241,0.04); transform: translateY(-4px); }
+.step-num {
+  font-size: 2.5em; font-weight: 900; color: rgba(99,102,241,0.15); margin-bottom: 12px; line-height: 1;
+}
+.step h3 { font-size: 1.05em; margin-bottom: 8px; color: #c4b5fd; }
+.step p { font-size: 0.85em; color: #666; line-height: 1.6; }
+
+/* Features */
+.features-section { padding: 80px 20px; max-width: 1000px; margin: 0 auto; }
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.feat {
+  padding: 28px 24px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.02); transition: all 0.3s;
+}
+.feat:hover { border-color: rgba(99,102,241,0.2); }
+.feat-icon { font-size: 1.6em; margin-bottom: 12px; }
+.feat h3 { font-size: 1em; margin-bottom: 6px; color: #e0e0e0; }
+.feat p { font-size: 0.82em; color: #666; line-height: 1.6; }
+
+/* CTA */
+.cta-section {
+  padding: 100px 20px; text-align: center;
+  background: linear-gradient(180deg, transparent, rgba(99,102,241,0.05));
+}
+.cta-section h2 { font-size: 2.2em; font-weight: 900; margin-bottom: 16px; }
+.cta-section p { color: #888; font-size: 1.05em; margin-bottom: 32px; }
+.cta-phone {
+  display: inline-block; margin-top: 16px; font-size: 1.1em; color: #6366f1; font-weight: 600;
   text-decoration: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-  margin-bottom: 16px;
+}
+.cta-phone:hover { color: #a78bfa; }
+
+/* Footer */
+footer {
+  padding: 30px 40px; text-align: center; font-size: 0.75em; color: #333;
+  border-top: 1px solid rgba(255,255,255,0.03);
 }
 
-.cta-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(99,102,241,0.3);
-}
-
-.cta-sub {
-  font-size: 0.85em;
-  color: #666;
-}
-
-.pricing {
-  margin-top: 20px;
-  font-size: 1.8em;
-  font-weight: 800;
-  color: #e0e0e0;
-}
-
-.pricing span {
-  font-size: 0.5em;
-  color: #888;
-  font-weight: 400;
-}
-
-.bottom-bar {
-  padding: 20px;
-  text-align: center;
-  font-size: 0.78em;
-  color: #444;
-  border-top: 1px solid #1a1a24;
+/* Responsive */
+@media (max-width: 600px) {
+  nav { padding: 16px 20px; }
+  nav .brand { font-size: 1em; letter-spacing: 3px; }
+  .hero { padding: 100px 16px 60px; }
+  .hero h1 { font-size: 2.2em; }
+  .terminal { margin-top: 40px; }
+  .section-title { font-size: 1.6em; }
 }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="logo">JANOVUM</div>
-  <p class="tagline">An AI receptionist that answers your business calls 24/7. Books appointments, answers questions, and sends confirmations — all on autopilot.</p>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-  <div class="features">
-    <div class="feature">
-      <h3>Answers Every Call</h3>
-      <p>Never miss a customer again. Your AI receptionist picks up instantly, day or night.</p>
-    </div>
-    <div class="feature">
-      <h3>Books Appointments</h3>
-      <p>Checks your schedule, finds open slots, and books clients automatically.</p>
-    </div>
-    <div class="feature">
-      <h3>Sounds Human</h3>
-      <p>Natural voice powered by cutting-edge AI. Callers won't know the difference.</p>
-    </div>
-    <div class="feature">
-      <h3>Knows Your Business</h3>
-      <p>Trained on your services, prices, hours, and staff. Answers questions like a real employee.</p>
-    </div>
-    <div class="feature">
-      <h3>Sends Confirmations</h3>
-      <p>Automatically texts or emails appointment details to your customers after booking.</p>
-    </div>
-    <div class="feature">
-      <h3>Live in 24 Hours</h3>
-      <p>We handle the entire setup. No tech skills needed. Your receptionist is ready tomorrow.</p>
-    </div>
+<nav>
+  <div class="brand">JANOVUM</div>
+  <a href="tel:+18339589975">Try the Demo</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">AI-POWERED AUTOMATION</div>
+  <h1>Your Business.<br><span class="gradient">Never Misses a Call.</span></h1>
+  <p>An AI receptionist that answers calls, books appointments, and handles your front desk 24/7 — so you never lose a customer again.</p>
+  <div class="hero-cta">
+    <a href="tel:+18339589975" class="btn-primary">Call the AI Now</a>
+    <a href="#how" class="btn-secondary">See How It Works</a>
   </div>
 
-  <a href="tel:+18339589975" class="cta-btn">Call For a Demo</a>
-  <p class="cta-sub">Talk to our AI receptionist right now — +1 (833) 958-9975</p>
-</div>
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
+      <span class="terminal-title">janovum_receptionist.py</span>
+    </div>
+    <div class="terminal-body">
+      <div class="line"><span class="dim">// incoming call from +1 (305) ***-****</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> Hey, thanks for calling! How can I help you?</div>
+      <div class="line"><span class="dim">// caller: "I need to book a haircut for Thursday"</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">checking_schedule(Thursday)...</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> Thursday at 2 PM is open. Want me to book that?</div>
+      <div class="line"><span class="dim">// caller: "Yes, send me a text"</span></div>
+      <div class="line"><span class="prompt">AI &gt;</span> <span class="output">booked + confirmation_sent</span></div>
+    </div>
+  </div>
+</section>
 
-<div class="bottom-bar">
-  &copy; 2026 Janovum. All rights reserved.
-</div>
+<section class="how-it-works" id="how">
+  <div class="section-label">How It Works</div>
+  <div class="section-title">Live in 24 Hours. Zero Tech Skills.</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h3>Tell Us About Your Business</h3>
+      <p>Services, hours, staff, prices — we configure everything for you.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h3>We Build Your AI</h3>
+      <p>Your receptionist learns your business inside and out. Sounds natural, knows your schedule.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h3>Connect Your Phone</h3>
+      <p>Forward your business line or get a new number. Calls route to your AI automatically.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h3>Watch It Work</h3>
+      <p>Track appointments, revenue, and calls from your dashboard. You stay in control.</p>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="section-label">Built for Real Businesses</div>
+  <div class="section-title">Everything You Need</div>
+  <div class="features-grid">
+    <div class="feat">
+      <div class="feat-icon">&#9742;</div>
+      <h3>24/7 Call Handling</h3>
+      <p>Never miss a lead. Your AI picks up instantly, even at 3 AM.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128197;</div>
+      <h3>Smart Scheduling</h3>
+      <p>Checks availability, avoids double-bookings, and confirms with the caller.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128172;</div>
+      <h3>Natural Conversation</h3>
+      <p>Real voice, real tone. Handles interruptions, follow-ups, and questions naturally.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128233;</div>
+      <h3>Auto Confirmations</h3>
+      <p>Sends appointment details by text or email — automatically after booking.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128200;</div>
+      <h3>Revenue Dashboard</h3>
+      <p>Track potential income, confirmed payments, and active clients in real time.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">&#128274;</div>
+      <h3>Your Business, Your Rules</h3>
+      <p>Custom knowledge, pricing, hours, and personality. Fully tailored to you.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section" id="demo">
+  <h2>Book a Free Demo</h2>
+  <p>Call us or fill out the form below — we'll show you exactly how it works for your business.</p>
+  <a href="tel:+18339589975" class="btn-primary" style="margin-bottom:40px">Call +1 (833) 958-9975</a>
+
+  <div style="max-width:480px;margin:0 auto;text-align:left">
+    <div style="text-align:center;margin-bottom:24px;color:#666;font-size:0.9em">or schedule a demo online</div>
+    <form id="demoForm" onsubmit="submitDemo(event)">
+      <input id="demoName" placeholder="Your Name" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
+      <input id="demoBusiness" placeholder="Business Name" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
+      <input id="demoPhone" placeholder="Phone Number" type="tel" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
+      <input id="demoEmail" placeholder="Email" type="email" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
+      <select id="demoDay" required onchange="loadSlots()" style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(15,15,25,0.9);color:#e0e0e0;font-size:0.95em;margin-bottom:12px;font-family:inherit">
+        <option value="">Pick a Day</option>
+      </select>
+      <select id="demoTime" required style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(15,15,25,0.9);color:#e0e0e0;font-size:0.95em;margin-bottom:16px;font-family:inherit">
+        <option value="">Pick a Time</option>
+      </select>
+      <button type="submit" style="width:100%;padding:16px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:700;font-size:1em;cursor:pointer;font-family:inherit;transition:all 0.3s">Request Demo</button>
+    </form>
+    <div id="demoResult" style="text-align:center;margin-top:16px;font-size:0.9em"></div>
+  </div>
+</section>
+
+<script>
+// Populate day picker with next 5 weekdays
+(function() {
+  const sel = document.getElementById('demoDay');
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const now = new Date();
+  for (let i = 1; i <= 10; i++) {
+    const d = new Date(now); d.setDate(now.getDate() + i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue; // skip weekends
+    const label = days[d.getDay()] + ', ' + d.toLocaleDateString('en-US', {month:'long', day:'numeric'});
+    const val = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const opt = document.createElement('option'); opt.value = val; opt.textContent = label;
+    sel.appendChild(opt);
+  }
+})();
+
+async function loadSlots() {
+  const day = document.getElementById('demoDay').value;
+  const timeSel = document.getElementById('demoTime');
+  timeSel.innerHTML = '<option value="">Loading...</option>';
+  if (!day) { timeSel.innerHTML = '<option value="">Pick a Time</option>'; return; }
+
+  // Get existing appointments to exclude booked slots
+  let booked = [];
+  try {
+    const r = await fetch('/appointments');
+    const data = await r.json();
+    booked = (data.appointments || []).filter(a => a.status === 'confirmed').map(a => (a.time || '').toLowerCase());
+  } catch(e) {}
+
+  // Generate 30-min slots from 9am to 5pm
+  const slots = [];
+  for (let h = 9; h < 17; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const hour12 = h > 12 ? h - 12 : h;
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const label = hour12 + ':' + String(m).padStart(2,'0') + ' ' + ampm;
+      const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
+      if (!taken) slots.push(label);
+    }
+  }
+
+  timeSel.innerHTML = '<option value="">Pick a Time</option>';
+  slots.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; timeSel.appendChild(o); });
+}
+
+async function submitDemo(e) {
+  e.preventDefault();
+  const result = document.getElementById('demoResult');
+  result.innerHTML = '<span style="color:#a78bfa">Submitting...</span>';
+  const data = {
+    name: document.getElementById('demoName').value,
+    business: document.getElementById('demoBusiness').value,
+    phone: document.getElementById('demoPhone').value,
+    email: document.getElementById('demoEmail').value,
+    date: document.getElementById('demoDay').value,
+    time: document.getElementById('demoTime').value,
+  };
+  try {
+    const r = await fetch('/api/demo-request', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)});
+    const res = await r.json();
+    if (res.status === 'ok') {
+      result.innerHTML = '<span style="color:#22c55e">Demo booked! Check your email for confirmation.</span>';
+      document.getElementById('demoForm').reset();
+    } else {
+      result.innerHTML = '<span style="color:#ef4444">' + (res.error || 'Something went wrong') + '</span>';
+    }
+  } catch(err) {
+    result.innerHTML = '<span style="color:#ef4444">Could not submit. Try calling instead.</span>';
+  }
+}
+</script>
+
+<footer>
+  &copy; 2026 Janovum LLC. All rights reserved.
+</footer>
 
 </body>
 </html>

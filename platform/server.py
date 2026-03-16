@@ -219,6 +219,76 @@ def index():
 def toolkit():
     return send_from_directory(PARENT_DIR, "Janovum_Platform.html")
 
+@app.route("/api/demo-request", methods=["POST"])
+def demo_request():
+    """Handle demo request from landing page — save appointment + email Jaden."""
+    import uuid, smtplib
+    from email.mime.text import MIMEText
+    data = request.json
+    name = data.get("name", "").strip()
+    business = data.get("business", "").strip()
+    phone = data.get("phone", "").strip()
+    email = data.get("email", "").strip()
+    date = data.get("date", "")
+    time_slot = data.get("time", "")
+
+    if not name or not phone or not date or not time_slot:
+        return jsonify({"error": "Please fill out all fields"}), 400
+
+    # Save as appointment
+    appts_path = os.path.join(PLATFORM_DIR, "data", "clients", "janovum_appointments.json")
+    try:
+        with open(appts_path, "r") as f:
+            appts = json.load(f)
+    except Exception:
+        appts = []
+
+    appt = {
+        "id": str(uuid.uuid4())[:8],
+        "client_id": "janovum",
+        "business_name": "Janovum",
+        "name": name,
+        "phone": phone,
+        "date": date,
+        "time": time_slot,
+        "service": "AI Receptionist Demo",
+        "notes": f"Business: {business}. Email: {email}",
+        "status": "confirmed",
+        "payment_status": "pending",
+        "potential_income": 1000,
+        "booked_at": datetime.now().isoformat(),
+        "booked_by": "Website Form",
+    }
+    appts.append(appt)
+    with open(appts_path, "w") as f:
+        json.dump(appts, f, indent=2)
+
+    # Email notification to Jaden
+    try:
+        smtp_user = "myfriendlyagent12@gmail.com"
+        smtp_pass = "pdcvjroclstugncx"
+        msg = MIMEText(
+            f"New Demo Request!\n\n"
+            f"Name: {name}\n"
+            f"Business: {business}\n"
+            f"Phone: {phone}\n"
+            f"Email: {email}\n"
+            f"Date: {date}\n"
+            f"Time: {time_slot}\n\n"
+            f"Booked via website form."
+        )
+        msg["Subject"] = f"New Janovum Demo Request — {name} ({business})"
+        msg["From"] = smtp_user
+        msg["To"] = "janovumllc@gmail.com"
+        with smtplib.SMTP("smtp.gmail.com", 587) as s:
+            s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.send_message(msg)
+    except Exception as e:
+        print(f"Email notification failed: {e}")
+
+    return jsonify({"status": "ok", "id": appt["id"]})
+
 @app.route("/<path:filename>")
 def serve_file(filename):
     if filename.startswith("api/"):

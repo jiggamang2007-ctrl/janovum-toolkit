@@ -258,6 +258,7 @@ def demo_request():
         "potential_income": 1000,
         "booked_at": datetime.now().isoformat(),
         "booked_by": "Website Form",
+        "meeting_link": "https://meet.google.com/cro-iiwp-egq",
     }
     appts.append(appt)
     with open(appts_path, "w") as f:
@@ -294,6 +295,8 @@ def demo_request():
                 f"Your Janovum AI Receptionist demo is confirmed!\n\n"
                 f"Date: {date}\n"
                 f"Time: {time_slot}\n\n"
+                f"Join the demo here:\n"
+                f"https://meet.google.com/cro-iiwp-egq\n\n"
                 f"We'll show you exactly how an AI receptionist can handle calls, book appointments, and grow {business}.\n\n"
                 f"If you need to reschedule, just call us at +1 (833) 958-9975.\n\n"
                 f"See you soon!\n"
@@ -317,7 +320,7 @@ def demo_request():
             _req.post(
                 f"https://api.twilio.com/2010-04-01/Accounts/{tk['twilio_account_sid']}/Messages.json",
                 auth=(tk["twilio_account_sid"], tk["twilio_auth_token"]),
-                data={"From": "18339589975", "To": phone, "Body": f"Hey {name}! Your Janovum demo is confirmed for {date} at {time_slot}. See you then! - Janovum"}
+                data={"From": "18339589975", "To": phone, "Body": f"Hey {name}! Your Janovum demo is confirmed for {date} at {time_slot}.\n\nJoin here: https://meet.google.com/cro-iiwp-egq\n\nSee you then! - Janovum"}
             )
     except Exception as e:
         print(f"Notification failed: {e}")

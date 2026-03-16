@@ -355,7 +355,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         logger.info(f"[{CLIENT_ID}] Using Cerebras LLM (Groq unavailable)")
         llm = OpenAILLMService(
             api_key=CEREBRAS_KEY,
-            model="llama-3.3-70b",
+            model="qwen-3-235b-a22b-instruct-2507",
             base_url="https://api.cerebras.ai/v1",
         )
 
@@ -891,7 +891,8 @@ function renderAppts() {{
     const paidBadge = ps === 'paid' ? '<span class="badge" style="background:rgba(34,197,94,0.12);color:#22c55e">PAID</span>' : ps === 'rejected' ? '<span class="badge" style="background:rgba(239,68,68,0.12);color:#ef4444">DECLINED</span>' : '<span class="badge" style="background:rgba(245,158,11,0.12);color:#f59e0b">PENDING</span>';
     const removeBtn = '<button onclick="removeAppt(\\'' + a.id + '\\')" style="padding:8px;border-radius:8px;border:none;background:rgba(100,100,100,0.15);color:#888;font-weight:700;font-size:0.82em;cursor:pointer">Remove</button>';
     const actions = ps === 'pending' ? '<div style="display:flex;gap:8px;margin-top:8px"><button onclick="confirmAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(34,197,94,0.15);color:#22c55e;font-weight:700;font-size:0.82em;cursor:pointer">Paid</button><button onclick="rejectAppt(\\'' + a.id + '\\')" style="flex:1;padding:8px;border-radius:8px;border:none;background:rgba(239,68,68,0.15);color:#ef4444;font-weight:700;font-size:0.82em;cursor:pointer">Didn\\'t Go Through</button>' + removeBtn + '</div>' : '<div style="margin-top:8px">' + removeBtn + '</div>';
-    return '<div class="card' + (isToday ? ' today-card' : '') + '"><div class="top"><span class="name">' + (a.name||'Unknown') + '</span><span class="time-badge">' + (a.time||'TBD') + '</span></div><div class="top" style="margin-bottom:0"><span style="font-size:0.78em;color:#999">' + (a.service||'') + '</span>' + paidBadge + '</div><div style="margin-top:6px;font-size:0.9em;font-weight:700;color:#f59e0b">Potential: $' + pot.toLocaleString() + '</div><div class="details" style="margin-top:4px">' + (a.phone ? '<div>&#128222; <span>' + a.phone + '</span></div>' : '') + (a.notes ? '<div>&#128221; <span>' + a.notes + '</span></div>' : '') + '</div>' + actions + '</div>';
+    const meetLink = a.meeting_link ? '<div style="margin-top:6px"><a href="' + a.meeting_link + '" target="_blank" style="display:inline-block;padding:6px 14px;border-radius:8px;background:rgba(66,133,244,0.12);color:#4285f4;font-size:0.78em;font-weight:700;text-decoration:none">Join Meeting</a></div>' : '';
+    return '<div class="card' + (isToday ? ' today-card' : '') + '"><div class="top"><span class="name">' + (a.name||'Unknown') + '</span><span class="time-badge">' + (a.time||'TBD') + '</span></div><div class="top" style="margin-bottom:0"><span style="font-size:0.78em;color:#999">' + (a.service||'') + '</span>' + paidBadge + '</div><div style="margin-top:6px;font-size:0.9em;font-weight:700;color:#f59e0b">Potential: $' + pot.toLocaleString() + '</div><div class="details" style="margin-top:4px">' + (a.phone ? '<div>&#128222; <span>' + a.phone + '</span></div>' : '') + (a.notes ? '<div>&#128221; <span>' + a.notes + '</span></div>' : '') + '</div>' + meetLink + actions + '</div>';
   }}).join('');
 }}
 

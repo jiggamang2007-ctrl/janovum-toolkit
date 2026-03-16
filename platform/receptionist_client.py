@@ -856,8 +856,11 @@ function matchDate(apptDate, targetDate) {{
       if (d.getDay() === dayIdx) return dateStr(d) === target;
     }}
   }}
-  try {{ const parsed = new Date(appt); if (!isNaN(parsed)) return dateStr(parsed) === target; }} catch(e) {{}}
-  return appt === target;
+  // Parse YYYY-MM-DD directly without timezone shift
+  const ymd = appt.match(/^(\d{{4}})-(\d{{2}})-(\d{{2}})$/);
+  if (ymd) return appt === target;
+  try {{ const parts2 = appt.split('-'); if (parts2.length === 3) {{ const parsed = new Date(parts2[0], parts2[1]-1, parts2[2]); if (!isNaN(parsed)) return dateStr(parsed) === target; }} }} catch(e) {{}}
+  return false;
 }}
 function countForDate(date) {{ const ds = dateStr(date); return allAppts.filter(a => a.status === 'confirmed' && matchDate(a.date, ds)).length; }}
 

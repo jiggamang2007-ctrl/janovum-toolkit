@@ -949,8 +949,8 @@ function loadAddSlots() {{
     const label = hour12 + ':00 ' + ampm + ' - ' + nextH + ':00 ' + nextAmpm + ' EST';
     const taken = booked.some(b => b.includes(String(hour12)) && b.includes(ampm.toLowerCase()));
     const o = document.createElement('option');
-    if (taken) {{ o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#555'; }}
-    else {{ o.value = hour12 + ':00 ' + ampm + ' EST'; o.textContent = label + ' — Available'; o.style.fontWeight = '900'; o.style.color = '#ffffff'; }}
+    if (taken) {{ o.value = ''; o.textContent = label + ' — Reserved'; o.disabled = true; o.style.color = '#999'; o.style.fontWeight = '400'; }}
+    else {{ o.value = hour12 + ':00 ' + ampm + ' EST'; o.textContent = label + ' — Available'; o.style.fontWeight = '900'; o.style.color = '#000000'; }}
     timeSel.appendChild(o);
   }}
 }}

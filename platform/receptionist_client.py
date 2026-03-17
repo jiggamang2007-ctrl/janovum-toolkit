@@ -930,7 +930,7 @@ async function loadData() {{
     const d = new Date(now); d.setDate(now.getDate() + i);
     const label = (i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : days[d.getDay()]) + ', ' + d.toLocaleDateString('en-US', {{month:'long', day:'numeric'}});
     const val = dateStr(d);
-    const opt = document.createElement('option'); opt.value = val; opt.textContent = label;
+    const opt = document.createElement('option'); opt.value = val; opt.textContent = label; opt.style.fontWeight = '900'; opt.style.color = '#000000';
     sel.appendChild(opt);
   }}
 }})();

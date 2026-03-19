@@ -1,0 +1,16 @@
+{
+  "business_name": "Test Biz",
+  "capabilities": [
+    "income_tracking",
+    "expense_categorization",
+    "financial_reports",
+    "tax_prep",
+    "profit_loss_statements",
+    "balance_sheets",
+    "quarterly_reports",
+    "receipt_scanning"
+  ],
+  "bot_type": "accountant",
+  "created_at": "2026-03-18T06:32:01.257529",
+  "status": "configured"
+}

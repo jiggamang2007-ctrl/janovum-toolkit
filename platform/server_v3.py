@@ -442,6 +442,11 @@ def demo_request():
 
     return jsonify({"status": "ok", "id": appt["id"]})
 
+@app.route("/faq")
+def faq_page():
+    """Serve the FAQ page"""
+    return send_from_directory(PARENT_DIR, "faq.html")
+
 @app.route("/<path:filename>")
 def serve_file(filename):
     if filename.startswith("api/"):

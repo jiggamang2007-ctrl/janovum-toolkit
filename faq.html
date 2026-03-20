@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ — Janovum</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:#06060b;color:#e0e0e0;min-height:100vh;}
+a{color:inherit;text-decoration:none;}
+
+/* Nav */
+nav{display:flex;align-items:center;justify-content:space-between;padding:18px 40px;position:sticky;top:0;z-index:100;background:rgba(6,6,11,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.06);}
+.nav-left{display:flex;align-items:center;gap:32px;}
+.brand{font-size:18px;font-weight:800;letter-spacing:3px;color:#fff;}
+.nav-links{display:flex;gap:24px;}
+.nav-links a{color:#777;font-size:0.82em;font-weight:500;transition:color 0.3s;}
+.nav-links a:hover{color:#e0e0e0;}
+.nav-links a.active{color:#6366f1;}
+.nav-cta{padding:8px 22px;background:#6366f1;color:#fff;border-radius:8px;font-weight:600;font-size:0.82em;transition:all 0.3s;}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(99,102,241,0.4);}
+
+/* Hero */
+.faq-hero{text-align:center;padding:80px 20px 40px;max-width:700px;margin:0 auto;}
+.faq-hero h1{font-size:42px;font-weight:800;letter-spacing:-1px;margin-bottom:12px;}
+.faq-hero h1 span{background:linear-gradient(135deg,#6366f1,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.faq-hero p{color:#777;font-size:16px;line-height:1.6;}
+
+/* Categories */
+.faq-cats{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:0 20px 40px;max-width:800px;margin:0 auto;}
+.cat-btn{padding:8px 20px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:20px;color:#888;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;font-family:inherit;}
+.cat-btn:hover{border-color:rgba(99,102,241,0.3);color:#fff;}
+.cat-btn.active{background:rgba(99,102,241,0.15);border-color:#6366f1;color:#6366f1;}
+
+/* FAQ Content */
+.faq-container{max-width:800px;margin:0 auto;padding:0 20px 80px;}
+.faq-category{margin-bottom:48px;}
+.faq-category-title{font-size:20px;font-weight:700;color:#fff;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid rgba(99,102,241,0.3);display:flex;align-items:center;gap:10px;}
+.faq-category-title .cat-icon{font-size:22px;}
+
+.faq-item{border:1px solid rgba(255,255,255,0.06);border-radius:10px;margin-bottom:8px;overflow:hidden;transition:border-color 0.2s;}
+.faq-item:hover{border-color:rgba(99,102,241,0.2);}
+.faq-question{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;cursor:pointer;font-size:15px;font-weight:600;color:#ddd;transition:all 0.2s;user-select:none;}
+.faq-question:hover{color:#fff;}
+.faq-arrow{font-size:14px;color:#555;transition:transform 0.3s;flex-shrink:0;margin-left:16px;}
+.faq-item.open .faq-arrow{transform:rotate(180deg);color:#6366f1;}
+.faq-item.open .faq-question{color:#6366f1;}
+.faq-answer{max-height:0;overflow:hidden;transition:max-height 0.3s ease;padding:0 22px;}
+.faq-item.open .faq-answer{max-height:500px;padding:0 22px 20px;}
+.faq-answer p{font-size:14px;color:#999;line-height:1.7;}
+.faq-answer ul{margin:8px 0 0 20px;font-size:14px;color:#999;line-height:1.8;}
+.faq-answer strong{color:#ccc;}
+
+/* CTA */
+.faq-cta{text-align:center;padding:60px 20px;margin:0 20px;border-radius:16px;background:linear-gradient(135deg,rgba(99,102,241,0.1),rgba(167,139,250,0.05));border:1px solid rgba(99,102,241,0.15);}
+.faq-cta h2{font-size:24px;font-weight:700;margin-bottom:10px;}
+.faq-cta p{color:#888;font-size:15px;margin-bottom:24px;}
+.faq-cta a{display:inline-block;padding:14px 36px;background:#6366f1;color:#fff;border-radius:10px;font-weight:700;font-size:15px;transition:all 0.2s;}
+.faq-cta a:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(99,102,241,0.4);}
+
+/* Footer */
+.footer{text-align:center;padding:40px 20px;color:#444;font-size:12px;border-top:1px solid rgba(255,255,255,0.04);margin-top:60px;}
+.footer a{color:#6366f1;}
+
+/* Search */
+.faq-search{max-width:500px;margin:0 auto 40px;padding:0 20px;position:relative;}
+.faq-search input{width:100%;padding:14px 20px 14px 46px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;font-size:15px;font-family:inherit;outline:none;transition:border 0.2s;}
+.faq-search input:focus{border-color:#6366f1;}
+.faq-search input::placeholder{color:#555;}
+.faq-search .search-icon{position:absolute;left:36px;top:50%;transform:translateY(-50%);color:#555;font-size:16px;pointer-events:none;}
+.no-results{text-align:center;padding:40px;color:#555;font-size:15px;display:none;}
+
+@media(max-width:768px){
+  nav{padding:14px 16px;}
+  .nav-links{display:none;}
+  .faq-hero h1{font-size:28px;}
+  .faq-hero{padding:60px 16px 30px;}
+  .faq-question{font-size:14px;padding:16px 18px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a href="/" class="brand">JANOVUM</a>
+    <div class="nav-links">
+      <a href="/#how">How It Works</a>
+      <a href="/#features">Features</a>
+      <a href="/#demo">Book Demo</a>
+      <a href="/faq" class="active">FAQ</a>
+    </div>
+  </div>
+  <a href="/#demo" class="nav-cta">Get Started</a>
+</nav>
+
+<div class="faq-hero">
+  <h1>Frequently Asked <span>Questions</span></h1>
+  <p>Everything you need to know about Janovum and our AI-powered business solutions. Can't find your answer? Book a free consultation and we'll walk you through it.</p>
+</div>
+
+<!-- Search -->
+<div class="faq-search">
+  <span class="search-icon">&#128269;</span>
+  <input type="text" id="faqSearch" placeholder="Search questions..." oninput="filterFAQ(this.value)">
+</div>
+
+<!-- Category Filter -->
+<div class="faq-cats" id="catFilter">
+  <button class="cat-btn active" onclick="filterCategory('all', this)">All</button>
+  <button class="cat-btn" onclick="filterCategory('general', this)">General</button>
+  <button class="cat-btn" onclick="filterCategory('ai-receptionist', this)">AI Receptionist</button>
+  <button class="cat-btn" onclick="filterCategory('pricing', this)">Pricing & Billing</button>
+  <button class="cat-btn" onclick="filterCategory('setup', this)">Setup & Onboarding</button>
+  <button class="cat-btn" onclick="filterCategory('dashboard', this)">Dashboard & Tools</button>
+  <button class="cat-btn" onclick="filterCategory('security', this)">Security & Data</button>
+  <button class="cat-btn" onclick="filterCategory('support', this)">Support</button>
+</div>
+
+<div class="faq-container" id="faqContainer">
+
+  <!-- GENERAL -->
+  <div class="faq-category" data-cat="general">
+    <div class="faq-category-title"><span class="cat-icon">&#128161;</span> General</div>
+
+    <div class="faq-item" data-cat="general">
+      <div class="faq-question" onclick="toggleFaq(this)">What is Janovum? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Janovum is an AI-powered business automation company. We provide intelligent tools that handle your phone calls, customer inquiries, email follow-ups, appointment scheduling, and more — all running 24/7 in the cloud without you lifting a finger. Think of us as your always-on digital team.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="general">
+      <div class="faq-question" onclick="toggleFaq(this)">How does it work? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>We set up AI systems custom-trained on your business — your services, pricing, hours, and FAQs. Once configured, the AI handles customer interactions automatically. Calls get answered, appointments get booked, leads get followed up on, and you see everything in a real-time dashboard. It runs in the cloud so there's nothing to install on your end.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="general">
+      <div class="faq-question" onclick="toggleFaq(this)">What does the AI actually do? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer">
+        <p>The AI can:</p>
+        <ul>
+          <li>Answer your business phone line 24/7 with natural, human-like conversation</li>
+          <li>Book appointments directly into your calendar</li>
+          <li>Answer customer questions about your services, pricing, and hours</li>
+          <li>Route urgent calls to you or your team</li>
+          <li>Send automated follow-up emails to leads</li>
+          <li>Run email campaigns and respond to inquiries</li>
+          <li>Track everything in a dashboard you can access anytime</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item" data-cat="general">
+      <div class="faq-question" onclick="toggleFaq(this)">Do I need to do anything to keep it running? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>No. Everything runs on its own in the cloud. Once we set it up, the AI handles calls, books appointments, and follows up with customers automatically. You just check your dashboard whenever you want to see how things are going. If your business info changes (new hours, new services, etc.), just let us know and we'll update the AI.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="general">
+      <div class="faq-question" onclick="toggleFaq(this)">What types of businesses does Janovum work for? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Any business that gets phone calls or customer inquiries. We work with real estate agents, restaurants, medical offices, law firms, home service companies (plumbing, HVAC, electrical), salons, auto shops, and more. If your business talks to customers, we can automate it.</p></div>
+    </div>
+  </div>
+
+  <!-- AI RECEPTIONIST -->
+  <div class="faq-category" data-cat="ai-receptionist">
+    <div class="faq-category-title"><span class="cat-icon">&#128222;</span> AI Receptionist</div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">How does the AI Receptionist work? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>When someone calls your business number, the AI picks up instantly. It sounds natural — like a real person at the front desk. It listens to what the caller needs, gives accurate answers based on your business info, and can book appointments, take messages, or route the call to you. It works 24/7, including nights, weekends, and holidays.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">Do I get my own phone number? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes! You get a dedicated business phone number. You can forward your existing number to it, or use the new number directly on your website, business cards, and ads. Callers will never know they're talking to AI — it sounds completely natural.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">Will callers know it's AI? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>No. The AI uses advanced voice technology that sounds natural and human. It uses casual language, contractions, and conversational tone — just like a real person picking up the phone. Most callers have no idea they're talking to AI.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">What if I already have a receptionist? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Our AI handles the calls your receptionist can't — after hours, weekends, lunch breaks, high-volume periods, or when they're busy with another caller. Think of it as backup that never calls in sick. Many clients use both and let the AI pick up the overflow.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">Can the AI transfer calls to me? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. The AI can be configured to route urgent or specific calls directly to you or a team member. You set the rules — certain keywords, VIP callers, or emergency situations can trigger an immediate transfer.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">Can the AI book appointments? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. The AI checks your available time slots and books appointments directly during the call. The caller picks a day and time, the AI confirms it, and you see it instantly in your dashboard. No double-bookings — the AI knows what's already scheduled.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="ai-receptionist">
+      <div class="faq-question" onclick="toggleFaq(this)">Can I listen to the calls? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. Every call is logged in your dashboard with the full transcript and recording. You can review any call, see exactly what was said, and make sure the AI is handling things the way you want.</p></div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="faq-category" data-cat="pricing">
+    <div class="faq-category-title"><span class="cat-icon">&#128176;</span> Pricing & Billing</div>
+
+    <div class="faq-item" data-cat="pricing">
+      <div class="faq-question" onclick="toggleFaq(this)">How much does it cost? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer">
+        <p><strong>$1,000 one-time setup fee</strong> — covers configuration, AI training on your business, dedicated phone number, and first month of service.</p>
+        <p><strong>$500/month ongoing</strong> — covers 24/7 AI receptionist, dashboard access, email automation, support, and continuous optimization.</p>
+        <p>That's it. No hidden fees, no per-minute charges, no surprises.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" data-cat="pricing">
+      <div class="faq-question" onclick="toggleFaq(this)">What's included in the monthly fee? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer">
+        <ul>
+          <li>24/7 AI Receptionist — unlimited calls</li>
+          <li>Dedicated business phone number</li>
+          <li>Full Janovum Dashboard access</li>
+          <li>Email automation & lead response</li>
+          <li>Call logs, transcripts, and analytics</li>
+          <li>Weekly/monthly performance reports</li>
+          <li>Ongoing AI optimization and support</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item" data-cat="pricing">
+      <div class="faq-question" onclick="toggleFaq(this)">What's NOT included? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer">
+        <p>The standard package covers everything most businesses need. Optional add-ons are available separately:</p>
+        <ul>
+          <li>Website development — $500 one-time</li>
+          <li>Social media bot — $200/month</li>
+          <li>Email campaign automation — $150/month</li>
+          <li>Additional AI agents — $250/month each</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="faq-item" data-cat="pricing">
+      <div class="faq-question" onclick="toggleFaq(this)">Are there per-minute or per-call charges? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>No. The $500/month covers unlimited calls. Whether your AI handles 10 calls a day or 100, the price stays the same.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="pricing">
+      <div class="faq-question" onclick="toggleFaq(this)">How do I pay? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>We accept Zelle, PayPal, Bank Transfer (ACH), and Cash App. Monthly invoices are sent on the 1st of each month and are due within 15 days.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="pricing">
+      <div class="faq-question" onclick="toggleFaq(this)">Can I cancel anytime? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. There's a short initial term (typically 3 months), and after that it's month-to-month. Cancel anytime with 30 days written notice. The setup fee is non-refundable, but there are no cancellation penalties. We keep clients because they love the service, not because they're locked in.</p></div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div class="faq-category" data-cat="setup">
+    <div class="faq-category-title"><span class="cat-icon">&#9881;</span> Setup & Onboarding</div>
+
+    <div class="faq-item" data-cat="setup">
+      <div class="faq-question" onclick="toggleFaq(this)">How fast can I get set up? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Most clients are fully live within <strong>3-5 business days</strong> after signing. We handle everything — phone setup, AI training, dashboard configuration, email automation. You just give us your business info and we do the rest.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="setup">
+      <div class="faq-question" onclick="toggleFaq(this)">What do you need from me to get started? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer">
+        <p>Just the basics about your business:</p>
+        <ul>
+          <li>Business name, address, phone, email</li>
+          <li>Services you offer and pricing</li>
+          <li>Business hours</li>
+          <li>Common questions customers ask</li>
+          <li>How you want appointments handled</li>
+        </ul>
+        <p>We'll send you a simple onboarding form after you sign up. Takes about 10 minutes to fill out.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" data-cat="setup">
+      <div class="faq-question" onclick="toggleFaq(this)">Do I need to install anything? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>No. Everything runs in the cloud. You access your dashboard through any web browser — phone, tablet, or computer. No apps to download, no software to install, no IT required.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="setup">
+      <div class="faq-question" onclick="toggleFaq(this)">What happens during the demo call? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>It's a casual 15-20 minute Google Meet call. We'll learn about your business, show you a live demo of the AI receptionist in action, answer all your questions, and if you're ready, we can get you set up right on the call. No pressure, no hard sell.</p></div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="faq-category" data-cat="dashboard">
+    <div class="faq-category-title"><span class="cat-icon">&#128202;</span> Dashboard & Tools</div>
+
+    <div class="faq-item" data-cat="dashboard">
+      <div class="faq-question" onclick="toggleFaq(this)">Can I see how the AI is performing? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Absolutely. You get full access to the Janovum Dashboard where you can see every call, read transcripts, track appointments, monitor AI performance, view income tracking, and check analytics — all in real time from your phone or computer.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="dashboard">
+      <div class="faq-question" onclick="toggleFaq(this)">Can I make changes to what the AI says? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. Just let us know and we'll update the AI's responses, greetings, scripts, or workflows. Non-critical changes are done within 2 business days. You can also update your business info anytime through the dashboard or by contacting us.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="dashboard">
+      <div class="faq-question" onclick="toggleFaq(this)">Do I get reports? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. You'll receive performance reports covering call volume, appointment bookings, AI response quality, and customer engagement. Reports can be delivered weekly or monthly — your choice. Plus, all data is available in real-time on your dashboard.</p></div>
+    </div>
+  </div>
+
+  <!-- SECURITY -->
+  <div class="faq-category" data-cat="security">
+    <div class="faq-category-title"><span class="cat-icon">&#128274;</span> Security & Data</div>
+
+    <div class="faq-item" data-cat="security">
+      <div class="faq-question" onclick="toggleFaq(this)">Is my data safe? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. All data is encrypted in transit and at rest. We never sell or share your business data with third parties. Call recordings, transcripts, and customer information are stored securely and accessible only to you and authorized Janovum personnel.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="security">
+      <div class="faq-question" onclick="toggleFaq(this)">Who can see my call data? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Only you and the Janovum team managing your account. We don't share your data with other clients or third parties. Your dashboard is password-protected and only accessible with your credentials.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="security">
+      <div class="faq-question" onclick="toggleFaq(this)">What happens to my data if I cancel? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Your data remains available for export for 30 days after cancellation. During that window you can download call logs, transcripts, customer records, and any other data. After 30 days, it's permanently deleted from our servers.</p></div>
+    </div>
+  </div>
+
+  <!-- SUPPORT -->
+  <div class="faq-category" data-cat="support">
+    <div class="faq-category-title"><span class="cat-icon">&#128172;</span> Support</div>
+
+    <div class="faq-item" data-cat="support">
+      <div class="faq-question" onclick="toggleFaq(this)">What if something breaks? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>We monitor all systems 24/7. If anything goes wrong, we detect it immediately and fix it remotely — most of the time before you even notice. For critical outages, we respond within 2 hours regardless of time or day. You'll never have to troubleshoot anything yourself.</p></div>
+    </div>
+
+    <div class="faq-item" data-cat="support">
+      <div class="faq-question" onclick="toggleFaq(this)">How do I reach Janovum if I need help? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer">
+        <p>Multiple ways:</p>
+        <ul>
+          <li><strong>Phone:</strong> +1 (833) 958-9975 — our AI assistant is available 24/7</li>
+          <li><strong>Email:</strong> We respond within 1 business day</li>
+          <li><strong>Dashboard:</strong> Submit requests directly from your dashboard</li>
+          <li><strong>Scheduled calls:</strong> Monthly check-in calls with your account manager</li>
+        </ul>
+        <p>For urgent issues, call us directly and we'll prioritize it.</p>
+      </div>
+    </div>
+
+    <div class="faq-item" data-cat="support">
+      <div class="faq-question" onclick="toggleFaq(this)">Do you offer training? <span class="faq-arrow">&#9660;</span></div>
+      <div class="faq-answer"><p>Yes. During onboarding we walk you through everything — your dashboard, how to read reports, how to request changes, and how the AI works. If you ever need a refresher, just ask and we'll hop on a call.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- No results -->
+<div class="no-results" id="noResults">No questions match your search. Try different keywords or <a href="/#demo" style="color:#6366f1;">book a demo</a> to ask us directly.</div>
+
+<!-- CTA -->
+<div class="faq-cta">
+  <h2>Still have questions?</h2>
+  <p>Book a free demo and we'll answer everything personally.</p>
+  <a href="/#demo">Book a Free Demo</a>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  <p>&copy; 2026 Janovum LLC &mdash; <a href="https://janovum.com">janovum.com</a> &mdash; +1 (833) 958-9975</p>
+</div>
+
+<script>
+// Toggle FAQ
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  // Close all in same category
+  item.closest('.faq-category').querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// Category filter
+function filterCategory(cat, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('faqSearch').value = '';
+
+  const categories = document.querySelectorAll('.faq-category');
+  categories.forEach(c => {
+    if (cat === 'all' || c.dataset.cat === cat) {
+      c.style.display = '';
+    } else {
+      c.style.display = 'none';
+    }
+  });
+  document.getElementById('noResults').style.display = 'none';
+}
+
+// Search
+function filterFAQ(query) {
+  const q = query.toLowerCase().trim();
+  const items = document.querySelectorAll('.faq-item');
+  const categories = document.querySelectorAll('.faq-category');
+  let totalVisible = 0;
+
+  // Reset category buttons
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.cat-btn').classList.add('active');
+
+  if (!q) {
+    items.forEach(i => i.style.display = '');
+    categories.forEach(c => c.style.display = '');
+    document.getElementById('noResults').style.display = 'none';
+    return;
+  }
+
+  categories.forEach(cat => {
+    let catVisible = 0;
+    cat.querySelectorAll('.faq-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      if (text.includes(q)) {
+        item.style.display = '';
+        catVisible++;
+        totalVisible++;
+      } else {
+        item.style.display = 'none';
+        item.classList.remove('open');
+      }
+    });
+    cat.style.display = catVisible > 0 ? '' : 'none';
+  });
+
+  document.getElementById('noResults').style.display = totalVisible === 0 ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

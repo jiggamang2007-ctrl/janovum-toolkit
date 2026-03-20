@@ -536,7 +536,29 @@ function toast(msg) {
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); if(e.ctrlKey&&e.key==='n'){e.preventDefault();openModal('lead');} });
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('modalOverlay')) closeModal(); });
 
-load(); render();
+load();
+// Seed with a test lead if empty
+if(leads.length === 0) {
+  leads.push({
+    id: genId(),
+    business: "Doe's Auto Repair",
+    owner: "John Doe",
+    phone: "305-555-8821",
+    email: "johndoe@doesauto.com",
+    industry: "Auto Shop",
+    method: "inperson",
+    address: "4821 NW 7th St, Miami, FL 33126",
+    stage: "lead",
+    notes: "Walked in, owner was at the front desk. Busy shop, no receptionist. Said they miss a lot of calls.",
+    dateContacted: "",
+    movedAt: new Date().toISOString().split('T')[0],
+    createdAt: new Date().toISOString(),
+    retryCount: 0,
+    history: [{stage:'lead',at:new Date().toISOString()}]
+  });
+  save();
+}
+render();
 </script>
 </body>
 </html>

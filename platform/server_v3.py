@@ -300,23 +300,126 @@ def demo_request():
             s.login(smtp_user, smtp_pass)
             s.send_message(msg)
 
-        # 2. Send confirmation to the customer
+        # 2. Send confirmation to the customer (HTML with FAQ)
         if email:
-            cust_msg = MIMEText(
+            from email.mime.multipart import MIMEMultipart
+            cust_msg = MIMEMultipart("alternative")
+            cust_msg["Subject"] = f"Your Janovum Demo is Confirmed \u2014 {date} at {time_slot}"
+            cust_msg["From"] = smtp_user
+            cust_msg["To"] = email
+
+            # Plain text fallback
+            plain = (
                 f"Hi {name},\n\n"
                 f"Your Janovum AI Receptionist demo is confirmed!\n\n"
                 f"Date: {date}\n"
-                f"Time: {time_slot}\n\n"
-                f"Join the demo here:\n"
-                f"https://meet.google.com/cro-iiwp-egq\n\n"
-                f"We'll show you exactly how an AI receptionist can handle calls, book appointments, and grow {business}.\n\n"
-                f"If you need to reschedule, just call us at +1 (833) 958-9975.\n\n"
-                f"See you soon!\n"
-                f"— Jaden, Janovum"
+                f"Time: {time_slot}\n"
+                f"Google Meet: https://meet.google.com/cro-iiwp-egq\n\n"
+                f"See you soon!\n— Jaden, Janovum"
             )
-            cust_msg["Subject"] = f"Your Janovum Demo is Confirmed — {date} at {time_slot}"
-            cust_msg["From"] = smtp_user
-            cust_msg["To"] = email
+            cust_msg.attach(MIMEText(plain, "plain"))
+
+            # HTML email with FAQ
+            html_email = f"""
+<div style="font-family:'Inter',Arial,sans-serif;max-width:640px;margin:0 auto;background:#fff;">
+
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#0a0a0a,#1a1a18);padding:32px;text-align:center;">
+    <h1 style="color:#fff;font-size:26px;margin:0;letter-spacing:3px;">JANOVUM</h1>
+    <p style="color:#D4AF37;margin:6px 0 0;font-size:14px;">AI-Powered Business Automation</p>
+  </div>
+
+  <!-- Confirmation -->
+  <div style="padding:32px;">
+    <h2 style="color:#00C853;font-size:22px;margin:0 0 16px;">Your Demo is Confirmed!</h2>
+    <p style="font-size:15px;color:#333;">Hi <strong>{name}</strong>,</p>
+    <p style="font-size:14px;color:#444;line-height:1.6;">Thank you for booking a consultation with Janovum. We're excited to show you how AI can transform <strong>{business}</strong>.</p>
+
+    <!-- Meeting Details Box -->
+    <div style="background:#f8f8f8;border:2px solid #D4AF37;border-radius:12px;padding:24px;margin:24px 0;text-align:center;">
+      <p style="font-size:13px;color:#888;margin:0 0 8px;text-transform:uppercase;letter-spacing:1px;">Your Consultation</p>
+      <p style="font-size:20px;font-weight:700;color:#111;margin:0 0 4px;">{date}</p>
+      <p style="font-size:18px;font-weight:600;color:#D4AF37;margin:0 0 20px;">{time_slot}</p>
+      <a href="https://meet.google.com/cro-iiwp-egq" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#D4AF37,#b8941f);color:#000;font-size:16px;font-weight:700;text-decoration:none;border-radius:10px;">Join Google Meet</a>
+      <p style="font-size:12px;color:#999;margin:12px 0 0;">meet.google.com/cro-iiwp-egq</p>
+    </div>
+
+    <p style="font-size:14px;color:#444;line-height:1.6;">During the call, we'll walk you through exactly how an AI receptionist can handle your calls, book appointments, and help grow your business — all running 24/7 without you lifting a finger.</p>
+
+    <!-- Divider -->
+    <hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+    <!-- FAQ Section -->
+    <h2 style="font-size:20px;color:#111;margin:0 0 20px;text-align:center;">Frequently Asked Questions</h2>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">What does Janovum do?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">Janovum provides AI-powered automation for businesses. Our flagship service is an AI Receptionist that answers your phone calls 24/7 — handling customer questions, booking appointments, routing calls, and making sure you never miss a lead. We also offer email automation, customer follow-ups, and a full business dashboard.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">How does the AI Receptionist work?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">It's a real AI that answers your business phone line. It sounds natural, understands what callers are asking, gives accurate answers based on your business info, and books appointments directly into your calendar. It works 24/7 — nights, weekends, holidays — so you never miss a call.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">How much does it cost?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;"><strong>$1,000 one-time setup</strong> (includes configuration, AI training on your business, phone number, and first month of service) + <strong>$500/month</strong> ongoing. That's it — no hidden fees, no per-minute charges, no contracts after the initial term.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">What happens during the demo?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">It's a casual 15-20 minute Google Meet call. We'll learn about your business, show you a live demo of the AI receptionist in action, answer all your questions, and if you're ready, we can get you set up on the spot. No pressure, no hard sell.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">Can the AI handle my specific business?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">Yes. We customize the AI for your exact business — your services, pricing, hours, FAQs, and personality. Whether you're in real estate, restaurants, medical, legal, home services, or any other industry, the AI learns your business inside and out.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">Do I get my own phone number?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">Yes! You get a dedicated business phone number. You can forward your existing number to it, or use the new number directly. Callers will never know they're talking to AI — it sounds completely natural.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">What if I already have a receptionist?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">Our AI handles the calls your receptionist can't — after hours, weekends, lunch breaks, high-volume periods, or when they're busy. Think of it as backup that never calls in sick. Many clients use both.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">How fast can I get set up?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">Most clients are live within 3-5 business days after signing. We handle everything — phone setup, AI training, dashboard configuration. You just give us your business info and we do the rest.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">Can I see how it's performing?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">Absolutely. You get access to the Janovum Dashboard where you can see every call, read transcripts, track appointments, monitor AI performance, and view analytics — all in real time from your phone or computer.</p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <p style="font-size:15px;font-weight:700;color:#111;margin:0 0 6px;">Is there a contract or commitment?</p>
+      <p style="font-size:14px;color:#555;line-height:1.6;margin:0;">There's a short initial term (typically 3 months) and after that it's month-to-month. Cancel anytime with 30 days notice. We keep clients because they love the service, not because they're locked in.</p>
+    </div>
+
+    <!-- Divider -->
+    <hr style="border:none;border-top:1px solid #eee;margin:32px 0;">
+
+    <!-- Reschedule info -->
+    <p style="font-size:14px;color:#666;line-height:1.6;text-align:center;">Need to reschedule? No problem — just call us at<br><strong style="color:#111;">+1 (833) 958-9975</strong> or reply to this email.</p>
+
+    <p style="font-size:14px;color:#333;text-align:center;margin-top:24px;">Looking forward to meeting you!</p>
+    <p style="font-size:14px;color:#333;text-align:center;font-weight:600;">— Jaden, Janovum</p>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#0a0a0a;padding:20px;text-align:center;">
+    <p style="color:#666;font-size:12px;margin:0;">&copy; 2026 Janovum LLC &mdash; <a href="https://janovum.com" style="color:#D4AF37;text-decoration:none;">janovum.com</a> &mdash; +1 (833) 958-9975</p>
+  </div>
+
+</div>
+"""
+            cust_msg.attach(MIMEText(html_email, "html"))
             with smtplib.SMTP("smtp.gmail.com", 587) as s:
                 s.starttls()
                 s.login(smtp_user, smtp_pass)

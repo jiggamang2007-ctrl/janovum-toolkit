@@ -157,18 +157,40 @@ input,select,textarea{font-family:inherit;outline:none;}
   <div class="section-body" id="secPending"></div>
 </div>
 
-<!-- CRM — actual pipeline -->
+<!-- SCHEDULED — demo/meeting booked -->
 <div class="section">
   <div class="section-header" onclick="toggleSec(this)">
-    <span style="font-size:18px;">&#128188;</span>
-    <h2>CRM <span style="color:var(--dim);font-weight:400;font-size:13px;">— scheduled / proposal / closed</span></h2>
-    <span class="count" id="countCRM">0</span>
+    <span style="font-size:18px;">&#128197;</span>
+    <h2>Scheduled <span style="color:var(--dim);font-weight:400;font-size:13px;">— demo or meeting booked</span></h2>
+    <span class="count" id="countDemo">0</span>
     <span class="chevron">&#9660;</span>
   </div>
-  <div class="section-body" id="secCRM"></div>
+  <div class="section-body" id="secDemo"></div>
 </div>
 
-<!-- LOST / NOT INTERESTED -->
+<!-- PROPOSAL SENT -->
+<div class="section">
+  <div class="section-header" onclick="toggleSec(this)">
+    <span style="font-size:18px;">&#128196;</span>
+    <h2>Proposal Sent <span style="color:var(--dim);font-weight:400;font-size:13px;">— contract / agreement sent</span></h2>
+    <span class="count" id="countProposal">0</span>
+    <span class="chevron">&#9660;</span>
+  </div>
+  <div class="section-body" id="secProposal"></div>
+</div>
+
+<!-- CLOSED — deal done -->
+<div class="section">
+  <div class="section-header" onclick="toggleSec(this)">
+    <span style="font-size:18px;">&#128176;</span>
+    <h2>Closed <span style="color:var(--dim);font-weight:400;font-size:13px;">— signed and paying</span></h2>
+    <span class="count" id="countClosed">0</span>
+    <span class="chevron">&#9660;</span>
+  </div>
+  <div class="section-body" id="secClosed"></div>
+</div>
+
+<!-- NOT INTERESTED -->
 <div class="section">
   <div class="section-header collapsed" onclick="toggleSec(this)">
     <span style="font-size:18px;">&#128683;</span>
@@ -279,13 +301,18 @@ function renderCard(l, section) {
       <button class="btn-sm act-promote" onclick="promote('${l.id}','proposal')" title="Sent them a proposal">&#128196; Proposal</button>
       <button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost interest">&#10007; Lost</button>
     `;
-  } else if (section === 'crm') {
-    const stageLabel = {demo:'Demo Scheduled',proposal:'Proposal Sent',closed:'Closed'}[l.stage] || l.stage;
+  } else if (section === 'demo') {
     actions = `
-      <span class="badge badge-crm">${stageLabel}</span>
-      ${l.stage !== 'closed' ? `<button class="btn-sm act-yes" onclick="promote('${l.id}','closed')" title="Deal closed!">&#128176; Closed</button>` : ''}
-      ${l.stage !== 'closed' ? `<button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost">&#10007; Lost</button>` : ''}
+      <button class="btn-sm act-promote" onclick="promote('${l.id}','proposal')" title="Sent proposal/contract">&#128196; Sent Proposal</button>
+      <button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost">&#10007; Lost</button>
     `;
+  } else if (section === 'proposal') {
+    actions = `
+      <button class="btn-sm act-yes" onclick="promote('${l.id}','closed')" title="They signed!">&#128176; Closed!</button>
+      <button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost">&#10007; Lost</button>
+    `;
+  } else if (section === 'closed') {
+    actions = `<span class="badge badge-crm" style="font-size:12px;">&#10003; Active Client</span>`;
   } else {
     actions = `<button class="btn-sm act-retry" onclick="revive('${l.id}')" title="Move back to leads">&#128260; Retry</button>`;
   }
@@ -317,7 +344,9 @@ function render() {
   const filtered = leads.filter(matchSearch);
   const leadList = filtered.filter(l => l.stage === 'lead' || l.stage === 'retry');
   const pendingList = filtered.filter(l => l.stage === 'pending');
-  const crmList = filtered.filter(l => ['demo','proposal','closed'].includes(l.stage));
+  const demoList = filtered.filter(l => l.stage === 'demo');
+  const proposalList = filtered.filter(l => l.stage === 'proposal');
+  const closedList = filtered.filter(l => l.stage === 'closed');
   const lostList = filtered.filter(l => l.stage === 'lost');
 
   // Sort: most recent first, except retry goes to bottom of leads
@@ -328,22 +357,27 @@ function render() {
     return sortDate(a,b);
   });
   pendingList.sort((a,b) => {
-    // Overdue first
     const da = daysBetween(a.movedAt||a.createdAt?.split('T')[0]||today(), today());
     const db = daysBetween(b.movedAt||b.createdAt?.split('T')[0]||today(), today());
     return db - da;
   });
-  crmList.sort(sortDate);
+  demoList.sort(sortDate);
+  proposalList.sort(sortDate);
+  closedList.sort(sortDate);
   lostList.sort(sortDate);
 
   document.getElementById('secLeads').innerHTML = leadList.length ? leadList.map(l=>renderCard(l,'leads')).join('') : '<div class="empty-msg">No leads yet. Add businesses you want to pitch.</div>';
   document.getElementById('secPending').innerHTML = pendingList.length ? pendingList.map(l=>renderCard(l,'pending')).join('') : '<div class="empty-msg">No pending leads. Pitch some businesses first!</div>';
-  document.getElementById('secCRM').innerHTML = crmList.length ? crmList.map(l=>renderCard(l,'crm')).join('') : '<div class="empty-msg">No active clients yet. Keep pitching!</div>';
+  document.getElementById('secDemo').innerHTML = demoList.length ? demoList.map(l=>renderCard(l,'demo')).join('') : '<div class="empty-msg">No demos scheduled yet.</div>';
+  document.getElementById('secProposal').innerHTML = proposalList.length ? proposalList.map(l=>renderCard(l,'proposal')).join('') : '<div class="empty-msg">No proposals sent yet.</div>';
+  document.getElementById('secClosed').innerHTML = closedList.length ? closedList.map(l=>renderCard(l,'closed')).join('') : '<div class="empty-msg">No closed deals yet. Keep going!</div>';
   document.getElementById('secLost').innerHTML = lostList.length ? lostList.map(l=>renderCard(l,'lost')).join('') : '<div class="empty-msg">Nobody here yet.</div>';
 
   document.getElementById('countLeads').textContent = leadList.length;
   document.getElementById('countPending').textContent = pendingList.length;
-  document.getElementById('countCRM').textContent = crmList.length;
+  document.getElementById('countDemo').textContent = demoList.length;
+  document.getElementById('countProposal').textContent = proposalList.length;
+  document.getElementById('countClosed').textContent = closedList.length;
   document.getElementById('countLost').textContent = lostList.length;
 
   // Stats

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum CRM — Lead Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;--border:#2a2a2a;--gold:#D4AF37;--green:#00C853;--blue:#4A90D9;--red:#ef4444;--orange:#f59e0b;--purple:#8b5cf6;--text:#e0e0e0;--dim:#777;--radius:10px;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,select,textarea{font-family:inherit;outline:none;}
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* Header */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.header h1{font-size:20px;font-weight:800;letter-spacing:1px;}
+.header h1 span{color:var(--gold);}
+.header-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;transition:all .2s;}
+.btn-gold{background:var(--gold);color:#000;}
+.btn-gold:hover{background:#e6c349;}
+.btn-outline{background:none;border:1px solid var(--border);color:var(--dim);}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);}
+
+/* Stats */
+.stats{display:flex;gap:12px;padding:16px 24px;flex-wrap:wrap;}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;min-width:130px;}
+.stat .label{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.stat .value{font-size:22px;font-weight:800;}
+.stat .value.gold{color:var(--gold);}
+.stat .value.green{color:var(--green);}
+.stat .value.blue{color:var(--blue);}
+.stat .value.orange{color:var(--orange);}
+.stat .value.purple{color:var(--purple);}
+
+/* Filters */
+.filters{display:flex;gap:8px;padding:0 24px 12px;flex-wrap:wrap;align-items:center;}
+.filter-btn{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--dim);font-size:12px;font-weight:500;transition:all .2s;}
+.filter-btn:hover{border-color:var(--gold);color:var(--text);}
+.filter-btn.active{background:rgba(212,175,55,0.15);border-color:var(--gold);color:var(--gold);}
+.search-input{padding:7px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:13px;width:220px;transition:border .2s;}
+.search-input:focus{border-color:var(--gold);}
+
+/* Table */
+.table-wrap{padding:0 24px 24px;overflow-x:auto;}
+table{width:100%;border-collapse:collapse;min-width:1100px;}
+th{background:var(--bg2);padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--dim);text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;cursor:pointer;}
+th:hover{color:var(--text);}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.03);white-space:nowrap;}
+tr:hover td{background:var(--bg3);}
+tr.overdue td{border-left:3px solid var(--red);}
+
+/* Status badges */
+.badge{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;display:inline-block;}
+.badge-prospect{background:rgba(119,119,119,.15);color:#999;}
+.badge-contacted{background:rgba(74,144,217,.15);color:var(--blue);}
+.badge-interested{background:rgba(245,158,11,.15);color:var(--orange);}
+.badge-demo{background:rgba(139,92,246,.15);color:var(--purple);}
+.badge-proposal{background:rgba(212,175,55,.15);color:var(--gold);}
+.badge-closed{background:rgba(0,200,83,.15);color:var(--green);}
+.badge-lost{background:rgba(239,68,68,.15);color:var(--red);}
+
+/* Method badges */
+.method{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:500;}
+.method-inperson{background:rgba(0,200,83,.1);color:var(--green);}
+.method-phone{background:rgba(74,144,217,.1);color:var(--blue);}
+.method-email{background:rgba(212,175,55,.1);color:var(--gold);}
+.method-social{background:rgba(139,92,246,.1);color:var(--purple);}
+
+/* Action buttons */
+.row-actions{display:flex;gap:4px;}
+.row-btn{padding:4px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--dim);font-size:11px;transition:all .15s;}
+.row-btn:hover{border-color:var(--gold);color:var(--gold);}
+.row-btn.del:hover{border-color:var(--red);color:var(--red);}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:28px;width:90%;max-width:560px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:20px;font-weight:700;margin-bottom:20px;}
+.modal h2 span{color:var(--gold);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-row.full{grid-template-columns:1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;}
+.form-group input,.form-group select,.form-group textarea{padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--gold);}
+.form-group textarea{resize:vertical;min-height:70px;}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--dim);}
+.empty .icon{font-size:48px;margin-bottom:12px;opacity:.5;}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg3);border:1px solid var(--green);color:var(--green);padding:12px 20px;border-radius:8px;font-size:13px;font-weight:500;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+@media(max-width:768px){
+  .header{padding:12px 16px;}
+  .stats{padding:12px 16px;gap:8px;}
+  .stat{min-width:100px;padding:10px 14px;}
+  .stat .value{font-size:18px;}
+  .filters{padding:0 16px 12px;}
+  .table-wrap{padding:0 16px 16px;}
+  .form-row{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Janovum <span>CRM</span></h1>
+  <div class="header-right">
+    <button class="btn btn-outline" onclick="exportCSV()">&#128190; Export CSV</button>
+    <button class="btn btn-gold" onclick="openModal()">&#43; Add Lead</button>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+
+<div class="filters">
+  <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">All</button>
+  <button class="filter-btn" data-filter="prospect" onclick="setFilter('prospect',this)">Prospect</button>
+  <button class="filter-btn" data-filter="contacted" onclick="setFilter('contacted',this)">Contacted</button>
+  <button class="filter-btn" data-filter="interested" onclick="setFilter('interested',this)">Interested</button>
+  <button class="filter-btn" data-filter="demo" onclick="setFilter('demo',this)">Demo Scheduled</button>
+  <button class="filter-btn" data-filter="proposal" onclick="setFilter('proposal',this)">Proposal Sent</button>
+  <button class="filter-btn" data-filter="closed" onclick="setFilter('closed',this)">Closed</button>
+  <button class="filter-btn" data-filter="lost" onclick="setFilter('lost',this)">Lost</button>
+  <input type="text" class="search-input" placeholder="Search leads..." oninput="searchLeads(this.value)" style="margin-left:auto;">
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th onclick="sortBy('business')">Business &#8597;</th>
+        <th onclick="sortBy('owner')">Owner/Manager &#8597;</th>
+        <th onclick="sortBy('industry')">Industry</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th onclick="sortBy('dateContacted')">Contacted &#8597;</th>
+        <th>Method</th>
+        <th onclick="sortBy('status')">Status &#8597;</th>
+        <th onclick="sortBy('followUp')">Follow-Up &#8597;</th>
+        <th>Notes</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+  <div class="empty" id="empty" style="display:none;">
+    <div class="icon">&#128203;</div>
+    <p>No leads yet. Click "+ Add Lead" to start tracking.</p>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Add <span>New Lead</span></h2>
+    <input type="hidden" id="editId">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Business Name *</label>
+        <input type="text" id="fBusiness" placeholder="Smith Plumbing">
+      </div>
+      <div class="form-group">
+        <label>Owner / Manager</label>
+        <input type="text" id="fOwner" placeholder="John Smith">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="tel" id="fPhone" placeholder="555-123-4567">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="fEmail" placeholder="john@smith.com">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Industry</label>
+        <select id="fIndustry">
+          <option value="">Select...</option>
+          <option>Restaurant</option>
+          <option>Real Estate</option>
+          <option>Medical / Dental</option>
+          <option>Law Firm</option>
+          <option>Salon / Barbershop</option>
+          <option>Home Services</option>
+          <option>Auto Shop</option>
+          <option>Gym / Fitness</option>
+          <option>Cleaning</option>
+          <option>Construction</option>
+          <option>Retail</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Contact Method</label>
+        <select id="fMethod">
+          <option value="inperson">In-Person</option>
+          <option value="phone">Phone Call</option>
+          <option value="email">Email</option>
+          <option value="social">Social Media</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Date Contacted</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="form-group">
+        <label>Follow-Up Date</label>
+        <input type="date" id="fFollowUp">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Status</label>
+        <select id="fStatus">
+          <option value="prospect">Prospect</option>
+          <option value="contacted">Contacted</option>
+          <option value="interested">Interested</option>
+          <option value="demo">Demo Scheduled</option>
+          <option value="proposal">Proposal Sent</option>
+          <option value="closed">Closed (Won)</option>
+          <option value="lost">Lost</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Response</label>
+        <input type="text" id="fResponse" placeholder="Said they'd think about it">
+      </div>
+    </div>
+    <div class="form-row full">
+      <div class="form-group">
+        <label>Notes</label>
+        <textarea id="fNotes" placeholder="Any details — what they said, what they need, when to call back..."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-gold" onclick="saveLead()">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'janovum_crm';
+let leads = [];
+let currentFilter = 'all';
+let currentSearch = '';
+let sortField = 'dateContacted';
+let sortDir = 'desc';
+
+function load() {
+  try { leads = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { leads = []; }
+}
+function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(leads)); }
+
+function render() {
+  updateStats();
+  let filtered = leads.filter(l => {
+    if (currentFilter !== 'all' && l.status !== currentFilter) return false;
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      return (l.business+l.owner+l.email+l.phone+l.industry+l.notes+l.response).toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  // Sort
+  filtered.sort((a, b) => {
+    let va = (a[sortField] || '').toLowerCase();
+    let vb = (b[sortField] || '').toLowerCase();
+    if (sortField === 'dateContacted' || sortField === 'followUp') {
+      va = a[sortField] || '9999';
+      vb = b[sortField] || '9999';
+    }
+    if (va < vb) return sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const tbody = document.getElementById('tbody');
+  const empty = document.getElementById('empty');
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const today = new Date().toISOString().split('T')[0];
+
+  tbody.innerHTML = filtered.map(l => {
+    const overdue = l.followUp && l.followUp < today && l.status !== 'closed' && l.status !== 'lost';
+    const statusLabels = {prospect:'Prospect',contacted:'Contacted',interested:'Interested',demo:'Demo Scheduled',proposal:'Proposal Sent',closed:'Closed',lost:'Lost'};
+    const methodLabels = {inperson:'In-Person',phone:'Phone',email:'Email',social:'Social'};
+    return `<tr class="${overdue ? 'overdue' : ''}">
+      <td style="font-weight:600;color:#fff;">${esc(l.business)}</td>
+      <td>${esc(l.owner)}</td>
+      <td>${esc(l.industry)}</td>
+      <td>${l.phone ? '<a href="tel:'+esc(l.phone)+'" style="color:var(--blue);text-decoration:none;">'+esc(l.phone)+'</a>' : '-'}</td>
+      <td>${l.email ? '<a href="mailto:'+esc(l.email)+'" style="color:var(--gold);text-decoration:none;">'+esc(l.email)+'</a>' : '-'}</td>
+      <td>${l.dateContacted || '-'}</td>
+      <td><span class="method method-${l.method}">${methodLabels[l.method] || l.method}</span></td>
+      <td><span class="badge badge-${l.status}">${statusLabels[l.status] || l.status}</span></td>
+      <td style="${overdue ? 'color:var(--red);font-weight:600;' : ''}">${l.followUp || '-'} ${overdue ? '⚠' : ''}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;" title="${esc(l.notes)}">${esc(l.notes || l.response || '-')}</td>
+      <td>
+        <div class="row-actions">
+          <button class="row-btn" onclick="editLead('${l.id}')">Edit</button>
+          <button class="row-btn del" onclick="deleteLead('${l.id}')">&#10005;</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function updateStats() {
+  const total = leads.length;
+  const contacted = leads.filter(l => l.status !== 'prospect').length;
+  const interested = leads.filter(l => ['interested','demo','proposal'].includes(l.status)).length;
+  const demos = leads.filter(l => l.status === 'demo').length;
+  const closed = leads.filter(l => l.status === 'closed').length;
+  const today = new Date().toISOString().split('T')[0];
+  const overdue = leads.filter(l => l.followUp && l.followUp < today && l.status !== 'closed' && l.status !== 'lost').length;
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="label">Total Leads</div><div class="value">${total}</div></div>
+    <div class="stat"><div class="label">Contacted</div><div class="value blue">${contacted}</div></div>
+    <div class="stat"><div class="label">Interested</div><div class="value orange">${interested}</div></div>
+    <div class="stat"><div class="label">Demos</div><div class="value purple">${demos}</div></div>
+    <div class="stat"><div class="label">Closed</div><div class="value green">${closed}</div></div>
+    ${overdue > 0 ? `<div class="stat" style="border-color:var(--red);"><div class="label">Overdue</div><div class="value" style="color:var(--red);">${overdue}</div></div>` : ''}
+    ${total > 0 ? `<div class="stat"><div class="label">Close Rate</div><div class="value gold">${total > 0 ? Math.round(closed/total*100) : 0}%</div></div>` : ''}
+  `;
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function searchLeads(q) {
+  currentSearch = q;
+  render();
+}
+
+function sortBy(field) {
+  if (sortField === field) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+  else { sortField = field; sortDir = 'asc'; }
+  render();
+}
+
+function openModal(id) {
+  document.getElementById('editId').value = id || '';
+  document.getElementById('modalTitle').innerHTML = id ? 'Edit <span>Lead</span>' : 'Add <span>New Lead</span>';
+
+  if (id) {
+    const l = leads.find(x => x.id === id);
+    if (!l) return;
+    document.getElementById('fBusiness').value = l.business;
+    document.getElementById('fOwner').value = l.owner;
+    document.getElementById('fPhone').value = l.phone;
+    document.getElementById('fEmail').value = l.email;
+    document.getElementById('fIndustry').value = l.industry;
+    document.getElementById('fMethod').value = l.method;
+    document.getElementById('fDate').value = l.dateContacted;
+    document.getElementById('fFollowUp').value = l.followUp;
+    document.getElementById('fStatus').value = l.status;
+    document.getElementById('fResponse').value = l.response || '';
+    document.getElementById('fNotes').value = l.notes || '';
+  } else {
+    document.getElementById('fBusiness').value = '';
+    document.getElementById('fOwner').value = '';
+    document.getElementById('fPhone').value = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fIndustry').value = '';
+    document.getElementById('fMethod').value = 'inperson';
+    document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('fFollowUp').value = '';
+    document.getElementById('fStatus').value = 'prospect';
+    document.getElementById('fResponse').value = '';
+    document.getElementById('fNotes').value = '';
+  }
+
+  document.getElementById('modalOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('fBusiness').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function saveLead() {
+  const business = document.getElementById('fBusiness').value.trim();
+  if (!business) { document.getElementById('fBusiness').style.borderColor = 'var(--red)'; return; }
+
+  const editId = document.getElementById('editId').value;
+  const data = {
+    id: editId || 'lead_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2,4),
+    business,
+    owner: document.getElementById('fOwner').value.trim(),
+    phone: document.getElementById('fPhone').value.trim(),
+    email: document.getElementById('fEmail').value.trim(),
+    industry: document.getElementById('fIndustry').value,
+    method: document.getElementById('fMethod').value,
+    dateContacted: document.getElementById('fDate').value,
+    followUp: document.getElementById('fFollowUp').value,
+    status: document.getElementById('fStatus').value,
+    response: document.getElementById('fResponse').value.trim(),
+    notes: document.getElementById('fNotes').value.trim(),
+    createdAt: editId ? (leads.find(l => l.id === editId) || {}).createdAt || new Date().toISOString() : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  if (editId) {
+    const idx = leads.findIndex(l => l.id === editId);
+    if (idx >= 0) leads[idx] = data;
+  } else {
+    leads.push(data);
+  }
+
+  save();
+  closeModal();
+  render();
+  toast(editId ? 'Lead updated' : 'Lead added');
+}
+
+function editLead(id) { openModal(id); }
+
+function deleteLead(id) {
+  if (!confirm('Delete this lead?')) return;
+  leads = leads.filter(l => l.id !== id);
+  save();
+  render();
+  toast('Lead deleted');
+}
+
+function exportCSV() {
+  if (leads.length === 0) { toast('No leads to export'); return; }
+  const headers = ['Business','Owner','Phone','Email','Industry','Date Contacted','Method','Status','Follow-Up','Response','Notes'];
+  const rows = leads.map(l => [l.business,l.owner,l.phone,l.email,l.industry,l.dateContacted,l.method,l.status,l.followUp,l.response,l.notes].map(v => '"'+(v||'').replace(/"/g,'""')+'"').join(','));
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'janovum_leads_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exported');
+}
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+  if (e.ctrlKey && e.key === 'n') { e.preventDefault(); openModal(); }
+});
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('modalOverlay')) closeModal(); });
+
+// Init
+load();
+render();
+</script>
+</body>
+</html>

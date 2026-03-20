@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — Consultation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0a;
+    --bg2: #111111;
+    --bg3: #1a1a1a;
+    --white: #ffffff;
+    --gray: #999999;
+    --light-gray: #cccccc;
+    --gold: #D4AF37;
+    --gold-dim: rgba(212,175,55,0.15);
+    --green: #00C853;
+    --green-dim: rgba(0,200,83,0.12);
+    --blue: #4A90D9;
+    --blue-dim: rgba(74,144,217,0.12);
+    --warm-gold: #E8C547;
+    --soft-blue: #5BA0E0;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--white);
+    -webkit-font-smoothing: antialiased;
+    cursor: default;
+    user-select: none;
+  }
+
+  /* Slide wrapper */
+  .deck { width: 100%; height: 100%; position: relative; }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 80px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    transform: translateX(40px);
+    text-align: center;
+    overflow-y: auto;
+  }
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+  }
+  .slide.exit-left {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  /* Typography */
+  h1 { font-size: clamp(38px,5vw,72px); font-weight: 900; line-height: 1.1; letter-spacing: -1px; }
+  h2 { font-size: clamp(28px,3.8vw,52px); font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; }
+  h3 { font-size: clamp(22px,2.8vw,36px); font-weight: 700; line-height: 1.25; }
+  p, li { font-size: clamp(15px,1.5vw,20px); line-height: 1.6; color: var(--light-gray); }
+  .subtitle { font-size: clamp(16px,1.8vw,24px); color: var(--gray); font-weight: 400; margin-top: 14px; }
+  .gold { color: var(--gold); }
+  .green { color: var(--green); }
+  .blue { color: var(--blue); }
+
+  /* Customize placeholders */
+  .customize {
+    background: var(--gold-dim);
+    border: 2px dashed var(--gold);
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: var(--gold);
+    font-weight: 600;
+    font-size: 0.85em;
+    display: inline-block;
+    margin: 6px 0;
+    cursor: default;
+  }
+
+  /* Divider */
+  .divider {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--blue), var(--gold));
+    border-radius: 2px;
+    margin: 20px auto;
+  }
+
+  /* Logo */
+  .logo-text {
+    font-size: clamp(56px,8vw,110px);
+    font-weight: 900;
+    letter-spacing: -3px;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--soft-blue) 30%, var(--gold) 70%, var(--warm-gold) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Question cards for discussion slide */
+  .question-list {
+    max-width: 750px;
+    width: 100%;
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .question-card {
+    background: var(--bg2);
+    border: 1px solid #1e1e1e;
+    border-left: 4px solid var(--soft-blue);
+    border-radius: 12px;
+    padding: 22px 28px;
+    text-align: left;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .question-card:hover {
+    border-left-color: var(--gold);
+    background: var(--bg3);
+  }
+  .question-card p {
+    font-size: clamp(16px,1.6vw,21px);
+    color: var(--white);
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  /* Flow comparison */
+  .flow-container {
+    display: flex;
+    gap: 40px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+  }
+  .flow-column {
+    flex: 1;
+    min-width: 300px;
+    max-width: 450px;
+  }
+  .flow-column h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+  }
+  .flow-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: var(--bg2);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .flow-step .icon { font-size: 20px; flex-shrink: 0; }
+  .flow-arrow {
+    text-align: center;
+    color: #333;
+    font-size: 18px;
+    margin: 4px 0;
+  }
+
+  /* Feature/add-on grid */
+  .addon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 28px;
+  }
+  .addon-card {
+    background: var(--bg2);
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    padding: 22px 24px;
+    text-align: left;
+    transition: border-color 0.3s, transform 0.2s;
+    cursor: default;
+  }
+  .addon-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .addon-card .card-icon { font-size: 24px; margin-bottom: 8px; }
+  .addon-card h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--white); }
+  .addon-card p { font-size: 13px; color: var(--gray); line-height: 1.45; }
+
+  /* Core feature grid */
+  .core-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 860px;
+    margin-top: 28px;
+  }
+  .core-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--bg2);
+    border: 1px solid #1e1e1e;
+    border-radius: 10px;
+    transition: border-color 0.3s;
+  }
+  .core-item:hover { border-color: var(--soft-blue); }
+  .core-item .ci-icon { font-size: 22px; flex-shrink: 0; }
+  .core-item span { font-size: 15px; font-weight: 600; }
+
+  /* Phone CTA */
+  .phone-cta {
+    background: var(--bg2);
+    border: 2px solid var(--soft-blue);
+    border-radius: 16px;
+    padding: 40px 56px;
+    margin-top: 32px;
+    max-width: 520px;
+  }
+  .phone-number {
+    font-size: clamp(26px,3.2vw,40px);
+    font-weight: 900;
+    color: var(--soft-blue);
+    letter-spacing: 1px;
+    margin: 14px 0 8px;
+  }
+
+  /* Automation flow */
+  .auto-flow {
+    max-width: 700px;
+    margin-top: 28px;
+    width: 100%;
+  }
+  .auto-step {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 22px;
+    background: var(--bg2);
+    border-radius: 10px;
+    border-left: 3px solid var(--green);
+    margin-bottom: 6px;
+    text-align: left;
+  }
+  .auto-step .a-icon { font-size: 22px; flex-shrink: 0; }
+  .auto-step p { font-size: 15px; color: var(--white); font-weight: 500; }
+  .auto-connector {
+    margin-left: 36px;
+    color: #333;
+    font-size: 16px;
+    line-height: 1;
+    padding: 2px 0;
+  }
+
+  /* AI employee cards */
+  .ai-emp-list {
+    max-width: 700px;
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+  .ai-emp-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--bg2);
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    text-align: left;
+    transition: border-color 0.3s;
+  }
+  .ai-emp-card:hover { border-color: var(--blue); }
+  .ai-emp-card .emp-icon { font-size: 28px; flex-shrink: 0; }
+  .ai-emp-card p { font-size: 16px; color: var(--white); font-weight: 500; }
+  .ai-emp-card p span { color: var(--gray); font-weight: 400; font-size: 14px; }
+
+  /* Build template */
+  .build-template {
+    max-width: 750px;
+    width: 100%;
+    margin-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .build-box {
+    background: var(--bg2);
+    border: 2px dashed #2a2a2a;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+    min-height: 120px;
+  }
+  .build-box h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--soft-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  /* Timeline steps */
+  .timeline {
+    max-width: 700px;
+    margin-top: 28px;
+    width: 100%;
+  }
+  .tl-step {
+    display: flex;
+    gap: 20px;
+    padding: 18px 0;
+    border-bottom: 1px solid #1a1a1a;
+    text-align: left;
+  }
+  .tl-step:last-child { border: none; }
+  .tl-day {
+    flex-shrink: 0;
+    width: 80px;
+    font-weight: 800;
+    font-size: 15px;
+    color: var(--soft-blue);
+    padding-top: 2px;
+  }
+  .tl-content h4 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .tl-content p { font-size: 14px; color: var(--gray); }
+
+  /* Price card */
+  .price-card {
+    background: linear-gradient(145deg, #141414, #1a1a1a);
+    border: 1px solid #222;
+    border-radius: 20px;
+    padding: 40px 48px;
+    max-width: 500px;
+    margin-top: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+  .price-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 160px; height: 160px;
+    background: var(--blue-dim);
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 14px 0;
+    border-bottom: 1px solid #1e1e1e;
+  }
+  .price-row:last-child { border: none; }
+  .price-label { color: var(--gray); font-size: 15px; }
+  .price-value { font-size: 26px; font-weight: 800; }
+
+  /* Next steps */
+  .next-steps {
+    max-width: 600px;
+    margin-top: 28px;
+    width: 100%;
+  }
+  .ns-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 16px 0;
+    text-align: left;
+  }
+  .ns-num {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--soft-blue), var(--blue));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .ns-item p { font-size: 16px; color: var(--white); font-weight: 500; padding-top: 6px; }
+
+  /* Contact grid */
+  .contact-grid {
+    display: flex;
+    gap: 28px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .contact-item {
+    background: var(--bg2);
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    padding: 22px 28px;
+    min-width: 200px;
+  }
+  .contact-item .label { font-size: 12px; color: var(--gray); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .contact-item .value { font-size: 17px; font-weight: 600; }
+
+  /* Slide counter */
+  .counter {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    font-size: 14px;
+    color: #444;
+    font-weight: 500;
+    z-index: 100;
+    letter-spacing: 1px;
+  }
+
+  /* Nav arrows */
+  .nav-arrows {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+  .nav-btn {
+    width: 44px; height: 44px;
+    background: var(--bg2);
+    border: 1px solid #222;
+    border-radius: 50%;
+    color: var(--gray);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { border-color: var(--blue); color: var(--white); }
+
+  /* Progress bar */
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--soft-blue), var(--gold));
+    z-index: 100;
+    transition: width 0.4s ease;
+  }
+
+  /* ROI box */
+  .roi-box {
+    background: var(--green-dim);
+    border: 1px solid rgba(0,200,83,0.25);
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin-top: 20px;
+    max-width: 650px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .slide { padding: 40px 24px; }
+    .flow-container { gap: 20px; }
+    .flow-column { min-width: 260px; }
+    .addon-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+    .addon-card { padding: 16px 18px; }
+    .build-template { grid-template-columns: 1fr; }
+    .phone-cta { padding: 28px 32px; }
+    .price-card { padding: 28px 32px; }
+    .nav-arrows { bottom: 16px; }
+    .counter { bottom: 16px; right: 16px; }
+    .contact-grid { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<div class="counter" id="counter"></div>
+<div class="nav-arrows">
+  <button class="nav-btn" onclick="prev()">&#8592;</button>
+  <button class="nav-btn" onclick="next()">&#8594;</button>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1 — Welcome -->
+  <div class="slide active">
+    <div class="logo-text">JANOVUM</div>
+    <div class="divider"></div>
+    <p style="font-size:clamp(22px,2.5vw,34px);color:var(--white);font-weight:600;margin-top:12px;">
+      Welcome, <span class="customize">[Business Name]</span>
+    </p>
+    <p style="margin-top:28px;font-size:clamp(16px,1.6vw,21px);color:var(--light-gray);max-width:550px;line-height:1.7;">
+      I'm excited to show you what we've been building.
+    </p>
+  </div>
+
+  <!-- SLIDE 2 — About Jaden -->
+  <div class="slide">
+    <h2>I'm <span class="gold">Jaden</span></h2>
+    <div class="divider"></div>
+    <p style="font-size:clamp(18px,2vw,26px);max-width:700px;color:var(--white);font-weight:500;margin-top:16px;line-height:1.7;">
+      Founder of Janovum.
+    </p>
+    <p style="margin-top:24px;font-size:clamp(16px,1.6vw,21px);max-width:650px;color:var(--light-gray);line-height:1.8;">
+      I personally build every system for every client. You're not getting a sales rep -- you're getting the person who builds it.
+    </p>
+    <p style="margin-top:28px;font-size:16px;color:var(--soft-blue);font-weight:600;">
+      Everything I show you today, I built myself.
+    </p>
+  </div>
+
+  <!-- SLIDE 3 — Small Question #1 -->
+  <div class="slide">
+    <h2>Before We Dive In</h2>
+    <div class="divider"></div>
+    <p style="font-size:clamp(20px,2.2vw,30px);max-width:700px;color:var(--white);font-weight:600;margin-top:20px;line-height:1.5;">
+      "How are you handling your calls right now?"
+    </p>
+    <p style="margin-top:32px;font-size:16px;color:var(--gray);max-width:500px;line-height:1.7;">
+      Do you pick up yourself? Have someone at the front desk? Or do most of them go to voicemail?
+    </p>
+    <p style="margin-top:28px;font-size:14px;color:var(--soft-blue);font-style:italic;">
+      Just want to understand where you're at so I can show you what matters most.
+    </p>
+  </div>
+
+  <!-- SLIDE 4 — What We Do -->
+  <div class="slide">
+    <h2>This Is What We <span class="blue">Built</span></h2>
+    <div class="divider"></div>
+    <p style="font-size:clamp(16px,1.6vw,21px);max-width:700px;color:var(--light-gray);margin-top:16px;line-height:1.8;">
+      A customer calls your business at <span style="color:var(--white);font-weight:600;">10 PM on a Saturday.</span> Nobody's there.
+    </p>
+    <p style="margin-top:20px;font-size:clamp(16px,1.6vw,21px);max-width:700px;color:var(--light-gray);line-height:1.8;">
+      But the AI picks up in under a second. It knows your services, your hours, your prices. It has a <span style="color:var(--white);font-weight:600;">full conversation.</span> Books the appointment. Sends the customer a confirmation text. And notifies you.
+    </p>
+    <p style="margin-top:24px;font-size:clamp(18px,2vw,24px);max-width:700px;color:var(--gold);font-weight:700;line-height:1.5;">
+      You wake up to a new booking.
+    </p>
+  </div>
+
+  <!-- SLIDE 8 — It Doesn't Stop There -->
+  <div class="slide">
+    <h2>It Doesn't Just <span class="green">Answer the Call</span></h2>
+    <p class="subtitle" style="margin-bottom:4px;">This is everything that happens from a single phone call.</p>
+    <div class="auto-flow" style="margin-top:20px;">
+      <div class="auto-step"><span class="a-icon">&#9889;</span><p>AI picks up instantly -- under 1 second, 24/7</p></div>
+      <div class="auto-connector" style="color:var(--green);">&#8595;</div>
+      <div class="auto-step"><span class="a-icon">&#128172;</span><p>Has a real conversation -- answers questions about your business</p></div>
+      <div class="auto-connector" style="color:var(--green);">&#8595;</div>
+      <div class="auto-step"><span class="a-icon">&#128197;</span><p>Books the appointment right on the call</p></div>
+      <div class="auto-connector" style="color:var(--green);">&#8595;</div>
+      <div class="auto-step"><span class="a-icon">&#128233;</span><p>Sends confirmation text + email to the customer</p></div>
+      <div class="auto-connector" style="color:var(--green);">&#8595;</div>
+      <div class="auto-step"><span class="a-icon">&#128227;</span><p>Notifies you with all the details</p></div>
+      <div class="auto-connector" style="color:var(--green);">&#8595;</div>
+      <div class="auto-step"><span class="a-icon">&#9200;</span><p>Sends the customer a reminder before their appointment</p></div>
+      <div class="auto-connector" style="color:var(--green);">&#8595;</div>
+      <div class="auto-step"><span class="a-icon">&#11088;</span><p>Follows up after -- asks for a review, sends a thank you</p></div>
+    </div>
+    <p style="margin-top:20px;font-size:clamp(16px,1.6vw,20px);color:var(--white);font-weight:600;max-width:650px;">
+      A receptionist picks up the phone. <span class="gold">This runs your entire customer pipeline.</span>
+    </p>
+  </div>
+
+  <!-- SLIDE 9 — Small Question #2 -->
+  <div class="slide">
+    <h2>Real Quick --</h2>
+    <div class="divider"></div>
+    <p style="font-size:clamp(20px,2.2vw,30px);max-width:700px;color:var(--white);font-weight:600;margin-top:20px;line-height:1.5;">
+      "What's the one thing that eats up most of your time every day?"
+    </p>
+    <p style="margin-top:32px;font-size:16px;color:var(--gray);max-width:500px;line-height:1.7;">
+      Answering calls? Scheduling? Following up with people? Something else entirely?
+    </p>
+    <p style="margin-top:28px;font-size:14px;color:var(--soft-blue);font-style:italic;">
+      This helps me figure out which features to focus on for you.
+    </p>
+  </div>
+
+  <!-- SLIDE 10 — The Full Arsenal -->
+  <div class="slide">
+    <h2>The Full <span class="gold">Arsenal</span></h2>
+    <p class="subtitle" style="margin-bottom:4px;">Everything we can build into your system.</p>
+    <div class="addon-grid" style="grid-template-columns:repeat(auto-fit,minmax(190px,1fr));">
+      <div class="addon-card"><div class="card-icon">&#128222;</div><h4>24/7 AI Receptionist</h4><p>Answers every call instantly, day or night</p></div>
+      <div class="addon-card"><div class="card-icon">&#128197;</div><h4>Appointment Booking</h4><p>Books directly into your calendar on the call</p></div>
+      <div class="addon-card"><div class="card-icon">&#128178;</div><h4>Instant Quoting</h4><p>Gives price estimates live on the call</p></div>
+      <div class="addon-card"><div class="card-icon">&#128218;</div><h4>Custom Knowledge Base</h4><p>Knows your entire business inside and out</p></div>
+      <div class="addon-card"><div class="card-icon">&#128260;</div><h4>Workflow Automations</h4><p>Any manual process you do, automated</p></div>
+      <div class="addon-card"><div class="card-icon">&#128233;</div><h4>Auto Follow-Ups</h4><p>Texts and emails after every interaction</p></div>
+      <div class="addon-card"><div class="card-icon">&#11088;</div><h4>Review Requests</h4><p>Asks happy customers for Google reviews</p></div>
+      <div class="addon-card"><div class="card-icon">&#128268;</div><h4>CRM Integration</h4><p>Syncs with whatever tools you already use</p></div>
+      <div class="addon-card"><div class="card-icon">&#128172;</div><h4>AI Employees</h4><p>Telegram, email, SMS -- AI agents on any channel</p></div>
+      <div class="addon-card"><div class="card-icon">&#128247;</div><h4>Social Media Manager</h4><p>Posts, schedules, engages -- all platforms</p></div>
+      <div class="addon-card"><div class="card-icon">&#128202;</div><h4>Analytics Dashboards</h4><p>See every metric about your business</p></div>
+      <div class="addon-card"><div class="card-icon">&#127912;</div><h4>Content Creation</h4><p>AI-generated images, posts, and marketing</p></div>
+    </div>
+  </div>
+
+  <!-- The Real Cost Without Automation -->
+  <div class="slide">
+    <h2>What This <span class="gold">Actually Costs</span> Without AI</h2>
+    <p class="subtitle" style="margin-bottom:8px;">Realistically, here's what most small businesses spend to cover what the AI handles.</p>
+    <div style="display:flex;gap:20px;margin-top:24px;flex-wrap:wrap;justify-content:center;max-width:1000px;width:100%;">
+
+      <!-- Traditional Cost Column -->
+      <div style="flex:1;min-width:320px;max-width:460px;background:var(--bg2);border:1px solid #1e1e1e;border-radius:16px;padding:28px;">
+        <h3 style="font-size:16px;color:var(--gray);margin-bottom:20px;text-align:center;">The Traditional Way</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg3);border-radius:8px;">
+            <span style="font-size:14px;color:var(--light-gray);">&#128222; Part-Time Front Desk / Receptionist</span>
+            <span style="font-size:15px;font-weight:700;color:var(--light-gray);">$2,000-3,000/mo</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg3);border-radius:8px;">
+            <span style="font-size:14px;color:var(--light-gray);">&#128337; After-Hours Answering Service</span>
+            <span style="font-size:15px;font-weight:700;color:var(--light-gray);">$300-800/mo</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg3);border-radius:8px;">
+            <span style="font-size:14px;color:var(--light-gray);">&#128197; Scheduling / CRM / Email Tools</span>
+            <span style="font-size:15px;font-weight:700;color:var(--light-gray);">$100-300/mo</span>
+          </div>
+        </div>
+        <div style="margin-top:16px;padding:14px 16px;background:rgba(255,255,255,0.03);border:1px solid #2a2a2a;border-radius:8px;text-align:center;">
+          <span style="font-size:13px;color:var(--gray);">Realistic Monthly Range</span>
+          <div style="font-size:26px;font-weight:900;color:var(--white);margin-top:4px;">$2,500 - $4,000/mo</div>
+          <span style="font-size:12px;color:var(--gray);">And that still only covers business hours</span>
+        </div>
+      </div>
+
+      <!-- Limitations Column -->
+      <div style="flex:1;min-width:280px;max-width:400px;display:flex;flex-direction:column;gap:12px;justify-content:center;">
+        <p style="font-size:16px;font-weight:700;color:var(--white);margin-bottom:4px;">What you're still missing:</p>
+        <div style="padding:14px 18px;background:var(--bg2);border-left:3px solid var(--gray);border-radius:0 8px 8px 0;">
+          <p style="font-size:14px;color:var(--light-gray);margin:0;">No one answering <strong style="color:var(--white);">after hours, weekends, or holidays</strong></p>
+        </div>
+        <div style="padding:14px 18px;background:var(--bg2);border-left:3px solid var(--gray);border-radius:0 8px 8px 0;">
+          <p style="font-size:14px;color:var(--light-gray);margin:0;">Can only take <strong style="color:var(--white);">one call at a time</strong></p>
+        </div>
+        <div style="padding:14px 18px;background:var(--bg2);border-left:3px solid var(--gray);border-radius:0 8px 8px 0;">
+          <p style="font-size:14px;color:var(--light-gray);margin:0;">No automated <strong style="color:var(--white);">follow-ups or email responses</strong></p>
+        </div>
+        <div style="padding:14px 18px;background:var(--bg2);border-left:3px solid var(--gray);border-radius:0 8px 8px 0;">
+          <p style="font-size:14px;color:var(--light-gray);margin:0;">Sick days, turnover, <strong style="color:var(--white);">retraining</strong></p>
+        </div>
+        <div style="padding:14px 18px;background:var(--bg2);border-left:3px solid var(--green);border-radius:0 8px 8px 0;margin-top:8px;">
+          <p style="font-size:15px;color:var(--green);margin:0;font-weight:600;">One system replaces all of it. Runs 24/7. A fraction of the cost.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Live Demo -->
+  <div class="slide">
+    <h2>Don't Take My Word for It.<br><span class="blue">Call It Right Now.</span></h2>
+    <div class="phone-cta">
+      <p style="font-size:14px;color:var(--gray);font-weight:500;text-transform:uppercase;letter-spacing:1px;">Live Demo Number</p>
+      <div class="phone-number">+1 (833) 958-9975</div>
+      <p style="font-size:14px;color:var(--gray);margin-top:4px;">Go ahead -- call it from your phone right now.</p>
+    </div>
+    <p style="margin-top:28px;font-size:16px;color:var(--gray);max-width:500px;line-height:1.6;">
+      This is a live AI receptionist. Hear what your customers would hear.
+    </p>
+  </div>
+
+  <!-- How It Works -->
+  <div class="slide">
+    <h2>How It <span class="blue">Works</span></h2>
+    <p class="subtitle" style="margin-bottom:8px;">Three simple steps.</p>
+    <div class="next-steps" style="max-width:650px;">
+      <div class="ns-item">
+        <div class="ns-num">1</div>
+        <p><strong>We learn your business</strong> -- that's this call right here</p>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">2</div>
+        <p><strong>I personally build your AI</strong> -- 3-4 days, from scratch, just for you</p>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">3</div>
+        <p><strong>You review it, approve it, go live</strong> -- nothing launches until you love it</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 15 — The Build Process -->
+  <div class="slide">
+    <h2>The <span class="gold">Build Process</span></h2>
+    <div class="divider"></div>
+    <p style="font-size:clamp(17px,1.8vw,22px);max-width:700px;color:var(--light-gray);margin-top:16px;line-height:1.8;">
+      I spend 3-4 days personally building your system. I learn everything about your business -- your services, your FAQs, your tone, your hours.
+    </p>
+    <p style="margin-top:20px;font-size:clamp(17px,1.8vw,22px);max-width:700px;color:var(--light-gray);line-height:1.8;">
+      I configure every response. I test every scenario.
+    </p>
+    <p style="margin-top:28px;font-size:clamp(18px,2vw,24px);color:var(--white);font-weight:700;max-width:600px;">
+      Nothing goes live until you love it.
+    </p>
+    <p style="margin-top:24px;font-size:15px;color:var(--soft-blue);font-weight:500;">
+      This isn't a template. It's handcrafted for your business.
+    </p>
+  </div>
+
+  <!-- Your Business -->
+  <div class="slide">
+    <h2>Tell Me About <span class="blue">Your Business</span></h2>
+    <p class="subtitle" style="margin-bottom:8px;">I need to understand how things run so I can build the AI right.</p>
+    <div class="question-list">
+      <div class="question-card">
+        <p>"What services do you offer? Walk me through what a customer can book or buy from you."</p>
+      </div>
+      <div class="question-card">
+        <p>"What are your business hours? Any different hours for different days?"</p>
+      </div>
+      <div class="question-card">
+        <p>"What do callers typically ask about? What are the top 5-10 questions you get?"</p>
+      </div>
+      <div class="question-card">
+        <p>"How many calls do you get per day or per week right now?"</p>
+      </div>
+      <div class="question-card">
+        <p>"Do you have multiple locations or just one?"</p>
+      </div>
+    </div>
+    <p style="margin-top:24px;font-size:14px;color:var(--gold);">Every answer here directly shapes how I build your AI.</p>
+  </div>
+
+  <!-- SLIDE 18 — Going Deeper -->
+  <div class="slide">
+    <h2>Going <span class="gold">Deeper</span></h2>
+    <p class="subtitle" style="margin-bottom:8px;">These details make the AI sound like it's been working at your business for years.</p>
+    <div class="question-list">
+      <div class="question-card">
+        <p>"Do you give estimates or quotes over the phone? If so, what's your pricing structure?"</p>
+      </div>
+      <div class="question-card">
+        <p>"How do you currently schedule? Google Calendar, software, pen and paper?"</p>
+      </div>
+      <div class="question-card">
+        <p>"What tone should the AI have? Professional, friendly, casual?"</p>
+      </div>
+      <div class="question-card">
+        <p>"Are there calls that should always go to a real person? Emergencies?"</p>
+      </div>
+    </div>
+    <p style="margin-top:24px;font-size:14px;color:#555;">Take your time. This is the foundation of everything I build for you.</p>
+  </div>
+
+  <!-- SLIDE 19 — What I'll Need From You -->
+  <div class="slide">
+    <h2>What I'll Need <span class="blue">From You</span></h2>
+    <p class="subtitle" style="margin-bottom:8px;">I'll send you a simple form after this call that walks through everything.</p>
+    <div class="question-list" style="max-width:700px;">
+      <div class="question-card" style="border-left-color:var(--gold);">
+        <p style="font-style:normal;font-size:15px;"><strong style="color:var(--gold);">Service List</strong> -- Every service you offer, with descriptions</p>
+      </div>
+      <div class="question-card" style="border-left-color:var(--gold);">
+        <p style="font-style:normal;font-size:15px;"><strong style="color:var(--gold);">FAQ Document</strong> -- The top questions callers ask and how you want them answered</p>
+      </div>
+      <div class="question-card" style="border-left-color:var(--gold);">
+        <p style="font-style:normal;font-size:15px;"><strong style="color:var(--gold);">Business Hours</strong> -- Regular hours, holiday hours, any exceptions</p>
+      </div>
+      <div class="question-card" style="border-left-color:var(--gold);">
+        <p style="font-style:normal;font-size:15px;"><strong style="color:var(--gold);">Calendar Access</strong> -- Whatever scheduling tool you use so I can connect booking</p>
+      </div>
+      <div class="question-card" style="border-left-color:var(--gold);">
+        <p style="font-style:normal;font-size:15px;"><strong style="color:var(--gold);">Pricing Structure</strong> <span style="color:var(--gray);">(if quoting)</span> -- Your rates, packages, or pricing rules</p>
+      </div>
+      <div class="question-card" style="border-left-color:var(--gold);">
+        <p style="font-style:normal;font-size:15px;"><strong style="color:var(--gold);">Call Handling Rules</strong> -- When to transfer, when to take a message, what's urgent</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 20 — Your Custom Build Plan -->
+  <div class="slide">
+    <h2>Your Custom <span class="gold">Build Plan</span></h2>
+    <p class="subtitle" style="margin-bottom:4px;">Based on everything we discussed -- here's what I'd build for you.</p>
+    <div class="build-template" style="grid-template-columns:1fr 1fr;">
+      <div class="build-box" style="border-color:var(--soft-blue);">
+        <h4>What You're Getting</h4>
+        <div class="customize" style="font-size:13px;border-width:1px;padding:6px 12px;">[Fill in live: Core receptionist + add-ons discussed]</div>
+      </div>
+      <div class="build-box" style="border-color:#FF6B6B;">
+        <h4>What I Still Need</h4>
+        <div class="customize" style="font-size:13px;border-width:1px;padding:6px 12px;">[Fill in live: Missing info -- pricing list, FAQ, calendar, etc.]</div>
+      </div>
+      <div class="build-box" style="border-color:var(--gold);">
+        <h4>Estimated Timeline</h4>
+        <div class="customize" style="font-size:13px;border-width:1px;padding:6px 12px;">[Fill in live: 3-4 days for base, longer for complex setups]</div>
+      </div>
+      <div class="build-box" style="border-color:var(--green);">
+        <h4>Investment</h4>
+        <div class="customize" style="font-size:13px;border-width:1px;padding:6px 12px;">[We'll talk about this next]</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- The Investment -->
+  <div class="slide">
+    <h2>The <span class="gold">Investment</span></h2>
+    <p class="subtitle" style="margin-bottom:4px;max-width:650px;">Here's what it costs to have all of this working for your business.</p>
+    <div style="display:flex;gap:24px;margin-top:24px;flex-wrap:wrap;justify-content:center;max-width:1000px;">
+      <div class="price-card" style="flex:1;min-width:320px;max-width:480px;">
+        <div class="price-row">
+          <span class="price-label">One-Time Setup</span>
+          <span class="price-value gold">$1,000</span>
+        </div>
+        <div class="price-row" style="flex-direction:column;gap:8px;align-items:flex-start;">
+          <span class="price-label" style="font-size:14px;color:var(--light-gray);font-weight:500;">What's included in setup:</span>
+          <span style="font-size:13px;color:var(--gray);line-height:1.8;">
+            &#10003; 3-4 days of hands-on development by Jaden<br>
+            &#10003; Custom AI training on your specific business<br>
+            &#10003; Knowledge base built from your services & FAQs<br>
+            &#10003; Calendar & scheduling integration<br>
+            &#10003; Voice, tone, and personality customization<br>
+            &#10003; Full testing & refinement before go-live<br>
+            &#10003; First month of service included
+          </span>
+        </div>
+        <div class="price-row">
+          <span class="price-label">Monthly After</span>
+          <span class="price-value">$500<span style="font-size:15px;color:var(--gray);">/mo</span></span>
+        </div>
+        <div class="price-row" style="border:none;padding-top:12px;">
+          <span class="price-label" style="font-size:13px;color:var(--gray);">No contracts. Month to month. Cancel anytime.</span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 23 — What Happens Next -->
+  <div class="slide">
+    <h2>What Happens <span class="blue">Next</span></h2>
+    <p class="subtitle" style="margin-bottom:4px;">No pressure. Here's the process from here.</p>
+    <div class="next-steps">
+      <div class="ns-item">
+        <div class="ns-num">1</div>
+        <p><strong>I send you the onboarding form</strong> -- a simple doc with everything I need from you</p>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">2</div>
+        <p><strong>You send it back with your info</strong> -- the more detail, the smarter your AI on day one</p>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">3</div>
+        <p><strong>I build your custom AI over 3-4 days</strong> -- training, automations, testing</p>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">4</div>
+        <p><strong>You review and approve</strong> -- call it, test it, tell me what to adjust</p>
+      </div>
+      <div class="ns-item">
+        <div class="ns-num">5</div>
+        <p><strong>Go live</strong> -- your AI starts working 24/7</p>
+      </div>
+    </div>
+    <div style="margin-top:28px;padding:20px 28px;background:var(--bg2);border-radius:12px;border:1px solid #1e1e1e;max-width:550px;">
+      <p style="font-size:16px;color:var(--white);font-weight:500;text-align:center;">
+        Take your time. I'm here when you're ready.
+      </p>
+    </div>
+  </div>
+
+  <!-- SLIDE 24 — Questions -->
+  <div class="slide">
+    <h1 style="font-size:clamp(40px,5vw,68px);">Questions?</h1>
+    <p class="subtitle" style="margin-bottom:4px;">What else would you like to know?</p>
+    <div class="divider"></div>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <div class="label">Founder</div>
+        <div class="value">Jaden</div>
+      </div>
+      <div class="contact-item">
+        <div class="label">Email</div>
+        <div class="value" style="color:var(--gold);">janovumllc@gmail.com</div>
+      </div>
+      <div class="contact-item">
+        <div class="label">Phone</div>
+        <div class="value" style="color:var(--soft-blue);">+1 (833) 958-9975</div>
+      </div>
+      <div class="contact-item">
+        <div class="label">Website</div>
+        <div class="value" style="color:var(--gold);">janovum.com</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 25 — Thank You -->
+  <div class="slide">
+    <h1 style="font-size:clamp(32px,4.5vw,58px);">Thank you for your time,<br><span class="customize" style="font-size:clamp(28px,4vw,50px);border:none;background:none;padding:0;">[Name]</span></h1>
+    <div class="divider"></div>
+    <p style="font-size:clamp(17px,1.8vw,24px);max-width:600px;color:var(--light-gray);margin-top:12px;line-height:1.6;">
+      I'm excited to build something great for<br>
+      <span class="customize" style="font-size:clamp(18px,2vw,26px);border:none;background:none;padding:0;">[Business Name]</span>
+    </p>
+    <p style="margin-top:24px;font-size:16px;color:var(--white);max-width:500px;line-height:1.6;">
+      Your onboarding form is on the way. Fill it out, send it back, and I'll start building.
+    </p>
+    <p style="margin-top:28px;font-size:15px;color:var(--gray);">janovumllc@gmail.com &nbsp;&middot;&nbsp; +1 (833) 958-9975 &nbsp;&middot;&nbsp; janovum.com</p>
+  </div>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  let current = 0;
+  const total = slides.length;
+
+  function updateUI() {
+    counter.textContent = (current + 1) + ' / ' + total;
+    progress.style.width = ((current + 1) / total * 100) + '%';
+  }
+
+  function goTo(n) {
+    if (n < 0 || n >= total || n === current) return;
+    slides[current].classList.remove('active');
+    slides[current].classList.add('exit-left');
+    const prev = current;
+    current = n;
+    slides[current].classList.add('active');
+    setTimeout(() => slides[prev].classList.remove('exit-left'), 500);
+    updateUI();
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+  });
+
+  // Click to advance (not on interactive elements)
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.nav-btn, a, button, .customize')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x > 0.3) next(); else prev();
+  });
+
+  // Touch swipe
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = e.changedTouches[0].screenX - touchStartX;
+    if (Math.abs(diff) > 50) { diff < 0 ? next() : prev(); }
+  });
+
+  updateUI();
+</script>
+
+</body>
+</html>

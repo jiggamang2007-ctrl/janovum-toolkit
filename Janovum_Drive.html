@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum Drive</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+--bg:#0a0a0a;--bg2:#111;--bg3:#1a1a1a;--bg4:#222;--bg5:#2a2a2a;
+--gold:#D4AF37;--gold2:#c49b2f;--green:#00C853;--green2:#00a844;
+--text:#e0e0e0;--text2:#999;--text3:#666;--red:#ef4444;--red2:#dc2626;
+--border:#333;--radius:8px;
+}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,textarea,select{font-family:inherit;outline:none;}
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#555;}
+
+/* HEADER */
+.header{display:flex;align-items:center;gap:16px;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:100;}
+.header-logo{font-size:20px;font-weight:800;letter-spacing:2px;background:linear-gradient(135deg,var(--gold),#f0d060,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;cursor:pointer;}
+.header-search{flex:1;max-width:560px;position:relative;}
+.header-search input{width:100%;padding:10px 16px 10px 40px;background:var(--bg3);border:1px solid var(--border);border-radius:24px;color:var(--text);font-size:14px;transition:border .2s;}
+.header-search input:focus{border-color:var(--gold);}
+.header-search .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:16px;}
+.header-search .search-clear{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text3);background:none;font-size:18px;display:none;}
+.header-right{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.view-toggle{display:flex;background:var(--bg3);border-radius:6px;overflow:hidden;}
+.view-toggle button{padding:8px 12px;background:none;color:var(--text2);font-size:16px;transition:all .2s;}
+.view-toggle button.active{background:var(--bg5);color:var(--gold);}
+.btn-new{padding:10px 20px;background:var(--gold);color:#000;font-weight:600;font-size:14px;border-radius:24px;display:flex;align-items:center;gap:6px;transition:background .2s;position:relative;}
+.btn-new:hover{background:var(--gold2);}
+.new-dropdown{position:absolute;top:100%;left:0;margin-top:8px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none;z-index:200;}
+.new-dropdown.show{display:block;}
+.new-dropdown button{display:flex;align-items:center;gap:10px;width:100%;padding:12px 16px;background:none;color:var(--text);font-size:14px;text-align:left;transition:background .15s;}
+.new-dropdown button:hover{background:var(--bg5);}
+.new-dropdown button span.ico{font-size:18px;width:24px;text-align:center;}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;transition:width .2s;}
+.sidebar-section{padding:8px 0;}
+.sidebar-section-title{padding:6px 16px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);}
+.sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:all .15s;font-size:14px;color:var(--text2);border-left:3px solid transparent;}
+.sidebar-item:hover{background:var(--bg3);color:var(--text);}
+.sidebar-item.active{background:var(--bg3);color:var(--gold);border-left-color:var(--gold);}
+.sidebar-item .ico{font-size:16px;width:22px;text-align:center;}
+.sidebar-item .badge{margin-left:auto;background:var(--bg5);color:var(--text3);font-size:11px;padding:2px 7px;border-radius:10px;}
+.sidebar-divider{height:1px;background:var(--border);margin:4px 12px;}
+.sidebar-recent-item{display:flex;align-items:center;gap:8px;padding:6px 16px 6px 24px;cursor:pointer;font-size:13px;color:var(--text3);transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sidebar-recent-item:hover{color:var(--text);background:var(--bg3);}
+.storage-bar-wrap{padding:12px 16px;margin-top:auto;}
+.storage-bar{height:4px;background:var(--bg5);border-radius:2px;overflow:hidden;}
+.storage-bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:2px;transition:width .3s;}
+.storage-label{font-size:11px;color:var(--text3);margin-top:6px;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.toolbar{display:flex;align-items:center;gap:8px;padding:12px 20px;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.breadcrumb{display:flex;align-items:center;gap:4px;font-size:14px;flex:1;min-width:0;}
+.breadcrumb span{color:var(--text3);cursor:pointer;transition:color .15s;white-space:nowrap;}
+.breadcrumb span:hover{color:var(--text);}
+.breadcrumb span.current{color:var(--gold);cursor:default;}
+.breadcrumb .sep{color:var(--text3);margin:0 2px;}
+.sort-select{padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;}
+
+/* STATS BAR */
+.stats-bar{display:flex;gap:24px;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;}
+.stat-item{font-size:12px;color:var(--text2);}
+.stat-item strong{color:var(--gold);font-weight:600;}
+
+/* FILE GRID */
+.file-area{flex:1;overflow-y:auto;padding:16px 20px;}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+.file-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;position:relative;}
+.file-card:hover{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 4px 16px rgba(212,175,55,.1);}
+.file-card .card-icon{font-size:36px;margin-bottom:10px;}
+.file-card .card-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
+.file-card .card-meta{font-size:11px;color:var(--text3);}
+.file-card .card-star{position:absolute;top:8px;right:8px;font-size:16px;background:none;color:var(--text3);transition:color .2s;}
+.file-card .card-star:hover,.file-card .card-star.starred{color:var(--gold);}
+.file-card .card-actions{position:absolute;top:8px;right:32px;display:none;}
+.file-card:hover .card-actions{display:flex;gap:2px;}
+.card-actions button{background:none;color:var(--text2);font-size:14px;padding:2px 4px;border-radius:4px;transition:all .15s;}
+.card-actions button:hover{color:var(--text);background:var(--bg5);}
+
+/* FILE LIST */
+.file-list{display:flex;flex-direction:column;}
+.file-row{display:grid;grid-template-columns:40px 1fr 100px 80px 140px 120px;align-items:center;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;gap:8px;}
+.file-row:hover{background:var(--bg3);}
+.file-row .row-icon{font-size:22px;text-align:center;}
+.file-row .row-name{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.file-row .row-type{font-size:12px;color:var(--text3);}
+.file-row .row-size{font-size:12px;color:var(--text3);}
+.file-row .row-modified{font-size:12px;color:var(--text3);}
+.file-row .row-actions{display:flex;gap:4px;justify-content:flex-end;}
+.file-row .row-actions button{background:none;color:var(--text3);font-size:14px;padding:4px;border-radius:4px;transition:all .15s;}
+.file-row .row-actions button:hover{color:var(--text);background:var(--bg5);}
+.list-header{display:grid;grid-template-columns:40px 1fr 100px 80px 140px 120px;padding:8px 12px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border);gap:8px;cursor:pointer;}
+.list-header span:hover{color:var(--text);}
+
+/* EMPTY STATE */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:var(--text3);}
+.empty-state .empty-icon{font-size:64px;margin-bottom:16px;opacity:.5;}
+.empty-state p{font-size:14px;}
+
+/* EDITOR */
+.editor-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;}
+.editor-overlay.show{display:flex;}
+.editor-panel{background:var(--bg2);border:1px solid var(--border);border-radius:12px;width:90%;max-width:900px;height:85vh;display:flex;flex-direction:column;overflow:hidden;}
+.editor-header{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--border);}
+.editor-title-input{flex:1;background:none;border:none;color:var(--text);font-size:18px;font-weight:600;}
+.editor-title-input::placeholder{color:var(--text3);}
+.editor-meta{font-size:11px;color:var(--text3);white-space:nowrap;}
+.editor-close{background:none;color:var(--text2);font-size:22px;padding:4px 8px;border-radius:6px;transition:all .15s;}
+.editor-close:hover{background:var(--bg5);color:var(--text);}
+.editor-toolbar{display:flex;align-items:center;gap:2px;padding:8px 16px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.editor-toolbar button{background:none;color:var(--text2);padding:6px 10px;border-radius:4px;font-size:14px;transition:all .15s;font-weight:600;}
+.editor-toolbar button:hover{background:var(--bg5);color:var(--text);}
+.editor-toolbar button.active{color:var(--gold);background:var(--bg4);}
+.editor-toolbar .sep{width:1px;height:20px;background:var(--border);margin:0 4px;}
+.editor-body{flex:1;overflow:hidden;display:flex;flex-direction:column;}
+.editor-content{flex:1;padding:20px;overflow-y:auto;font-size:15px;line-height:1.7;color:var(--text);outline:none;min-height:200px;}
+.editor-content:empty::before{content:attr(data-placeholder);color:var(--text3);}
+.editor-footer{display:flex;align-items:center;gap:12px;padding:12px 20px;border-top:1px solid var(--border);}
+.editor-footer .word-count{font-size:12px;color:var(--text3);margin-right:auto;}
+.editor-footer .auto-save{font-size:12px;color:var(--green);display:none;}
+.editor-footer .auto-save.show{display:block;}
+.btn-editor{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:500;transition:all .2s;}
+.btn-save{background:var(--gold);color:#000;}
+.btn-save:hover{background:var(--gold2);}
+.btn-export{background:var(--bg4);color:var(--text);}
+.btn-export:hover{background:var(--bg5);}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;display:none;align-items:center;justify-content:center;}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;min-width:360px;max-width:480px;width:90%;}
+.modal h3{font-size:18px;font-weight:600;margin-bottom:16px;color:var(--text);}
+.modal-input{width:100%;padding:10px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;margin-bottom:16px;}
+.modal-input:focus{border-color:var(--gold);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;}
+.modal-btns button{padding:8px 20px;border-radius:6px;font-size:14px;font-weight:500;transition:all .2s;}
+.btn-cancel{background:var(--bg4);color:var(--text);}
+.btn-cancel:hover{background:var(--bg5);}
+.btn-confirm{background:var(--gold);color:#000;}
+.btn-confirm:hover{background:var(--gold2);}
+.btn-danger{background:var(--red);color:#fff;}
+.btn-danger:hover{background:var(--red2);}
+.move-folder-list{max-height:240px;overflow-y:auto;margin-bottom:16px;border:1px solid var(--border);border-radius:6px;}
+.move-folder-item{padding:10px 14px;cursor:pointer;font-size:14px;transition:background .15s;display:flex;align-items:center;gap:8px;}
+.move-folder-item:hover{background:var(--bg3);}
+.move-folder-item.selected{background:var(--bg4);color:var(--gold);}
+
+/* CONTEXT MENU */
+.context-menu{position:fixed;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);min-width:180px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:700;display:none;}
+.context-menu.show{display:block;}
+.context-menu button{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:none;color:var(--text);font-size:13px;text-align:left;transition:background .15s;}
+.context-menu button:hover{background:var(--bg5);}
+.context-menu button .ico{font-size:15px;width:20px;text-align:center;}
+.context-menu .ctx-sep{height:1px;background:var(--border);margin:4px 8px;}
+
+/* SEARCH RESULTS */
+.search-results{padding:20px;}
+.search-results h3{font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text2);}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.search-result-item:hover{border-color:var(--gold);}
+.search-result-item .sr-icon{font-size:24px;}
+.search-result-item .sr-name{font-size:14px;font-weight:500;}
+.search-result-item .sr-path{font-size:11px;color:var(--text3);}
+.search-result-item .sr-snippet{font-size:12px;color:var(--text2);margin-top:2px;}
+mark{background:rgba(212,175,55,.3);color:var(--gold);padding:0 2px;border-radius:2px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 20px;font-size:14px;z-index:900;box-shadow:0 4px 16px rgba(0,0,0,.4);transform:translateY(100px);opacity:0;transition:all .3s;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.success{border-color:var(--green);}
+.toast.error{border-color:var(--red);}
+
+/* MOBILE */
+.sidebar-toggle{display:none;background:none;color:var(--text);font-size:22px;padding:4px;}
+@media(max-width:768px){
+.sidebar{position:fixed;left:-260px;top:0;bottom:0;z-index:300;transition:left .3s;width:240px;}
+.sidebar.open{left:0;}
+.sidebar-toggle{display:block;}
+.sidebar-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:299;display:none;}
+.sidebar-backdrop.show{display:block;}
+.file-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+.file-row{grid-template-columns:32px 1fr 80px 80px;font-size:12px;}
+.file-row .row-type,.file-row .row-size{display:none;}
+.list-header{grid-template-columns:32px 1fr 80px 80px;}
+.list-header span:nth-child(3),.list-header span:nth-child(4){display:none;}
+.header{padding:10px 12px;gap:10px;}
+.header-logo{font-size:16px;}
+.stats-bar{gap:12px;padding:8px 12px;flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+<button class="sidebar-toggle" onclick="toggleSidebar()">&#9776;</button>
+<div class="header-logo" onclick="navigateTo('root')">JANOVUM DRIVE</div>
+<div class="header-search">
+<span class="search-icon">&#128269;</span>
+<input type="text" id="searchInput" placeholder="Search documents..." oninput="handleSearch(this.value)">
+<button class="search-clear" id="searchClear" onclick="clearSearch()">&#10005;</button>
+</div>
+<div class="header-right">
+<div class="view-toggle">
+<button id="btnGrid" class="active" onclick="setView('grid')" title="Grid view">&#9638;</button>
+<button id="btnList" onclick="setView('list')" title="List view">&#9776;</button>
+</div>
+<div style="position:relative;">
+<button class="btn-new" onclick="toggleNewMenu(event)">&#43; New</button>
+<div class="new-dropdown" id="newDropdown">
+<button onclick="newDocument()"><span class="ico">&#128196;</span> New Document</button>
+<button onclick="newFolder()"><span class="ico">&#128193;</span> New Folder</button>
+<button onclick="uploadFile()"><span class="ico">&#128206;</span> Upload File</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+
+<!-- SIDEBAR -->
+<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+<div class="sidebar-section">
+<div class="sidebar-item active" data-nav="root" onclick="navigateTo('root')">
+<span class="ico">&#127968;</span> My Drive
+</div>
+<div class="sidebar-item" data-nav="starred" onclick="showStarred()">
+<span class="ico">&#11088;</span> Starred <span class="badge" id="starredCount">0</span>
+</div>
+<div class="sidebar-item" data-nav="recent" onclick="showRecent()">
+<span class="ico">&#128340;</span> Recent
+</div>
+<div class="sidebar-item" data-nav="trash" onclick="showTrash()">
+<span class="ico">&#128465;</span> Trash <span class="badge" id="trashCount">0</span>
+</div>
+</div>
+<div class="sidebar-divider"></div>
+<div class="sidebar-section">
+<div class="sidebar-section-title">Folders</div>
+<div id="sidebarFolders"></div>
+</div>
+<div class="sidebar-divider"></div>
+<div class="sidebar-section">
+<div class="sidebar-section-title">Recent Files</div>
+<div id="sidebarRecent"></div>
+</div>
+<div class="storage-bar-wrap">
+<div class="storage-bar"><div class="storage-bar-fill" id="storageBarFill" style="width:0%"></div></div>
+<div class="storage-label" id="storageLabel">0 KB used</div>
+</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+<div class="toolbar">
+<div class="breadcrumb" id="breadcrumb"></div>
+<select class="sort-select" id="sortSelect" onchange="render()">
+<option value="name-asc">Name A-Z</option>
+<option value="name-desc">Name Z-A</option>
+<option value="modified-desc" selected>Newest first</option>
+<option value="modified-asc">Oldest first</option>
+<option value="type-asc">Type</option>
+<option value="size-desc">Largest first</option>
+</select>
+</div>
+<div class="stats-bar">
+<div class="stat-item">&#128196; Documents: <strong id="statDocs">0</strong></div>
+<div class="stat-item">&#128193; Folders: <strong id="statFolders">0</strong></div>
+<div class="stat-item">&#128190; Storage: <strong id="statStorage">0 KB</strong></div>
+<div class="stat-item">&#128340; Last activity: <strong id="statActivity">-</strong></div>
+</div>
+<div class="file-area" id="fileArea"></div>
+</div>
+</div>
+
+<!-- EDITOR OVERLAY -->
+<div class="editor-overlay" id="editorOverlay">
+<div class="editor-panel">
+<div class="editor-header">
+<input class="editor-title-input" id="editorTitle" placeholder="Untitled Document">
+<span class="editor-meta" id="editorMeta"></span>
+<button class="editor-close" onclick="closeEditor()">&#10005;</button>
+</div>
+<div class="editor-toolbar">
+<button onclick="execCmd('bold')" title="Bold"><b>B</b></button>
+<button onclick="execCmd('italic')" title="Italic"><i>I</i></button>
+<button onclick="execCmd('underline')" title="Underline"><u>U</u></button>
+<div class="sep"></div>
+<button onclick="execCmd('formatBlock','H1')" title="Heading 1">H1</button>
+<button onclick="execCmd('formatBlock','H2')" title="Heading 2">H2</button>
+<button onclick="execCmd('formatBlock','H3')" title="Heading 3">H3</button>
+<button onclick="execCmd('formatBlock','P')" title="Paragraph">P</button>
+<div class="sep"></div>
+<button onclick="execCmd('insertUnorderedList')" title="Bullet List">&#8226; List</button>
+<button onclick="execCmd('insertOrderedList')" title="Numbered List">1. List</button>
+<div class="sep"></div>
+<button onclick="insertLink()" title="Insert Link">&#128279; Link</button>
+<button onclick="execCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+</div>
+<div class="editor-body">
+<div class="editor-content" id="editorContent" contenteditable="true" data-placeholder="Start typing your document..."></div>
+</div>
+<div class="editor-footer">
+<span class="word-count" id="wordCount">0 words</span>
+<span class="auto-save" id="autoSaveIndicator">Auto-saved</span>
+<button class="btn-editor btn-export" onclick="exportDoc('txt')">Export TXT</button>
+<button class="btn-editor btn-export" onclick="exportDoc('html')">Export HTML</button>
+<button class="btn-editor btn-save" onclick="saveDoc()">Save</button>
+</div>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal" id="modalContent"></div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div class="context-menu" id="contextMenu"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- HIDDEN FILE INPUT -->
+<input type="file" id="fileInput" style="display:none" multiple onchange="handleFileUpload(event)">
+
+<script>
+// =================== DATA LAYER ===================
+const STORAGE_KEY = 'janovum_drive';
+let data = { files: [] };
+let currentFolder = 'root';
+let currentView = 'grid';
+let editingFileId = null;
+let searchMode = false;
+let specialView = null; // 'starred', 'recent', 'trash'
+let autoSaveTimer = null;
+
+function generateId() {
+  return 'f_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6);
+}
+
+function loadData() {
+  try {
+    const ver = localStorage.getItem(STORAGE_KEY + '_ver');
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw && ver === 'v2') {
+      data = JSON.parse(raw);
+    } else {
+      initDefaultData();
+      localStorage.setItem(STORAGE_KEY + '_ver', 'v2');
+    }
+  } catch(e) {
+    initDefaultData();
+    localStorage.setItem(STORAGE_KEY + '_ver', 'v2');
+  }
+}
+
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function now() { return new Date().toISOString(); }
+
+function addFile(f) {
+  data.files.push(f);
+  saveData();
+}
+
+function getFile(id) { return data.files.find(f => f.id === id); }
+
+function getChildren(parentId, includeTrash) {
+  return data.files.filter(f => f.parent === parentId && (includeTrash || !f.trashed));
+}
+
+function getFolders(includeTrash) {
+  return data.files.filter(f => f.type === 'folder' && (includeTrash || !f.trashed));
+}
+
+function getPath(folderId) {
+  const path = [];
+  let id = folderId;
+  while (id && id !== 'root') {
+    const f = getFile(id);
+    if (!f) break;
+    path.unshift({ id: f.id, name: f.name });
+    id = f.parent;
+  }
+  path.unshift({ id: 'root', name: 'My Drive' });
+  return path;
+}
+
+function getPathString(fileId) {
+  const f = getFile(fileId);
+  if (!f) return '';
+  const path = getPath(f.parent);
+  return path.map(p => p.name).join(' > ');
+}
+
+function getIcon(file) {
+  if (file.type === 'folder') return '\u{1F4C1}';
+  if (file.type === 'document') return '\u{1F4C4}';
+  if (file.mimeType && file.mimeType.startsWith('image/')) return '\u{1F5BC}';
+  if (file.tags && file.tags.includes('template')) return '\u{1F4CB}';
+  return '\u{1F4CE}';
+}
+
+function getTypeLabel(file) {
+  if (file.type === 'folder') return 'Folder';
+  if (file.type === 'document') return 'Document';
+  if (file.mimeType) {
+    const m = file.mimeType.split('/')[1] || file.mimeType;
+    return m.toUpperCase();
+  }
+  return 'File';
+}
+
+function formatSize(bytes) {
+  if (!bytes || bytes === 0) return '-';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(2) + ' MB';
+}
+
+function formatDate(iso) {
+  if (!iso) return '-';
+  const d = new Date(iso);
+  const now2 = new Date();
+  const diff = now2 - d;
+  if (diff < 60000) return 'Just now';
+  if (diff < 3600000) return Math.floor(diff/60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff/3600000) + 'h ago';
+  if (diff < 604800000) return Math.floor(diff/86400000) + 'd ago';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getTotalStorage() {
+  const raw = localStorage.getItem(STORAGE_KEY) || '';
+  return new Blob([raw]).size;
+}
+
+// =================== INIT DEFAULT DATA ===================
+function initDefaultData() {
+  data = { files: [] };
+
+  const folders = [
+    { name: 'Contracts & Legal', id: 'fold_contracts' },
+    { name: 'Proposals', id: 'fold_proposals' },
+    { name: 'Client Docs', id: 'fold_clientdocs' },
+    { name: 'Receipts & Invoices', id: 'fold_receipts' },
+    { name: 'Sales Materials', id: 'fold_sales' },
+    { name: 'Email Templates', id: 'fold_email' },
+    { name: 'Research & Strategy', id: 'fold_research' },
+    { name: 'Guides & Setup', id: 'fold_guides' },
+    { name: 'Templates', id: 'fold_templates' },
+    { name: 'AI Agent Configs', id: 'fold_agents' },
+    { name: 'Brochures', id: 'fold_brochures' }
+  ];
+  const ts = now();
+  folders.forEach(f => {
+    data.files.push({
+      id: f.id, name: f.name, type: 'folder', parent: 'root',
+      content: '', mimeType: '', size: 0,
+      created: ts, modified: ts, starred: false, trashed: false, tags: []
+    });
+  });
+
+  // ===== CONTRACTS & LEGAL =====
+  const contracts = [
+    {
+      name: 'Janovum Service Agreement',
+      folder: 'fold_contracts',
+      starred: true,
+      tags: ['legal', 'contract'],
+      content: `<h1 style="text-align:center;border-bottom:3px solid #D4AF37;padding-bottom:12px;">JANOVUM LLC — SERVICE AGREEMENT</h1>
+<p style="text-align:center;color:#666;font-size:0.95em;">Professional AI Automation &amp; Technology Services</p>
+<hr>
+<p><strong>This Service Agreement</strong> ("Agreement") is entered into as of <strong>[DATE]</strong> ("Effective Date") by and between:</p>
+<p><strong>Service Provider:</strong><br>Janovum LLC<br>Phone: +1 (833) 958-9975<br>Website: janovum.com<br>Email: [JANOVUM EMAIL]</p>
+<p><strong>Client:</strong><br>[CLIENT LEGAL NAME] ("Client")<br>[CLIENT ADDRESS]<br>[CLIENT PHONE]<br>[CLIENT EMAIL]</p>
+<hr>
+<h2>1. SERVICES PROVIDED</h2>
+<p>Janovum LLC ("Provider") agrees to provide the following AI-powered business automation services to Client:</p>
+<ul>
+<li><strong>AI Receptionist:</strong> 24/7 AI-powered phone answering, call routing, appointment scheduling, and customer inquiry handling via dedicated business phone line.</li>
+<li><strong>Business Automation:</strong> Custom AI workflows including lead response, email management, customer follow-ups, and task automation.</li>
+<li><strong>Website &amp; Digital Presence:</strong> Business website development, hosting, and maintenance on Provider's platform.</li>
+<li><strong>Dashboard Access:</strong> Access to the Janovum Toolkit dashboard for real-time monitoring, analytics, agent management, and business insights.</li>
+<li><strong>Additional Services:</strong> [DESCRIBE ANY CUSTOM SERVICES]</li>
+</ul>
+<p><em>Specific deliverables, features, and scope are detailed in the attached Statement of Work (SOW) or as mutually agreed in writing.</em></p>
+
+<h2>2. COMPENSATION &amp; PAYMENT TERMS</h2>
+<h3>2.1 Fees</h3>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;">
+<tr style="background:#f5f5f5;"><td style="padding:10px;border:1px solid #ddd;"><strong>One-Time Setup Fee</strong></td><td style="padding:10px;border:1px solid #ddd;text-align:right;"><strong>$1,000.00</strong></td></tr>
+<tr><td style="padding:10px;border:1px solid #ddd;"><strong>Monthly Recurring Fee</strong></td><td style="padding:10px;border:1px solid #ddd;text-align:right;"><strong>$500.00/month</strong></td></tr>
+<tr style="background:#f5f5f5;"><td style="padding:10px;border:1px solid #ddd;"><strong>Total Due at Signing</strong></td><td style="padding:10px;border:1px solid #ddd;text-align:right;"><strong>$1,500.00</strong></td></tr>
+</table>
+<h3>2.2 Payment Schedule</h3>
+<ul>
+<li>Setup fee is due in full upon signing this Agreement.</li>
+<li>Monthly fees are billed on the 1st of each month, due within 15 days.</li>
+<li>First monthly payment is due at signing along with the setup fee.</li>
+</ul>
+<h3>2.3 Accepted Payment Methods</h3>
+<ul><li>Zelle</li><li>PayPal</li><li>Bank Transfer (ACH)</li><li>Cash App</li></ul>
+<h3>2.4 Late Payments</h3>
+<p>Payments not received within 15 days of the due date will incur a late fee of <strong>5% per month</strong> on the outstanding balance. Provider reserves the right to suspend services after 30 days of non-payment.</p>
+
+<h2>3. TERM &amp; RENEWAL</h2>
+<p><strong>3.1</strong> This Agreement begins on the Effective Date and continues for an initial term of <strong>[3 / 6 / 12] months</strong> ("Initial Term").</p>
+<p><strong>3.2</strong> After the Initial Term, this Agreement automatically renews on a <strong>month-to-month basis</strong> unless either party provides 30 days written notice of termination.</p>
+<p><strong>3.3</strong> Provider may offer discounted rates for longer commitment terms. Any such discounts will be documented in writing.</p>
+
+<h2>4. TERMINATION</h2>
+<p><strong>4.1 By Client:</strong> Client may terminate this Agreement with <strong>30 days written notice</strong>. No refunds for partial months. Setup fees are non-refundable.</p>
+<p><strong>4.2 By Provider:</strong> Provider may terminate this Agreement with 30 days written notice or immediately if Client breaches any material term, including non-payment.</p>
+<p><strong>4.3 Upon Termination:</strong></p>
+<ul>
+<li>All access to the Janovum platform, dashboard, and AI agents will be revoked.</li>
+<li>Client's data will be available for export for 30 days after termination.</li>
+<li>Provider will port or release any phone numbers upon request (standard carrier fees may apply).</li>
+<li>Any outstanding balance becomes immediately due.</li>
+</ul>
+
+<h2>5. SERVICE LEVEL &amp; UPTIME</h2>
+<p><strong>5.1</strong> Provider will use commercially reasonable efforts to maintain <strong>99.5% uptime</strong> for all AI services.</p>
+<p><strong>5.2</strong> Scheduled maintenance windows will be communicated at least 24 hours in advance when possible.</p>
+<p><strong>5.3</strong> Provider is not liable for downtime caused by third-party services (telephony providers, cloud infrastructure, API providers) or force majeure events.</p>
+
+<h2>6. CLIENT RESPONSIBILITIES</h2>
+<p>Client agrees to:</p>
+<ul>
+<li>Provide accurate and complete business information for AI training and configuration.</li>
+<li>Respond to onboarding requests within 5 business days.</li>
+<li>Notify Provider promptly of any changes to business hours, services, pricing, or contact information.</li>
+<li>Not use the services for illegal, fraudulent, or harmful purposes.</li>
+<li>Not attempt to reverse-engineer, copy, or redistribute Provider's software or AI models.</li>
+</ul>
+
+<h2>7. INTELLECTUAL PROPERTY</h2>
+<p><strong>7.1</strong> All software, AI models, dashboards, code, and platform technology developed by Provider remain the exclusive property of Janovum LLC.</p>
+<p><strong>7.2</strong> Client retains ownership of all their business data, customer records, and content provided to Provider.</p>
+<p><strong>7.3</strong> Provider is granted a limited license to use Client's business information solely for the purpose of delivering the contracted services.</p>
+
+<h2>8. CONFIDENTIALITY</h2>
+<p><strong>8.1</strong> Both parties agree to keep confidential any proprietary information, trade secrets, customer data, and business strategies shared during this engagement.</p>
+<p><strong>8.2</strong> This obligation survives termination of the Agreement for a period of <strong>2 years</strong>.</p>
+<p><strong>8.3</strong> Confidential information does not include information that is publicly available, independently developed, or required to be disclosed by law.</p>
+
+<h2>9. DATA PRIVACY &amp; SECURITY</h2>
+<p><strong>9.1</strong> Provider will implement reasonable security measures to protect Client's data, including encryption in transit and at rest.</p>
+<p><strong>9.2</strong> Provider will not sell or share Client's data with third parties except as necessary to deliver the contracted services.</p>
+<p><strong>9.3</strong> Call recordings, transcripts, and customer interactions are stored securely and accessible only to authorized personnel.</p>
+
+<h2>10. LIMITATION OF LIABILITY</h2>
+<p><strong>10.1</strong> Provider's total liability under this Agreement shall not exceed the <strong>total amount paid by Client in the 3 months preceding the claim</strong>.</p>
+<p><strong>10.2</strong> In no event shall Provider be liable for indirect, incidental, special, consequential, or punitive damages, including loss of revenue, profits, or business opportunities.</p>
+<p><strong>10.3</strong> Provider is not liable for any actions taken by AI systems that result from incorrect or incomplete information provided by Client.</p>
+
+<h2>11. INDEMNIFICATION</h2>
+<p><strong>11.1</strong> Client agrees to indemnify and hold harmless Provider from any claims, damages, or expenses arising from Client's use of the services, Client's breach of this Agreement, or Client's violation of any law or third-party rights.</p>
+
+<h2>12. DISPUTE RESOLUTION</h2>
+<p><strong>12.1</strong> Any disputes shall first be addressed through good-faith negotiation between the parties.</p>
+<p><strong>12.2</strong> If negotiation fails, disputes will be resolved through binding arbitration in the state where Provider is registered, under the rules of the American Arbitration Association.</p>
+<p><strong>12.3</strong> This Agreement shall be governed by the laws of the State of [STATE].</p>
+
+<h2>13. MODIFICATIONS</h2>
+<p>This Agreement may only be modified in writing signed by both parties. Provider may update service features and capabilities without prior notice, provided such updates do not materially reduce the contracted services.</p>
+
+<h2>14. ENTIRE AGREEMENT</h2>
+<p>This Agreement constitutes the entire understanding between the parties and supersedes all prior agreements, representations, and understandings relating to the subject matter herein.</p>
+
+<hr>
+<h2 style="text-align:center;margin-top:40px;">SIGNATURES</h2>
+<div style="display:flex;gap:40px;margin-top:30px;">
+<div style="flex:1;">
+<p><strong>SERVICE PROVIDER — Janovum LLC</strong></p>
+<p style="margin-top:40px;border-top:1px solid #000;padding-top:8px;">Authorized Signature</p>
+<p>Print Name: ___________________________</p>
+<p>Title: ___________________________</p>
+<p>Date: ___________________________</p>
+</div>
+<div style="flex:1;">
+<p><strong>CLIENT</strong></p>
+<p style="margin-top:40px;border-top:1px solid #000;padding-top:8px;">Authorized Signature</p>
+<p>Print Name: ___________________________</p>
+<p>Title: ___________________________</p>
+<p>Date: ___________________________</p>
+</div>
+</div>`
+    },
+    {
+      name: 'LLC Operating Agreement',
+      folder: 'fold_contracts',
+      starred: true,
+      tags: ['legal'],
+      content: `<h1>LLC OPERATING AGREEMENT</h1><p><em>See full document: Janovum_LLC_Operating_Agreement.html</em></p><p>This is the legal operating agreement for Janovum LLC. Open the full HTML file for the complete document with all articles, member provisions, and management structure.</p><p><strong>File:</strong> Janovum_LLC_Operating_Agreement.html</p>`
+    },
+    {
+      name: 'Non-Disclosure Agreement (NDA) Template',
+      folder: 'fold_contracts',
+      tags: ['legal', 'template'],
+      content: `<h1>MUTUAL NON-DISCLOSURE AGREEMENT</h1>
+<p>This Mutual Non-Disclosure Agreement ("NDA") is entered into as of <strong>[DATE]</strong> by and between:</p>
+<p><strong>Party A:</strong> Janovum LLC<br><strong>Party B:</strong> [OTHER PARTY NAME]</p>
+<hr>
+<h2>1. Purpose</h2>
+<p>The parties wish to explore a potential business relationship ("Purpose") and in connection with this, each party may disclose confidential information to the other.</p>
+<h2>2. Confidential Information</h2>
+<p>"Confidential Information" means any non-public information disclosed by either party, including but not limited to: business plans, customer lists, pricing, technology, software, AI models, trade secrets, financial data, and marketing strategies.</p>
+<h2>3. Obligations</h2>
+<ul><li>The receiving party shall not disclose Confidential Information to any third party without prior written consent.</li><li>The receiving party shall use Confidential Information only for the Purpose described above.</li><li>The receiving party shall protect Confidential Information with at least the same degree of care it uses for its own confidential information.</li></ul>
+<h2>4. Exclusions</h2>
+<p>This NDA does not apply to information that: (a) is publicly available; (b) was known prior to disclosure; (c) is independently developed; or (d) is required by law to be disclosed.</p>
+<h2>5. Term</h2>
+<p>This NDA is effective for <strong>2 years</strong> from the date of signing. Obligations of confidentiality survive termination.</p>
+<h2>6. Return of Information</h2>
+<p>Upon request or termination, each party shall return or destroy all Confidential Information received from the other party.</p>
+<hr>
+<p style="margin-top:30px"><strong>Party A Signature:</strong> ___________________________ Date: ___________</p>
+<p><strong>Party B Signature:</strong> ___________________________ Date: ___________</p>`
+    }
+  ];
+
+  // ===== PROPOSALS =====
+  const proposals = [
+    {
+      name: 'Service Proposal Template',
+      folder: 'fold_proposals',
+      tags: ['template'],
+      content: `<h1>SERVICE PROPOSAL</h1>
+<p><strong>Prepared for:</strong> [CLIENT NAME]<br><strong>Prepared by:</strong> Janovum LLC<br><strong>Date:</strong> [DATE]</p>
+<hr>
+<h2>Executive Summary</h2>
+<p>[Brief overview of what you're proposing and the value it brings to the client]</p>
+<h2>Scope of Work</h2>
+<ul><li>[Deliverable 1]</li><li>[Deliverable 2]</li><li>[Deliverable 3]</li><li>[Deliverable 4]</li></ul>
+<h2>Timeline</h2>
+<p><strong>Phase 1 — Setup (Week 1-2):</strong> [Description]</p>
+<p><strong>Phase 2 — Development (Week 3-4):</strong> [Description]</p>
+<p><strong>Phase 3 — Launch (Week 5):</strong> [Description]</p>
+<h2>Pricing</h2>
+<p><strong>One-Time Setup:</strong> $1,000</p>
+<p><strong>Monthly Service:</strong> $500/month</p>
+<p><strong>Total First Month:</strong> $1,500</p>
+<h2>Why Janovum</h2>
+<ul><li>24/7 AI-powered automation</li><li>Custom-built solutions, not cookie-cutter</li><li>Dedicated support and ongoing optimization</li><li>Full dashboard with real-time monitoring</li></ul>
+<p style="margin-top:30px"><strong>To proceed, reply to this proposal or sign the attached contract.</strong></p>`
+    }
+  ];
+
+  // ===== CLIENT DOCS =====
+  const clientDocs = [
+    {
+      name: 'Client Onboarding Form',
+      folder: 'fold_clientdocs',
+      tags: ['template'],
+      content: `<h1>CLIENT ONBOARDING FORM</h1>
+<p><strong>Welcome to Janovum!</strong> Please fill out the following information so we can get started.</p>
+<hr>
+<h2>Business Information</h2>
+<p><strong>Business Name:</strong> ___________________________</p>
+<p><strong>Owner Name:</strong> ___________________________</p>
+<p><strong>Business Address:</strong> ___________________________</p>
+<p><strong>Phone:</strong> ___________________________</p>
+<p><strong>Email:</strong> ___________________________</p>
+<p><strong>Website (if any):</strong> ___________________________</p>
+<h2>Services Needed</h2>
+<ul><li>[ ] AI Receptionist</li><li>[ ] Website Development</li><li>[ ] Automation / Workflows</li><li>[ ] Social Media Management</li><li>[ ] Email Campaign Automation</li><li>[ ] Customer Support Bot</li><li>[ ] Other: ___________________________</li></ul>
+<h2>Business Details</h2>
+<p><strong>Industry:</strong> ___________________________</p>
+<p><strong>Business Hours:</strong> ___________________________</p>
+<p><strong>Number of Employees:</strong> ___________________________</p>
+<p><strong>Current Monthly Revenue Range:</strong> ___________________________</p>
+<h2>AI Receptionist Details (if applicable)</h2>
+<p><strong>Greeting message:</strong> ___________________________</p>
+<p><strong>Common questions callers ask:</strong></p>
+<p>1. ___________________________</p>
+<p>2. ___________________________</p>
+<p>3. ___________________________</p>
+<p><strong>Services/pricing to quote:</strong> ___________________________</p>
+<p><strong>Appointment scheduling needed?</strong> Yes / No</p>
+<h2>Goals</h2>
+<p><strong>What are your top 3 business goals?</strong></p>
+<p>1. ___________________________</p>
+<p>2. ___________________________</p>
+<p>3. ___________________________</p>`
+    },
+    {
+      name: 'Client Handoff Checklist',
+      folder: 'fold_clientdocs',
+      tags: ['template'],
+      content: `<h1>CLIENT HANDOFF CHECKLIST</h1>
+<p><strong>Client:</strong> [CLIENT NAME]<br><strong>Setup Date:</strong> [DATE]<br><strong>Go-Live Date:</strong> [DATE]</p>
+<hr>
+<h2>Pre-Launch</h2>
+<ul><li>[ ] Onboarding form completed</li><li>[ ] Contract signed</li><li>[ ] Setup fee collected</li><li>[ ] AI Receptionist configured and tested</li><li>[ ] Phone number provisioned and forwarding set up</li><li>[ ] Website live (if applicable)</li><li>[ ] Dashboard access granted</li><li>[ ] Email automation configured</li><li>[ ] Knowledge base populated with client info</li></ul>
+<h2>Launch Day</h2>
+<ul><li>[ ] Client walkthrough call completed</li><li>[ ] Dashboard tour given</li><li>[ ] Test calls made with client present</li><li>[ ] Client confirmed satisfaction</li><li>[ ] First monthly invoice sent</li></ul>
+<h2>Post-Launch (Week 1)</h2>
+<ul><li>[ ] Follow-up check-in call</li><li>[ ] Review call logs and AI performance</li><li>[ ] Adjust AI responses based on feedback</li><li>[ ] Confirm billing is active</li></ul>`
+    }
+  ];
+
+  // ===== RECEIPTS & INVOICES =====
+  const receipts = [
+    {
+      name: 'Invoice Template',
+      folder: 'fold_receipts',
+      tags: ['template'],
+      content: `<h1>INVOICE</h1>
+<p><strong>Janovum LLC</strong></p>
+<p>Invoice #: [INV-001]<br>Date: [DATE]<br>Due Date: [DUE DATE]</p>
+<hr>
+<p><strong>Bill To:</strong><br>[CLIENT NAME]<br>[CLIENT ADDRESS]<br>[CLIENT EMAIL]</p>
+<hr>
+<h2>Services</h2>
+<table style="width:100%;border-collapse:collapse;">
+<tr style="background:#f5f5f5;"><th style="padding:8px;border:1px solid #ddd;text-align:left;">Description</th><th style="padding:8px;border:1px solid #ddd;text-align:right;">Amount</th></tr>
+<tr><td style="padding:8px;border:1px solid #ddd;">[SERVICE 1]</td><td style="padding:8px;border:1px solid #ddd;text-align:right;">$[AMOUNT]</td></tr>
+<tr><td style="padding:8px;border:1px solid #ddd;">[SERVICE 2]</td><td style="padding:8px;border:1px solid #ddd;text-align:right;">$[AMOUNT]</td></tr>
+<tr style="background:#f5f5f5;"><td style="padding:8px;border:1px solid #ddd;"><strong>Total Due</strong></td><td style="padding:8px;border:1px solid #ddd;text-align:right;"><strong>$[TOTAL]</strong></td></tr>
+</table>
+<h2>Payment Terms</h2>
+<ul><li>Payment due within 15 days of invoice date</li><li>Accepted: Zelle, PayPal, Bank Transfer, Cash App</li><li>Late payments subject to 5% monthly fee</li></ul>
+<p style="margin-top:30px;color:#888;font-size:0.9em">Thank you for your business! — Janovum LLC</p>`
+    }
+  ];
+
+  // ===== SALES MATERIALS =====
+  const salesDocs = [
+    {
+      name: 'Sales Pitch Deck (16 slides)',
+      folder: 'fold_sales',
+      starred: true,
+      tags: ['sales'],
+      content: `<h1>SALES PITCH DECK</h1><p>16-slide sales presentation for closing deals.</p><p><strong>Open full file:</strong> Janovum_Sales_Deck.html</p><p><strong>Key talking points:</strong></p><ul><li>AI receptionist answers calls 24/7</li><li>$1,000 setup + $500/mo — ROI in first month</li><li>Full dashboard with real-time analytics</li><li>Custom AI trained on client's business</li><li>No contracts — cancel anytime after initial term</li></ul>`
+    },
+    {
+      name: 'Consultation Deck (25 slides)',
+      folder: 'fold_sales',
+      tags: ['sales'],
+      content: `<h1>CONSULTATION DECK</h1><p>25-slide consultation presentation for Google Meet calls.</p><p><strong>Open full file:</strong> Janovum_Consultation_Deck.html</p><p><strong>Use this for:</strong> Discovery calls, demo walkthroughs, and closing meetings.</p>`
+    },
+    {
+      name: 'Pricing One-Pager',
+      folder: 'fold_sales',
+      tags: ['sales'],
+      content: `<h1 style="text-align:center;">JANOVUM — PRICING</h1>
+<p style="text-align:center;color:#666;">AI-Powered Business Automation</p>
+<hr>
+<h2>Standard Package</h2>
+<table style="width:100%;border-collapse:collapse;margin:12px 0;">
+<tr style="background:#D4AF37;color:#000;"><th style="padding:12px;">Item</th><th style="padding:12px;text-align:right;">Price</th></tr>
+<tr><td style="padding:10px;border:1px solid #ddd;">One-Time Setup &amp; Configuration</td><td style="padding:10px;border:1px solid #ddd;text-align:right;">$1,000</td></tr>
+<tr><td style="padding:10px;border:1px solid #ddd;">Monthly Service Fee</td><td style="padding:10px;border:1px solid #ddd;text-align:right;">$500/mo</td></tr>
+</table>
+<h2>What's Included</h2>
+<ul>
+<li>AI Receptionist — 24/7 call answering, routing, scheduling</li>
+<li>Dedicated business phone number</li>
+<li>Custom AI trained on your business</li>
+<li>Full Janovum Dashboard access</li>
+<li>Email automation &amp; lead response</li>
+<li>Weekly performance reports</li>
+<li>Ongoing optimization &amp; support</li>
+</ul>
+<h2>Add-Ons</h2>
+<ul>
+<li>Website Development — $500 one-time</li>
+<li>Social Media Bot — $200/mo</li>
+<li>Email Campaign Automation — $150/mo</li>
+<li>Additional AI Agent — $250/mo each</li>
+</ul>
+<p style="text-align:center;margin-top:30px;font-size:1.1em;"><strong>Book a free consultation: janovum.com</strong></p>`
+    }
+  ];
+
+  // ===== EMAIL TEMPLATES =====
+  const emailDocs = [
+    {
+      name: 'Email Auto-Responder Config',
+      folder: 'fold_email',
+      tags: ['email', 'automation'],
+      content: `<h1>EMAIL AUTO-RESPONDER</h1>
+<p><strong>File:</strong> platform/modules/email_responder.py</p>
+<p><strong>Skill Template:</strong> platform/modules/skills/email_responder.md</p>
+<hr>
+<h2>How It Works</h2>
+<ul><li>Monitors inbox via IMAP every 60 seconds</li><li>Detects new unread emails</li><li>Sends content to Claude AI for professional reply drafting</li><li>Auto-sends via SMTP (configurable: draft-only or live)</li></ul>
+<h2>Configuration</h2>
+<ul><li>Email: Gmail with app password</li><li>SMTP: smtp.gmail.com:587 (TLS)</li><li>IMAP: imap.gmail.com:993</li><li>Tone: Professional, matches client style</li><li>Max length: 150 words unless complex</li><li>Flags spam/contracts for human review</li></ul>`
+    },
+    {
+      name: 'Email Campaign Bot Config',
+      folder: 'fold_email',
+      tags: ['email', 'automation'],
+      content: `<h1>EMAIL CAMPAIGN BOT</h1>
+<p><strong>File:</strong> platform/bots/email_campaign_bot.py</p>
+<hr>
+<h2>Features</h2>
+<ul><li>AI-powered personalized email generation (Pollinations AI)</li><li>AI subject line generation</li><li>Batch sending with configurable delays</li><li>Campaign logging &amp; delivery tracking</li><li>Tracking pixels for open rates</li><li>Dry-run mode for previewing before sending</li><li>Rate-limited to avoid spam flags</li></ul>
+<h2>Contact Template Format</h2>
+<p>Name, Email, Company, Industry</p>
+<h2>Follow-up Sequences</h2>
+<p>Configurable multi-step follow-up chains with adjustable delays between emails.</p>`
+    },
+    {
+      name: 'Real Estate Auto-Responder',
+      folder: 'fold_email',
+      tags: ['email', 'real-estate'],
+      content: `<h1>REAL ESTATE AUTO-RESPONDER</h1>
+<p><strong>File:</strong> platform/bots/real_estate_auto_responder.py</p>
+<hr>
+<h2>Features</h2>
+<ul><li>Monitors leads JSON file for new entries</li><li>Auto-responds with AI-personalized emails</li><li>Tracks contacted leads (no duplicates)</li><li>Fallback template when AI is unavailable</li><li>Variables: property title, price, city, company info</li><li>Rate limited (5s between emails)</li><li>Dry-run mode available</li></ul>`
+    },
+    {
+      name: 'B2B Sales Outreach Sequences',
+      folder: 'fold_email',
+      tags: ['email', 'sales'],
+      content: `<h1>B2B SALES OUTREACH SEQUENCES</h1>
+<p><strong>File:</strong> platform/marketplace/sales_outreach.json</p>
+<hr>
+<h2>4-Email Sequence</h2>
+<ol>
+<li><strong>Email 1 — Personalized Intro:</strong> Value prop + pain point hook. Max 150 words.</li>
+<li><strong>Email 2 — Social Proof:</strong> Case study or testimonial. Show results.</li>
+<li><strong>Email 3 — Objection Handler:</strong> Address common pushback + new angle.</li>
+<li><strong>Email 4 — Breakup Email:</strong> Final offer + scarcity. "Last chance" tone.</li>
+</ol>
+<h2>Configuration</h2>
+<ul><li>Daily email limit: configurable</li><li>Follow-up spacing: configurable days between emails</li><li>Tone options: casual / professional / bold</li><li>Calendar booking link integration</li><li>Personalization: name, company, industry auto-filled</li></ul>`
+    },
+    {
+      name: 'Customer Support Response Templates',
+      folder: 'fold_email',
+      tags: ['email', 'support'],
+      content: `<h1>CUSTOMER SUPPORT TEMPLATES</h1>
+<p><strong>File:</strong> platform/marketplace/customer_support.json</p>
+<hr>
+<h2>Template Types</h2>
+<ul>
+<li><strong>Issue Acknowledgment:</strong> "We received your request and are looking into it..."</li>
+<li><strong>Step-by-Step Solution:</strong> Structured troubleshooting response</li>
+<li><strong>Refund Approval:</strong> Confirmation with timeline and amount</li>
+<li><strong>Escalation Notice:</strong> Ticket ID, summary, attempts made, sentiment</li>
+<li><strong>After Hours:</strong> Auto-reply with expected response time</li>
+</ul>
+<h2>Settings</h2>
+<ul><li>Tone: friendly / formal / casual (configurable per client)</li><li>Response time SLA: configurable</li><li>Refund limits: auto-approve up to threshold</li></ul>`
+    },
+    {
+      name: 'Lead Responder Skill',
+      folder: 'fold_email',
+      tags: ['email', 'leads'],
+      content: `<h1>AI LEAD RESPONDER</h1>
+<p><strong>File:</strong> platform/modules/skills/lead_responder.md</p>
+<hr>
+<h2>Response Format</h2>
+<ul><li>3-5 sentences max</li><li>Personalized greeting</li><li>Value acknowledgment</li><li>One qualifying question</li><li>Meeting/call booking CTA</li></ul>
+<h2>Lead Qualification</h2>
+<ul><li><strong>HOT:</strong> Ready to buy, respond within 5 minutes</li><li><strong>WARM:</strong> Interested, respond within 1 hour</li><li><strong>COLD:</strong> Browsing, respond within 24 hours</li></ul>`
+    }
+  ];
+
+  // ===== RESEARCH & STRATEGY =====
+  const researchDocs = [
+    {
+      name: 'Agent Platform Research',
+      folder: 'fold_research',
+      tags: ['research'],
+      content: `<h1>AGENT PLATFORM RESEARCH</h1><p><strong>File:</strong> agent_platform_research.md</p><p>Comprehensive research on autonomous AI agent platforms, architectures, and competitive landscape. Covers deployment models, multi-agent coordination, and open-source frameworks.</p>`
+    },
+    {
+      name: 'Free API Toolkit Research',
+      folder: 'fold_research',
+      tags: ['research'],
+      content: `<h1>FREE API TOOLKIT RESEARCH</h1><p><strong>File:</strong> Free_API_Toolkit_Research.md</p><p>Complete catalog of free APIs for every capability: image generation, TTS, STT, LLM inference, web search, email, SMS, and more. Used to build Janovum's zero-cost API stack.</p>`
+    },
+    {
+      name: 'OpenClaw Business Plan & Intel',
+      folder: 'fold_research',
+      tags: ['research', 'competitive'],
+      content: `<h1>OPENCLAW DEEP INTEL</h1><p><strong>Files:</strong> openclaw_business_plan.md, openclaw_step_by_step.md</p><p>Every OpenClaw feature mapped plus their weaknesses. Step-by-step analysis of their platform and where Janovum beats them. Key competitive advantages identified.</p>`
+    }
+  ];
+
+  // ===== GUIDES & SETUP =====
+  const guideDocs = [
+    {
+      name: 'Receptionist Setup Guide',
+      folder: 'fold_guides',
+      tags: ['guide'],
+      content: `<h1>AI RECEPTIONIST SETUP GUIDE</h1><p><strong>File:</strong> RECEPTIONIST_SETUP_GUIDE.md</p><p>Complete setup instructions for the AI receptionist system. Includes Twilio configuration, Cartesia TTS, Deepgram STT, Groq LLM integration.</p><h2>Cost</h2><p>~$0.023/minute</p><h2>Stack</h2><ul><li>Twilio — phone/SIP</li><li>Cartesia — text-to-speech</li><li>Deepgram — speech-to-text</li><li>Groq — LLM inference</li></ul><p><strong>WARNING:</strong> Do NOT change STT config or Python version from the working setup.</p>`
+    },
+    {
+      name: 'Client Check-In System',
+      folder: 'fold_guides',
+      tags: ['guide', 'automation'],
+      content: `<h1>CLIENT CHECK-IN SYSTEM</h1><p><strong>File:</strong> platform/client_checkin.py</p><p>Automated client check-in emails. Monitors client health, sends periodic status updates, and logs all check-in activity to platform/data/checkin_log.json.</p>`
+    }
+  ];
+
+  // ===== TEMPLATES (General) =====
+  const templateDocs = [
+    {
+      name: 'Meeting Notes Template',
+      folder: 'fold_templates',
+      tags: ['template'],
+      content: `<h1>MEETING NOTES</h1>
+<p><strong>Date:</strong> [DATE]<br><strong>Time:</strong> [TIME]<br><strong>Location:</strong> [In-person / Zoom / Phone]</p>
+<h2>Attendees</h2>
+<ul><li>[Name 1]</li><li>[Name 2]</li></ul>
+<h2>Agenda</h2>
+<ol><li>[Topic 1]</li><li>[Topic 2]</li></ol>
+<h2>Discussion Notes</h2>
+<p><strong>[Topic 1]:</strong> [Notes...]</p>
+<p><strong>[Topic 2]:</strong> [Notes...]</p>
+<h2>Decisions Made</h2>
+<ul><li>[Decision 1]</li><li>[Decision 2]</li></ul>
+<h2>Action Items</h2>
+<ul><li>[ ] [Task] — Assigned to: [Name] — Due: [Date]</li></ul>
+<h2>Next Meeting</h2>
+<p><strong>Date:</strong> [DATE]</p>`
+    }
+  ];
+
+  // ===== AI AGENT CONFIGS =====
+  const agentDocs = [
+    {
+      name: 'AI Receptionist Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>AI RECEPTIONIST</h1><p><strong>Config:</strong> platform/marketplace/ai_receptionist.json</p><p>24/7 phone answering, call routing, appointment scheduling, FAQ handling. Twilio + Cartesia + Deepgram + Groq stack.</p>`
+    },
+    {
+      name: 'Appointment Scheduler Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>APPOINTMENT SCHEDULER</h1><p><strong>Config:</strong> platform/marketplace/appointment_scheduler.json</p><p>Automated booking, rescheduling, cancellations, and reminders.</p>`
+    },
+    {
+      name: 'Content Creator Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>CONTENT CREATOR</h1><p><strong>Config:</strong> platform/marketplace/content_creator.json</p><p>AI-powered blog posts, social media captions, marketing copy generation.</p>`
+    },
+    {
+      name: 'Customer Support Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>CUSTOMER SUPPORT</h1><p><strong>Config:</strong> platform/marketplace/customer_support.json</p><p>Ticket responses, issue resolution, refund processing, escalation handling.</p>`
+    },
+    {
+      name: 'E-Commerce Assistant Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>E-COMMERCE ASSISTANT</h1><p><strong>Config:</strong> platform/marketplace/ecommerce_assistant.json</p><p>Order tracking, product recommendations, inventory alerts, customer Q&amp;A.</p>`
+    },
+    {
+      name: 'Financial Tracker Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>FINANCIAL TRACKER</h1><p><strong>Config:</strong> platform/marketplace/financial_tracker.json</p><p>Expense categorization, revenue tracking, invoice reminders, P&amp;L reports.</p>`
+    },
+    {
+      name: 'HR Onboarding Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>HR ONBOARDING</h1><p><strong>Config:</strong> platform/marketplace/hr_onboarding.json</p><p>New hire onboarding workflows, document collection, training scheduling.</p>`
+    },
+    {
+      name: 'Legal Document Reviewer Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>LEGAL DOCUMENT REVIEWER</h1><p><strong>Config:</strong> platform/marketplace/legal_document_reviewer.json</p><p>Contract analysis, clause extraction, risk flagging, compliance checking.</p>`
+    },
+    {
+      name: 'Property Manager Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>PROPERTY MANAGER</h1><p><strong>Config:</strong> platform/marketplace/property_manager.json</p><p>Tenant communication, maintenance requests, rent reminders, vacancy tracking.</p>`
+    },
+    {
+      name: 'Real Estate Assistant Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>REAL ESTATE ASSISTANT</h1><p><strong>Config:</strong> platform/marketplace/real_estate_assistant.json</p><p>Lead qualification, property matching, showing scheduling, follow-ups.</p>`
+    },
+    {
+      name: 'Restaurant Manager Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>RESTAURANT MANAGER</h1><p><strong>Config:</strong> platform/marketplace/restaurant_manager.json</p><p>Reservation management, menu inquiries, order tracking, review responses.</p>`
+    },
+    {
+      name: 'Sales Outreach Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>SALES OUTREACH</h1><p><strong>Config:</strong> platform/marketplace/sales_outreach.json</p><p>Cold email sequences, lead scoring, follow-up automation, meeting booking.</p>`
+    },
+    {
+      name: 'Social Media Manager Agent',
+      folder: 'fold_agents', tags: ['agent'],
+      content: `<h1>SOCIAL MEDIA MANAGER</h1><p><strong>Config:</strong> platform/marketplace/social_media_manager.json</p><p>Post scheduling, engagement tracking, comment responses, content ideas.</p>`
+    }
+  ];
+
+  // Combine all documents
+  const allDocs = [...contracts, ...proposals, ...clientDocs, ...receipts, ...salesDocs, ...emailDocs, ...researchDocs, ...guideDocs, ...templateDocs, ...agentDocs];
+
+  allDocs.forEach(d => {
+    const sz = new Blob([d.content]).size;
+    data.files.push({
+      id: generateId(), name: d.name, type: 'document', parent: d.folder,
+      content: d.content, mimeType: 'text/html', size: sz,
+      created: ts, modified: ts, starred: d.starred || false, trashed: false, tags: d.tags || ['template']
+    });
+  });
+
+  saveData();
+}
+
+// =================== RENDERING ===================
+function render() {
+  if (searchMode) return;
+  updateSidebar();
+  updateBreadcrumb();
+  updateStats();
+  renderFiles();
+}
+
+function updateSidebar() {
+  // Active item
+  document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+  if (specialView) {
+    const el = document.querySelector(`.sidebar-item[data-nav="${specialView}"]`);
+    if (el) el.classList.add('active');
+  } else {
+    const el = document.querySelector('.sidebar-item[data-nav="root"]');
+    if (el) el.classList.add('active');
+  }
+
+  // Starred count
+  const starredCount = data.files.filter(f => f.starred && !f.trashed).length;
+  document.getElementById('starredCount').textContent = starredCount;
+
+  // Trash count
+  const trashCount = data.files.filter(f => f.trashed).length;
+  document.getElementById('trashCount').textContent = trashCount;
+
+  // Folder tree
+  const folderDiv = document.getElementById('sidebarFolders');
+  const rootFolders = data.files.filter(f => f.type === 'folder' && f.parent === 'root' && !f.trashed);
+  folderDiv.innerHTML = rootFolders.map(f => `
+    <div class="sidebar-item ${currentFolder === f.id && !specialView ? 'active' : ''}" onclick="navigateTo('${f.id}')">
+      <span class="ico">\u{1F4C1}</span> ${escHtml(f.name)}
+      <span class="badge">${getChildren(f.id).length}</span>
+    </div>
+  `).join('');
+
+  // Recent files
+  const recentDiv = document.getElementById('sidebarRecent');
+  const recentFiles = data.files
+    .filter(f => f.type !== 'folder' && !f.trashed)
+    .sort((a, b) => new Date(b.modified) - new Date(a.modified))
+    .slice(0, 10);
+  recentDiv.innerHTML = recentFiles.map(f => `
+    <div class="sidebar-recent-item" onclick="openFile('${f.id}')">
+      ${getIcon(f)} ${escHtml(f.name)}
+    </div>
+  `).join('');
+
+  // Storage
+  const used = getTotalStorage();
+  const pct = Math.min((used / (5*1024*1024)) * 100, 100);
+  document.getElementById('storageBarFill').style.width = pct + '%';
+  document.getElementById('storageLabel').textContent = formatSize(used) + ' of 5 MB used';
+}
+
+function updateBreadcrumb() {
+  const bc = document.getElementById('breadcrumb');
+  if (specialView) {
+    const labels = { starred: '\u2B50 Starred', recent: '\u{1F554} Recent', trash: '\u{1F5D1} Trash' };
+    bc.innerHTML = `<span onclick="navigateTo('root')">My Drive</span><span class="sep">&rsaquo;</span><span class="current">${labels[specialView]}</span>`;
+    return;
+  }
+  const path = getPath(currentFolder);
+  bc.innerHTML = path.map((p, i) => {
+    if (i === path.length - 1) return `<span class="current">${escHtml(p.name)}</span>`;
+    return `<span onclick="navigateTo('${p.id}')">${escHtml(p.name)}</span><span class="sep">&rsaquo;</span>`;
+  }).join('');
+}
+
+function updateStats() {
+  const docs = data.files.filter(f => f.type === 'document' && !f.trashed).length;
+  const folders = data.files.filter(f => f.type === 'folder' && !f.trashed).length;
+  const storage = getTotalStorage();
+  const lastMod = data.files.filter(f => !f.trashed).sort((a,b) => new Date(b.modified) - new Date(a.modified))[0];
+
+  document.getElementById('statDocs').textContent = docs;
+  document.getElementById('statFolders').textContent = folders;
+  document.getElementById('statStorage').textContent = formatSize(storage);
+  document.getElementById('statActivity').textContent = lastMod ? formatDate(lastMod.modified) : '-';
+}
+
+function renderFiles() {
+  const area = document.getElementById('fileArea');
+  let items;
+
+  if (specialView === 'starred') {
+    items = data.files.filter(f => f.starred && !f.trashed);
+  } else if (specialView === 'recent') {
+    items = data.files.filter(f => f.type !== 'folder' && !f.trashed)
+      .sort((a,b) => new Date(b.modified) - new Date(a.modified)).slice(0, 20);
+  } else if (specialView === 'trash') {
+    items = data.files.filter(f => f.trashed);
+  } else {
+    items = getChildren(currentFolder);
+  }
+
+  // Sort
+  const sortVal = document.getElementById('sortSelect').value;
+  if (specialView !== 'recent') {
+    items = sortItems(items, sortVal);
+  }
+
+  if (items.length === 0) {
+    const msgs = {
+      starred: 'No starred items',
+      recent: 'No recent files',
+      trash: 'Trash is empty'
+    };
+    area.innerHTML = `<div class="empty-state"><div class="empty-icon">\u{1F4C2}</div><p>${msgs[specialView] || 'This folder is empty'}</p></div>`;
+    return;
+  }
+
+  if (currentView === 'grid') {
+    area.innerHTML = `<div class="file-grid">${items.map(f => renderCard(f)).join('')}</div>`;
+  } else {
+    area.innerHTML = `
+      <div class="list-header">
+        <span></span><span>Name</span><span>Type</span><span>Size</span><span>Modified</span><span>Actions</span>
+      </div>
+      <div class="file-list">${items.map(f => renderRow(f)).join('')}</div>`;
+  }
+}
+
+function sortItems(items, sortVal) {
+  const [key, dir] = sortVal.split('-');
+  const folders = items.filter(f => f.type === 'folder');
+  const files = items.filter(f => f.type !== 'folder');
+  const sortFn = (a, b) => {
+    let va, vb;
+    if (key === 'name') { va = a.name.toLowerCase(); vb = b.name.toLowerCase(); }
+    else if (key === 'modified') { va = new Date(a.modified); vb = new Date(b.modified); }
+    else if (key === 'type') { va = getTypeLabel(a); vb = getTypeLabel(b); }
+    else if (key === 'size') { va = a.size || 0; vb = b.size || 0; }
+    if (va < vb) return dir === 'asc' ? -1 : 1;
+    if (va > vb) return dir === 'asc' ? 1 : -1;
+    return 0;
+  };
+  folders.sort(sortFn);
+  files.sort(sortFn);
+  return [...folders, ...files];
+}
+
+function renderCard(f) {
+  const starCls = f.starred ? 'starred' : '';
+  const starIcon = f.starred ? '\u2605' : '\u2606';
+  return `
+    <div class="file-card" onclick="openFile('${f.id}')" oncontextmenu="showContext(event,'${f.id}')">
+      <div class="card-actions">
+        <button onclick="event.stopPropagation();showContext(event,'${f.id}')" title="More">\u22EE</button>
+      </div>
+      <button class="card-star ${starCls}" onclick="event.stopPropagation();toggleStar('${f.id}')" title="Star">${starIcon}</button>
+      <div class="card-icon">${getIcon(f)}</div>
+      <div class="card-name">${escHtml(f.name)}</div>
+      <div class="card-meta">${getTypeLabel(f)} &middot; ${formatDate(f.modified)}</div>
+    </div>`;
+}
+
+function renderRow(f) {
+  const starIcon = f.starred ? '\u2605' : '\u2606';
+  return `
+    <div class="file-row" onclick="openFile('${f.id}')" oncontextmenu="showContext(event,'${f.id}')">
+      <div class="row-icon">${getIcon(f)}</div>
+      <div class="row-name">${f.starred ? '<span style="color:var(--gold);margin-right:4px">\u2605</span>' : ''}${escHtml(f.name)}</div>
+      <div class="row-type">${getTypeLabel(f)}</div>
+      <div class="row-size">${formatSize(f.size)}</div>
+      <div class="row-modified">${formatDate(f.modified)}</div>
+      <div class="row-actions">
+        <button onclick="event.stopPropagation();toggleStar('${f.id}')" title="Star">${starIcon}</button>
+        <button onclick="event.stopPropagation();showContext(event,'${f.id}')" title="More">\u22EE</button>
+      </div>
+    </div>`;
+}
+
+// =================== NAVIGATION ===================
+function navigateTo(folderId) {
+  searchMode = false;
+  specialView = null;
+  currentFolder = folderId;
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  closeSidebarMobile();
+  render();
+}
+
+function showStarred() { specialView = 'starred'; searchMode = false; closeSidebarMobile(); render(); }
+function showRecent() { specialView = 'recent'; searchMode = false; closeSidebarMobile(); render(); }
+function showTrash() { specialView = 'trash'; searchMode = false; closeSidebarMobile(); render(); }
+
+function openFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  if (f.type === 'folder') {
+    specialView = null;
+    searchMode = false;
+    currentFolder = f.id;
+    render();
+    return;
+  }
+  // Update modified for "recent" tracking
+  f.modified = now();
+  saveData();
+  if (f.type === 'document') {
+    openEditor(id);
+  } else {
+    downloadFile(id);
+  }
+}
+
+// =================== FILE OPERATIONS ===================
+function newDocument() {
+  closeNewMenu();
+  const target = specialView ? 'root' : currentFolder;
+  const id = generateId();
+  const ts = now();
+  addFile({
+    id, name: 'Untitled Document', type: 'document', parent: target,
+    content: '', mimeType: 'text/html', size: 0,
+    created: ts, modified: ts, starred: false, trashed: false, tags: []
+  });
+  openEditor(id);
+  render();
+}
+
+function newFolder() {
+  closeNewMenu();
+  const target = specialView ? 'root' : currentFolder;
+  showModal('New Folder', `<input class="modal-input" id="modalInput" placeholder="Folder name" autofocus>`, [
+    { text: 'Cancel', cls: 'btn-cancel', action: 'closeModal()' },
+    { text: 'Create', cls: 'btn-confirm', action: 'createFolder()' }
+  ]);
+  setTimeout(() => {
+    const inp = document.getElementById('modalInput');
+    if (inp) { inp.focus(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') createFolder(); }); }
+  }, 100);
+}
+
+function createFolder() {
+  const name = document.getElementById('modalInput').value.trim();
+  if (!name) return;
+  const target = specialView ? 'root' : currentFolder;
+  const ts = now();
+  addFile({
+    id: generateId(), name, type: 'folder', parent: target,
+    content: '', mimeType: '', size: 0,
+    created: ts, modified: ts, starred: false, trashed: false, tags: []
+  });
+  closeModal();
+  render();
+  toast('Folder created', 'success');
+}
+
+function uploadFile() {
+  closeNewMenu();
+  document.getElementById('fileInput').click();
+}
+
+function handleFileUpload(event) {
+  const files = event.target.files;
+  if (!files.length) return;
+  const target = specialView ? 'root' : currentFolder;
+  let count = 0;
+
+  Array.from(files).forEach(file => {
+    if (file.size > 2 * 1024 * 1024) {
+      toast(`${file.name} is too large (max 2MB per file)`, 'error');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const ts = now();
+      addFile({
+        id: generateId(), name: file.name, type: 'file', parent: target,
+        content: e.target.result, mimeType: file.type || 'application/octet-stream',
+        size: file.size, created: ts, modified: ts, starred: false, trashed: false, tags: []
+      });
+      count++;
+      if (count === files.length || count === Array.from(files).filter(f2 => f2.size <= 2*1024*1024).length) {
+        render();
+        toast(count + ' file(s) uploaded', 'success');
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  event.target.value = '';
+}
+
+function renameFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  hideContext();
+  showModal('Rename', `<input class="modal-input" id="modalInput" value="${escAttr(f.name)}" autofocus>`, [
+    { text: 'Cancel', cls: 'btn-cancel', action: 'closeModal()' },
+    { text: 'Rename', cls: 'btn-confirm', action: `doRename('${id}')` }
+  ]);
+  setTimeout(() => {
+    const inp = document.getElementById('modalInput');
+    if (inp) { inp.focus(); inp.select(); inp.addEventListener('keydown', e => { if (e.key === 'Enter') doRename(id); }); }
+  }, 100);
+}
+
+function doRename(id) {
+  const name = document.getElementById('modalInput').value.trim();
+  if (!name) return;
+  const f = getFile(id);
+  f.name = name;
+  f.modified = now();
+  saveData();
+  closeModal();
+  render();
+  toast('Renamed', 'success');
+}
+
+function deleteFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  hideContext();
+  if (f.trashed) {
+    showModal('Delete Permanently?', `<p style="color:var(--text2);margin-bottom:16px">This will permanently delete "<strong>${escHtml(f.name)}</strong>". This cannot be undone.</p>`, [
+      { text: 'Cancel', cls: 'btn-cancel', action: 'closeModal()' },
+      { text: 'Delete Forever', cls: 'btn-danger', action: `permDelete('${id}')` }
+    ]);
+  } else {
+    f.trashed = true;
+    f.modified = now();
+    // Also trash children if folder
+    if (f.type === 'folder') trashChildren(f.id, true);
+    saveData();
+    render();
+    toast('Moved to Trash', 'success');
+  }
+}
+
+function trashChildren(folderId, trashed) {
+  data.files.filter(f => f.parent === folderId).forEach(f => {
+    f.trashed = trashed;
+    if (f.type === 'folder') trashChildren(f.id, trashed);
+  });
+}
+
+function permDelete(id) {
+  const f = getFile(id);
+  if (f && f.type === 'folder') {
+    // Delete children recursively
+    const deleteRecursive = (fid) => {
+      data.files.filter(ff => ff.parent === fid).forEach(ff => {
+        if (ff.type === 'folder') deleteRecursive(ff.id);
+        data.files = data.files.filter(x => x.id !== ff.id);
+      });
+    };
+    deleteRecursive(id);
+  }
+  data.files = data.files.filter(ff => ff.id !== id);
+  saveData();
+  closeModal();
+  render();
+  toast('Permanently deleted', 'success');
+}
+
+function restoreFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  hideContext();
+  f.trashed = false;
+  f.modified = now();
+  if (f.type === 'folder') trashChildren(f.id, false);
+  // If parent is trashed, move to root
+  const parent = getFile(f.parent);
+  if (parent && parent.trashed) f.parent = 'root';
+  saveData();
+  render();
+  toast('Restored', 'success');
+}
+
+function emptyTrash() {
+  hideContext();
+  showModal('Empty Trash?', '<p style="color:var(--text2);margin-bottom:16px">All items in Trash will be permanently deleted. This cannot be undone.</p>', [
+    { text: 'Cancel', cls: 'btn-cancel', action: 'closeModal()' },
+    { text: 'Empty Trash', cls: 'btn-danger', action: 'doEmptyTrash()' }
+  ]);
+}
+
+function doEmptyTrash() {
+  data.files = data.files.filter(f => !f.trashed);
+  saveData();
+  closeModal();
+  render();
+  toast('Trash emptied', 'success');
+}
+
+function moveFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  hideContext();
+  const folders = getFolders(false).filter(ff => ff.id !== id);
+  const folderListHtml = `
+    <div class="move-folder-list">
+      <div class="move-folder-item" data-target="root" onclick="selectMoveTarget(this,'root')">\u{1F3E0} My Drive (Root)</div>
+      ${folders.map(ff => `<div class="move-folder-item" data-target="${ff.id}" onclick="selectMoveTarget(this,'${ff.id}')">\u{1F4C1} ${escHtml(ff.name)}</div>`).join('')}
+    </div>`;
+  showModal(`Move "${escHtml(f.name)}"`, folderListHtml, [
+    { text: 'Cancel', cls: 'btn-cancel', action: 'closeModal()' },
+    { text: 'Move Here', cls: 'btn-confirm', action: `doMove('${id}')` }
+  ]);
+  window._moveTarget = f.parent;
+}
+
+function selectMoveTarget(el, targetId) {
+  document.querySelectorAll('.move-folder-item').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  window._moveTarget = targetId;
+}
+
+function doMove(id) {
+  const f = getFile(id);
+  if (!f || !window._moveTarget) return;
+  f.parent = window._moveTarget;
+  f.modified = now();
+  saveData();
+  closeModal();
+  render();
+  toast('Moved', 'success');
+}
+
+function toggleStar(id) {
+  const f = getFile(id);
+  if (!f) return;
+  f.starred = !f.starred;
+  saveData();
+  render();
+}
+
+function downloadFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  hideContext();
+  if (f.type === 'document') {
+    const blob = new Blob([f.content], { type: 'text/plain' });
+    downloadBlob(blob, f.name + '.txt');
+  } else if (f.content && f.content.startsWith('data:')) {
+    const a = document.createElement('a');
+    a.href = f.content;
+    a.download = f.name;
+    a.click();
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function duplicateFile(id) {
+  const f = getFile(id);
+  if (!f) return;
+  hideContext();
+  const ts = now();
+  const copy = { ...f, id: generateId(), name: f.name + ' (Copy)', created: ts, modified: ts, starred: false };
+  addFile(copy);
+  render();
+  toast('Duplicated', 'success');
+}
+
+// =================== EDITOR ===================
+function openEditor(id) {
+  editingFileId = id;
+  const f = getFile(id);
+  if (!f) return;
+  document.getElementById('editorTitle').value = f.name;
+  document.getElementById('editorContent').innerHTML = f.content || '';
+  updateEditorMeta();
+  updateWordCount();
+  document.getElementById('editorOverlay').classList.add('show');
+  document.getElementById('editorContent').focus();
+}
+
+function closeEditor() {
+  if (editingFileId) saveDoc();
+  document.getElementById('editorOverlay').classList.remove('show');
+  editingFileId = null;
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  render();
+}
+
+function saveDoc() {
+  if (!editingFileId) return;
+  const f = getFile(editingFileId);
+  if (!f) return;
+  f.name = document.getElementById('editorTitle').value.trim() || 'Untitled';
+  f.content = document.getElementById('editorContent').innerHTML;
+  f.size = new Blob([f.content]).size;
+  f.modified = now();
+  saveData();
+  updateEditorMeta();
+  const indicator = document.getElementById('autoSaveIndicator');
+  indicator.classList.add('show');
+  setTimeout(() => indicator.classList.remove('show'), 2000);
+}
+
+function updateEditorMeta() {
+  if (!editingFileId) return;
+  const f = getFile(editingFileId);
+  if (!f) return;
+  document.getElementById('editorMeta').textContent = 'Last modified: ' + formatDate(f.modified);
+}
+
+function updateWordCount() {
+  const text = document.getElementById('editorContent').innerText || '';
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = words + ' word' + (words !== 1 ? 's' : '');
+}
+
+// Auto-save on typing
+document.getElementById('editorContent').addEventListener('input', () => {
+  updateWordCount();
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => saveDoc(), 2000);
+});
+
+function execCmd(cmd, val) {
+  if (cmd === 'formatBlock') {
+    document.execCommand('formatBlock', false, '<' + val + '>');
+  } else {
+    document.execCommand(cmd, false, val || null);
+  }
+  document.getElementById('editorContent').focus();
+}
+
+function insertLink() {
+  const url = prompt('Enter URL:');
+  if (url) document.execCommand('createLink', false, url);
+}
+
+function exportDoc(format) {
+  if (!editingFileId) return;
+  const f = getFile(editingFileId);
+  if (!f) return;
+  if (format === 'txt') {
+    const text = document.getElementById('editorContent').innerText;
+    downloadBlob(new Blob([text], { type: 'text/plain' }), f.name + '.txt');
+  } else {
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${escHtml(f.name)}</title><style>body{font-family:Inter,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;color:#222;line-height:1.6;}</style></head><body>${f.content}</body></html>`;
+    downloadBlob(new Blob([html], { type: 'text/html' }), f.name + '.html');
+  }
+}
+
+// =================== SEARCH ===================
+function handleSearch(query) {
+  const clearBtn = document.getElementById('searchClear');
+  if (!query.trim()) {
+    clearSearch();
+    return;
+  }
+  clearBtn.style.display = 'block';
+  searchMode = true;
+  specialView = null;
+
+  const q = query.toLowerCase();
+  const results = data.files.filter(f => !f.trashed && (
+    f.name.toLowerCase().includes(q) ||
+    (f.content && f.type === 'document' && stripHtml(f.content).toLowerCase().includes(q))
+  ));
+
+  const area = document.getElementById('fileArea');
+  if (results.length === 0) {
+    area.innerHTML = `<div class="search-results"><h3>No results for "${escHtml(query)}"</h3></div>`;
+    return;
+  }
+
+  area.innerHTML = `<div class="search-results"><h3>${results.length} result(s) for "${escHtml(query)}"</h3>
+    ${results.map(f => {
+      let snippet = '';
+      if (f.type === 'document' && f.content) {
+        const plain = stripHtml(f.content);
+        const idx = plain.toLowerCase().indexOf(q);
+        if (idx >= 0) {
+          const start = Math.max(0, idx - 40);
+          const end = Math.min(plain.length, idx + q.length + 40);
+          snippet = '...' + escHtml(plain.substring(start, idx)) + '<mark>' + escHtml(plain.substring(idx, idx + q.length)) + '</mark>' + escHtml(plain.substring(idx + q.length, end)) + '...';
+        }
+      }
+      return `<div class="search-result-item" onclick="openFile('${f.id}')">
+        <div class="sr-icon">${getIcon(f)}</div>
+        <div>
+          <div class="sr-name">${escHtml(f.name)}</div>
+          <div class="sr-path">${getPathString(f.id)}</div>
+          ${snippet ? `<div class="sr-snippet">${snippet}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function clearSearch() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').style.display = 'none';
+  searchMode = false;
+  render();
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
+// =================== CONTEXT MENU ===================
+function showContext(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+  const f = getFile(id);
+  if (!f) return;
+  const menu = document.getElementById('contextMenu');
+
+  let items = '';
+  if (f.trashed) {
+    items = `
+      <button onclick="restoreFile('${id}')"><span class="ico">\u21A9</span> Restore</button>
+      <button onclick="deleteFile('${id}')"><span class="ico">\u{1F5D1}</span> Delete Forever</button>`;
+  } else {
+    items = `
+      <button onclick="openFile('${id}')"><span class="ico">${f.type === 'folder' ? '\u{1F4C2}' : '\u270F'}</span> ${f.type === 'folder' ? 'Open' : 'Edit'}</button>
+      <button onclick="renameFile('${id}')"><span class="ico">\u270D</span> Rename</button>
+      <button onclick="toggleStar('${id}');hideContext()"><span class="ico">${f.starred ? '\u2606' : '\u2605'}</span> ${f.starred ? 'Unstar' : 'Star'}</button>
+      <div class="ctx-sep"></div>
+      <button onclick="moveFile('${id}')"><span class="ico">\u{1F4E6}</span> Move to...</button>
+      <button onclick="duplicateFile('${id}')"><span class="ico">\u{1F4CB}</span> Duplicate</button>
+      ${f.type !== 'folder' ? `<button onclick="downloadFile('${id}')"><span class="ico">\u2B07</span> Download</button>` : ''}
+      <div class="ctx-sep"></div>
+      <button onclick="deleteFile('${id}')" style="color:var(--red)"><span class="ico">\u{1F5D1}</span> Delete</button>`;
+  }
+
+  menu.innerHTML = items;
+  menu.classList.add('show');
+
+  // Position
+  let x = event.clientX, y = event.clientY;
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+
+  // Keep on screen
+  requestAnimationFrame(() => {
+    const rect = menu.getBoundingClientRect();
+    if (rect.right > window.innerWidth) menu.style.left = (window.innerWidth - rect.width - 8) + 'px';
+    if (rect.bottom > window.innerHeight) menu.style.top = (window.innerHeight - rect.height - 8) + 'px';
+  });
+}
+
+function hideContext() {
+  document.getElementById('contextMenu').classList.remove('show');
+}
+
+document.addEventListener('click', (e) => {
+  hideContext();
+  if (!e.target.closest('.btn-new') && !e.target.closest('.new-dropdown')) closeNewMenu();
+});
+
+// =================== MODALS ===================
+function showModal(title, body, buttons) {
+  const modal = document.getElementById('modalContent');
+  modal.innerHTML = `<h3>${title}</h3>${body}<div class="modal-btns">${buttons.map(b =>
+    `<button class="${b.cls}" onclick="${b.action}">${b.text}</button>`
+  ).join('')}</div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('show');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+});
+
+document.getElementById('editorOverlay').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('editorOverlay')) closeEditor();
+});
+
+// =================== NEW MENU ===================
+function toggleNewMenu(e) {
+  e.stopPropagation();
+  document.getElementById('newDropdown').classList.toggle('show');
+}
+function closeNewMenu() {
+  document.getElementById('newDropdown').classList.remove('show');
+}
+
+// =================== VIEW TOGGLE ===================
+function setView(view) {
+  currentView = view;
+  document.getElementById('btnGrid').classList.toggle('active', view === 'grid');
+  document.getElementById('btnList').classList.toggle('active', view === 'list');
+  render();
+}
+
+// =================== SIDEBAR MOBILE ===================
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('show');
+}
+function closeSidebarMobile() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+}
+
+// =================== TOAST ===================
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + (type || '');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// =================== UTILS ===================
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escAttr(s) { return s.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+// =================== KEYBOARD ===================
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (document.getElementById('editorOverlay').classList.contains('show')) closeEditor();
+    else if (document.getElementById('modalOverlay').classList.contains('show')) closeModal();
+    else if (searchMode) clearSearch();
+  }
+  // Ctrl+S to save in editor
+  if (e.ctrlKey && e.key === 's' && document.getElementById('editorOverlay').classList.contains('show')) {
+    e.preventDefault();
+    saveDoc();
+    toast('Saved', 'success');
+  }
+});
+
+// =================== INIT ===================
+loadData();
+render();
+</script>
+</body>
+</html>

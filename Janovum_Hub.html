@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum Hub — Master Launcher</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0a;--card:#111;--card-hover:#1a1a1a;--border:#222;--gold:#D4AF37;--green:#00C853;--text:#e0e0e0;--dim:#777;--radius:12px}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+a{color:inherit;text-decoration:none}
+
+/* Header */
+.header{background:linear-gradient(135deg,#0d0d0d 0%,#1a1a18 100%);border-bottom:1px solid var(--border);padding:28px 32px;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+.header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--gold),#b8941f);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#0a0a0a}
+.brand h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.brand h1 span{color:var(--gold)}
+.brand-sub{font-size:12px;color:var(--dim);font-weight:400;margin-top:2px}
+
+/* Search */
+.search-wrap{position:relative;width:340px}
+.search-wrap input{width:100%;padding:10px 14px 10px 38px;background:#1a1a1a;border:1px solid var(--border);border-radius:8px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+.search-wrap input:focus{border-color:var(--gold)}
+.search-wrap .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:15px}
+
+/* Stats Bar */
+.stats-bar{max-width:1200px;margin:24px auto 0;padding:0 32px;display:flex;flex-wrap:wrap;gap:10px}
+.stat-chip{background:#161616;border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.stat-chip .val{color:#fff;font-weight:600}
+.stat-chip.live .val{color:var(--green)}
+.stat-chip.gold .val{color:var(--gold)}
+
+/* Main */
+.main{max-width:1200px;margin:0 auto;padding:20px 32px 60px}
+
+/* Section */
+.section{margin-top:28px}
+.section-header{display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 0;user-select:none}
+.section-header h2{font-size:16px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+.section-header .icon{font-size:18px}
+.section-header .chevron{margin-left:auto;font-size:12px;color:var(--dim);transition:transform .2s}
+.section-header.collapsed .chevron{transform:rotate(-90deg)}
+.section-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;padding-top:6px}
+.section-body.collapsed{display:none}
+.section-body.list-view{display:flex;flex-direction:column;gap:6px}
+
+/* Card */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;transition:all .2s;position:relative;display:flex;flex-direction:column;gap:8px}
+.card:hover{background:var(--card-hover);border-color:#333;transform:translateY(-1px)}
+.card-top{display:flex;align-items:flex-start;gap:12px}
+.card-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.card-icon.toolkit{background:linear-gradient(135deg,#1a237e,#283593)}
+.card-icon.drive{background:linear-gradient(135deg,#004d40,#00695c)}
+.card-icon.landing{background:linear-gradient(135deg,#b8941f,#D4AF37)}
+.card-icon.plan{background:linear-gradient(135deg,#4a148c,#6a1b9a)}
+.card-icon.sales{background:linear-gradient(135deg,#bf360c,#e64a19)}
+.card-icon.consult{background:linear-gradient(135deg,#0d47a1,#1565c0)}
+.card-icon.legal{background:linear-gradient(135deg,#3e2723,#5d4037)}
+.card-icon.expense{background:linear-gradient(135deg,#1b5e20,#2e7d32)}
+.card-icon.mileage{background:linear-gradient(135deg,#006064,#00838f)}
+.card-icon.recept{background:linear-gradient(135deg,#880e4f,#ad1457)}
+.card-icon.agent{background:linear-gradient(135deg,#311b92,#4527a0)}
+.card-icon.workflow{background:linear-gradient(135deg,#e65100,#ef6c00)}
+.card-icon.email{background:linear-gradient(135deg,#1565c0,#1e88e5)}
+.card-icon.campaign{background:linear-gradient(135deg,#6a1b9a,#8e24aa)}
+.card-icon.realestate{background:linear-gradient(135deg,#2e7d32,#43a047)}
+.card-icon.outreach{background:linear-gradient(135deg,#c62828,#e53935)}
+.card-icon.support{background:linear-gradient(135deg,#00695c,#00897b)}
+.card-icon.leadresp{background:linear-gradient(135deg,#e65100,#f57c00)}
+.card-info{flex:1;min-width:0}
+.card-title{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
+.card-desc{font-size:12px;color:var(--dim);line-height:1.4}
+.card-actions{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:6px}
+.btn-open{padding:6px 14px;background:var(--gold);color:#0a0a0a;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-open:hover{background:#e6c349;transform:scale(1.03)}
+.btn-open.green{background:var(--green)}
+.btn-open.green:hover{background:#00e676}
+.btn-copy{padding:6px 10px;background:transparent;border:1px solid var(--border);color:var(--dim);border-radius:6px;font-size:11px;cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-copy:hover{border-color:var(--gold);color:var(--gold)}
+.btn-copy.copied{border-color:var(--green);color:var(--green)}
+
+/* Live Links */
+.live-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:12px;transition:all .2s}
+.live-card:hover{background:var(--card-hover);border-color:#333}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.live-card .url{font-size:13px;font-weight:500;color:var(--green);flex:1}
+.live-card .label{font-size:12px;color:var(--dim)}
+
+/* Ref List */
+.ref-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;transition:all .15s}
+.ref-item:hover{background:var(--card-hover);border-color:#333}
+.ref-icon{font-size:16px;flex-shrink:0}
+.ref-name{font-size:13px;font-weight:500;color:#ccc;flex:1}
+.ref-path{font-size:11px;color:var(--dim);font-family:'Courier New',monospace;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#222;border:1px solid var(--green);color:var(--green);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:500;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* Responsive */
+@media(max-width:768px){
+  .header-inner{flex-direction:column;align-items:flex-start}
+  .search-wrap{width:100%}
+  .stats-bar{padding:0 16px}
+  .main{padding:20px 16px 60px}
+  .section-body{grid-template-columns:1fr}
+  .ref-path{display:none}
+}
+/* No results */
+.no-results{text-align:center;padding:40px;color:var(--dim);font-size:14px;display:none}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">J</div>
+      <div>
+        <h1>Janovum <span>Hub</span></h1>
+        <div class="brand-sub">Master Launcher &mdash; Everything in One Place</div>
+      </div>
+    </div>
+    <div class="search-wrap">
+      <span class="search-icon">&#128269;</span>
+      <input type="text" id="searchInput" placeholder="Search tools, files, links..." autocomplete="off">
+    </div>
+  </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+  <div class="stat-chip gold"><span>HTML Tools:</span><span class="val">12</span></div>
+  <div class="stat-chip"><span>Python Scripts:</span><span class="val">8+</span></div>
+  <div class="stat-chip"><span>Lines of Code:</span><span class="val">14,000+</span></div>
+  <div class="stat-chip live"><span>VPS:</span><span class="val">Live</span></div>
+  <div class="stat-chip"><span>Phone:</span><span class="val">+1 (833) 958-9975</span></div>
+  <div class="stat-chip gold"><span>Domain:</span><span class="val">janovum.com</span></div>
+</div>
+
+<!-- Main Content -->
+<div class="main" id="mainContent">
+
+  <!-- Core Tools -->
+  <div class="section" data-section="core">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#127968;</span>
+      <h2>Core Tools</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body" id="sec-core">
+      <div class="card" data-search="toolkit dashboard platform orchestrator agent tabs tools">
+        <div class="card-top">
+          <div class="card-icon toolkit">&#9881;</div>
+          <div class="card-info">
+            <div class="card-title">Toolkit / Dashboard</div>
+            <div class="card-desc">The main AI orchestrator platform. 34 tabs, 185+ tools.</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Platform_v3.html')">Open Local</button>
+          <button class="btn-open green" onclick="window.open('https://janovum.com/toolkit','_blank')">Live Site</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Platform_v3.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="drive documents contracts templates business files">
+        <div class="card-top">
+          <div class="card-icon drive">&#128193;</div>
+          <div class="card-info">
+            <div class="card-title">Janovum Drive</div>
+            <div class="card-desc">Document manager. Contracts, templates, business files.</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Drive.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Drive.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="landing page website public janovum.com">
+        <div class="card-top">
+          <div class="card-icon landing">&#127760;</div>
+          <div class="card-info">
+            <div class="card-title">Landing Page</div>
+            <div class="card-desc">Public website at janovum.com</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Landing_v2.html')">Open Local</button>
+          <button class="btn-open green" onclick="window.open('https://janovum.com','_blank')">Live Site</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Landing_v2.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="business plan launch step by step startup">
+        <div class="card-top">
+          <div class="card-icon plan">&#128203;</div>
+          <div class="card-info">
+            <div class="card-title">Business Plan</div>
+            <div class="card-desc">Step-by-step business launch plan</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Plan.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Plan.html',this)">Copy Path</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sales & Presentations -->
+  <div class="section" data-section="sales">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#128202;</span>
+      <h2>Sales &amp; Presentations</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body" id="sec-sales">
+      <div class="card" data-search="in person pitch walk in sales face to face door to door study guide objections">
+        <div class="card-top">
+          <div class="card-icon sales">&#128170;</div>
+          <div class="card-info">
+            <div class="card-title">In-Person Pitch Guide</div>
+            <div class="card-desc">Full walk-in pitch framework — approach, conversation, objections, close, follow-up, study plan</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_In_Person_Pitch.md')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_In_Person_Pitch.md',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="cold call pitch script sales phone outreach objection handling">
+        <div class="card-top">
+          <div class="card-icon sales">&#128222;</div>
+          <div class="card-info">
+            <div class="card-title">Cold Call Pitch Script</div>
+            <div class="card-desc">Full call script with intro, hook, objection handling, and close</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Cold_Call_Script.md')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Cold_Call_Script.md',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="consultation deck sales pitch google meet call presentation demo slides">
+        <div class="card-top">
+          <div class="card-icon consult">&#128187;</div>
+          <div class="card-info">
+            <div class="card-title">Sales / Consultation Deck</div>
+            <div class="card-desc">25-slide presentation for Google Meet demos and closing deals</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Consultation_Deck.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Consultation_Deck.html',this)">Copy Path</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Business Operations -->
+  <div class="section" data-section="business">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#128188;</span>
+      <h2>Business Operations</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body" id="sec-business">
+      <div class="card" data-search="llc operating agreement legal document">
+        <div class="card-top">
+          <div class="card-icon legal">&#128220;</div>
+          <div class="card-info">
+            <div class="card-title">LLC Operating Agreement</div>
+            <div class="card-desc">Legal operating agreement for Janovum LLC</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_LLC_Operating_Agreement.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_LLC_Operating_Agreement.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="expense tracker money spending costs business">
+        <div class="card-top">
+          <div class="card-icon expense">&#128176;</div>
+          <div class="card-info">
+            <div class="card-title">Expense Tracker</div>
+            <div class="card-desc">Track all business expenses</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Expenses.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Expenses.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="mileage tracker miles driving tax deductions car">
+        <div class="card-top">
+          <div class="card-icon mileage">&#128663;</div>
+          <div class="card-info">
+            <div class="card-title">Mileage Tracker</div>
+            <div class="card-desc">Track business miles for tax deductions</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Mileage.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Mileage.html',this)">Copy Path</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI & Receptionist -->
+  <div class="section" data-section="ai">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#129302;</span>
+      <h2>AI &amp; Receptionist</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body" id="sec-ai">
+      <div class="card" data-search="receptionist test ai phone voice call interface">
+        <div class="card-top">
+          <div class="card-icon recept">&#128222;</div>
+          <div class="card-info">
+            <div class="card-title">Receptionist Test</div>
+            <div class="card-desc">Test the AI receptionist interface</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Receptionist_Test_v2.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Receptionist_Test_v2.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="agent viewer watch ai agents real-time browser">
+        <div class="card-top">
+          <div class="card-icon agent">&#128065;</div>
+          <div class="card-info">
+            <div class="card-title">Agent Viewer</div>
+            <div class="card-desc">Watch AI agents work in real-time</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Agent_Viewer.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Agent_Viewer.html',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="workflow maps diagrams visual flow automation">
+        <div class="card-top">
+          <div class="card-icon workflow">&#128736;</div>
+          <div class="card-info">
+            <div class="card-title">Workflow Maps</div>
+            <div class="card-desc">Visual workflow diagrams</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('Janovum_Workflow_Maps_v2.html')">Open</button>
+          <button class="btn-copy" onclick="copyPath('Janovum_Workflow_Maps_v2.html',this)">Copy Path</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Links -->
+  <div class="section" data-section="live">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#127760;</span>
+      <h2>Live Links</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body list-view" id="sec-live">
+      <a href="https://janovum.com" target="_blank" rel="noopener" class="live-card" data-search="janovum.com live website main">
+        <div class="live-dot"></div>
+        <span class="url">janovum.com</span>
+        <span class="label">Live Website</span>
+        <button class="btn-open green" style="flex-shrink:0">Visit</button>
+      </a>
+      <a href="https://janovum.com/toolkit" target="_blank" rel="noopener" class="live-card" data-search="toolkit dashboard live janovum.com/toolkit">
+        <div class="live-dot"></div>
+        <span class="url">janovum.com/toolkit</span>
+        <span class="label">Toolkit Dashboard</span>
+        <button class="btn-open green" style="flex-shrink:0">Visit</button>
+      </a>
+      <a href="https://janovum.com/app" target="_blank" rel="noopener" class="live-card" data-search="app business owner janovum.com/app">
+        <div class="live-dot"></div>
+        <span class="url">janovum.com/app</span>
+        <span class="label">Business Owner App</span>
+        <button class="btn-open green" style="flex-shrink:0">Visit</button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Behind the Scenes -->
+  <div class="section" data-section="behind">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#128193;</span>
+      <h2>Behind the Scenes</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body list-view" id="sec-behind">
+      <div class="ref-item" data-search="platform server flask python backend server.py">
+        <span class="ref-icon">&#128421;</span>
+        <span class="ref-name">Platform Server</span>
+        <span class="ref-path">platform/server.py</span>
+        <button class="btn-copy" onclick="copyPath('platform/server.py',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="client check-in email auto checkin system">
+        <span class="ref-icon">&#128231;</span>
+        <span class="ref-name">Client Check-In Emails</span>
+        <span class="ref-path">platform/client_checkin.py</span>
+        <button class="btn-copy" onclick="copyPath('platform/client_checkin.py',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="receptionist client voice phone call">
+        <span class="ref-icon">&#128222;</span>
+        <span class="ref-name">Receptionist Client</span>
+        <span class="ref-path">platform/receptionist_client.py</span>
+        <button class="btn-copy" onclick="copyPath('platform/receptionist_client.py',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="telegram bot integration messaging">
+        <span class="ref-icon">&#128172;</span>
+        <span class="ref-name">Telegram Bot</span>
+        <span class="ref-path">telegram_bot/</span>
+        <button class="btn-copy" onclick="copyPath('telegram_bot/',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="free api toolkit research apis">
+        <span class="ref-icon">&#128218;</span>
+        <span class="ref-name">Free API Toolkit Research</span>
+        <span class="ref-path">Free_API_Toolkit_Research.md</span>
+        <button class="btn-copy" onclick="copyPath('Free_API_Toolkit_Research.md',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="agent platform research autonomous agents">
+        <span class="ref-icon">&#128218;</span>
+        <span class="ref-name">Agent Platform Research</span>
+        <span class="ref-path">agent_platform_research.md</span>
+        <button class="btn-copy" onclick="copyPath('agent_platform_research.md',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="openclaw business plan competition research">
+        <span class="ref-icon">&#128218;</span>
+        <span class="ref-name">OpenClaw Business Plan</span>
+        <span class="ref-path">openclaw_business_plan.md</span>
+        <button class="btn-copy" onclick="copyPath('openclaw_business_plan.md',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="logo concept design branding image">
+        <span class="ref-icon">&#127912;</span>
+        <span class="ref-name">Logo Concepts</span>
+        <span class="ref-path">logo_concept_1.png, _2.png, _3.png</span>
+        <button class="btn-copy" onclick="copyPath('logo_concept_1.png',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="signup accounts python selenium automation">
+        <span class="ref-icon">&#128295;</span>
+        <span class="ref-name">Signup Scripts</span>
+        <span class="ref-path">signup_accounts.py, signup_telnyx.py</span>
+        <button class="btn-copy" onclick="copyPath('signup_accounts.py',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="old versions platform v1 v2 landing v1 previous">
+        <span class="ref-icon">&#128451;</span>
+        <span class="ref-name">Old Versions</span>
+        <span class="ref-path">Janovum_Platform.html (v1), _v2.html, Landing.html (v1)</span>
+        <button class="btn-copy" onclick="copyPath('Janovum_Platform.html',this)">Copy</button>
+      </div>
+      <div class="ref-item" data-search="receptionist setup guide instructions config">
+        <span class="ref-icon">&#128214;</span>
+        <span class="ref-name">Receptionist Setup Guide</span>
+        <span class="ref-path">RECEPTIONIST_SETUP_GUIDE.md</span>
+        <button class="btn-copy" onclick="copyPath('RECEPTIONIST_SETUP_GUIDE.md',this)">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Templates & Auto-Send -->
+  <div class="section" data-section="email">
+    <div class="section-header" onclick="toggleSection(this)">
+      <span class="icon">&#128231;</span>
+      <h2>Email Templates &amp; Auto-Send</h2>
+      <span class="chevron">&#9660;</span>
+    </div>
+    <div class="section-body" id="sec-email">
+      <div class="card" data-search="email responder auto reply inbox monitor claude ai smtp imap">
+        <div class="card-top">
+          <div class="card-icon email">&#128231;</div>
+          <div class="card-info">
+            <div class="card-title">Email Auto-Responder</div>
+            <div class="card-desc">Monitors inbox every 60s, drafts AI replies with Claude, auto-sends via SMTP</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('platform/modules/email_responder.py')">Open</button>
+          <button class="btn-copy" onclick="copyPath('platform/modules/email_responder.py',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="email campaign bot mass batch outreach personalized pollinations ai">
+        <div class="card-top">
+          <div class="card-icon campaign">&#128232;</div>
+          <div class="card-info">
+            <div class="card-title">Email Campaign Bot</div>
+            <div class="card-desc">Batch personalized campaigns with AI subject lines, tracking pixels, dry-run mode</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('platform/bots/email_campaign_bot.py')">Open</button>
+          <button class="btn-copy" onclick="copyPath('platform/bots/email_campaign_bot.py',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="real estate auto responder leads property listing homes">
+        <div class="card-top">
+          <div class="card-icon realestate">&#127968;</div>
+          <div class="card-info">
+            <div class="card-title">Real Estate Auto-Responder</div>
+            <div class="card-desc">Auto-responds to real estate leads with personalized AI emails, tracks contacted leads</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('platform/bots/real_estate_auto_responder.py')">Open</button>
+          <button class="btn-copy" onclick="copyPath('platform/bots/real_estate_auto_responder.py',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="b2b sales outreach cold email sequence follow up template">
+        <div class="card-top">
+          <div class="card-icon outreach">&#128200;</div>
+          <div class="card-info">
+            <div class="card-title">B2B Sales Outreach Sequences</div>
+            <div class="card-desc">4-email outreach sequences: intro, social proof, objection handling, breakup email</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('platform/marketplace/sales_outreach.json')">Open</button>
+          <button class="btn-copy" onclick="copyPath('platform/marketplace/sales_outreach.json',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="customer support agent ticket response template escalation refund">
+        <div class="card-top">
+          <div class="card-icon support">&#128736;</div>
+          <div class="card-info">
+            <div class="card-title">Customer Support Templates</div>
+            <div class="card-desc">Ticket responses, refund approvals, escalation notices, after-hours messages</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('platform/marketplace/customer_support.json')">Open</button>
+          <button class="btn-copy" onclick="copyPath('platform/marketplace/customer_support.json',this)">Copy Path</button>
+        </div>
+      </div>
+      <div class="card" data-search="lead responder qualification hot warm cold follow up skill">
+        <div class="card-top">
+          <div class="card-icon leadresp">&#127919;</div>
+          <div class="card-info">
+            <div class="card-title">AI Lead Responder Skill</div>
+            <div class="card-desc">Lead qualification (HOT/WARM/COLD), personalized responses, follow-up timing rules</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-open" onclick="openFile('platform/modules/skills/lead_responder.md')">Open</button>
+          <button class="btn-copy" onclick="copyPath('platform/modules/skills/lead_responder.md',this)">Copy Path</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No results message -->
+  <div class="no-results" id="noResults">No matching items found.</div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">Path copied to clipboard</div>
+
+<script>
+function openFile(path) {
+  window.open(path, '_blank');
+}
+
+function copyPath(path, btn) {
+  navigator.clipboard.writeText(path).then(() => {
+    btn.classList.add('copied');
+    btn.textContent = 'Copied!';
+    showToast('Path copied: ' + path);
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = btn.textContent === 'Copied!' ? 'Copy Path' : 'Copy'; }, 1500);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = path;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.classList.add('copied');
+    btn.textContent = 'Copied!';
+    showToast('Path copied: ' + path);
+    setTimeout(() => { btn.classList.remove('copied'); btn.textContent = btn.textContent === 'Copied!' ? 'Copy Path' : 'Copy'; }, 1500);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function toggleSection(header) {
+  header.classList.toggle('collapsed');
+  const body = header.nextElementSibling;
+  body.classList.toggle('collapsed');
+}
+
+// Search
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  const allItems = document.querySelectorAll('.card, .live-card, .ref-item');
+  const sections = document.querySelectorAll('.section');
+  let totalVisible = 0;
+
+  if (!q) {
+    allItems.forEach(el => el.style.display = '');
+    sections.forEach(s => s.style.display = '');
+    document.getElementById('noResults').style.display = 'none';
+    return;
+  }
+
+  sections.forEach(section => {
+    const items = section.querySelectorAll('.card, .live-card, .ref-item');
+    let sectionVisible = 0;
+    items.forEach(item => {
+      const searchText = (item.getAttribute('data-search') || '') + ' ' + item.textContent.toLowerCase();
+      if (searchText.includes(q)) {
+        item.style.display = '';
+        sectionVisible++;
+        totalVisible++;
+      } else {
+        item.style.display = 'none';
+      }
+    });
+    section.style.display = sectionVisible > 0 ? '' : 'none';
+    // Auto-expand sections with results
+    if (sectionVisible > 0) {
+      const header = section.querySelector('.section-header');
+      const body = section.querySelector('.section-body');
+      header.classList.remove('collapsed');
+      body.classList.remove('collapsed');
+    }
+  });
+
+  document.getElementById('noResults').style.display = totalVisible === 0 ? 'block' : 'none';
+});
+
+// Keyboard shortcut: Ctrl+K or / to focus search
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey && e.key === 'k') || (e.key === '/' && document.activeElement.tagName !== 'INPUT')) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+  if (e.key === 'Escape') {
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input'));
+    searchInput.blur();
+  }
+});
+</script>
+
+</body>
+</html>

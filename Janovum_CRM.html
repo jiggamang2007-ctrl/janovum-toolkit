@@ -537,24 +537,73 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); if(e
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('modalOverlay')) closeModal(); });
 
 load();
-// Seed with a test lead if empty
+// Seed with scraped leads if empty
 if(leads.length === 0) {
-  leads.push({
-    id: genId(),
-    business: "Doe's Auto Repair",
-    owner: "John Doe",
-    phone: "305-555-8821",
-    email: "johndoe@doesauto.com",
-    industry: "Auto Shop",
-    method: "inperson",
-    address: "4821 NW 7th St, Miami, FL 33126",
-    stage: "lead",
-    notes: "Walked in, owner was at the front desk. Busy shop, no receptionist. Said they miss a lot of calls.",
-    dateContacted: "",
-    movedAt: new Date().toISOString().split('T')[0],
-    createdAt: new Date().toISOString(),
-    retryCount: 0,
-    history: [{stage:'lead',at:new Date().toISOString()}]
+  const ts = new Date().toISOString();
+  const td = ts.split('T')[0];
+  const seedLeads = [
+    {
+      business: "Lazarito's Barbershop",
+      owner: "Lazaro Gamon",
+      phone: "786-653-9703",
+      email: "",
+      industry: "Salon / Barbershop",
+      method: "inperson",
+      address: "1959 W 60th St, Hialeah, FL 33012",
+      notes: "Scraped by AI — local barbershop, owner-operated. High foot traffic area. Likely no automated booking or after-hours call handling. Good candidate for AI receptionist + appointment booking."
+    },
+    {
+      business: "Fade Lab Barber Shop",
+      owner: "Johnny C.",
+      phone: "813-385-7293",
+      email: "",
+      industry: "Salon / Barbershop",
+      method: "inperson",
+      address: "5393 W 20th Ave, Hialeah, FL 33012",
+      notes: "Scraped by AI — popular barbershop near you. Multiple reviews on Yelp. Probably misses calls when busy cutting hair. Great fit for AI receptionist to book appointments while they work."
+    },
+    {
+      business: "Professional Plumbing Corp",
+      owner: "",
+      phone: "305-822-8282",
+      email: "",
+      industry: "Home Services",
+      method: "phone",
+      address: "1755 W 39th Pl, Hialeah, FL 33012",
+      notes: "Scraped by AI — plumbing company in 33012. Service businesses miss calls constantly when techs are on job sites. AI receptionist would capture every lead, book estimates, and answer pricing questions 24/7."
+    },
+    {
+      business: "Hialeah Auto Care Center",
+      owner: "",
+      phone: "305-556-9681",
+      email: "",
+      industry: "Auto Shop",
+      method: "inperson",
+      address: "5988 W 20th Ave, Hialeah, FL 33016",
+      notes: "Scraped by AI — AAA-certified auto repair, family-owned since 2004. Busy shop with 24+ reviews. Owner probably answers phone while working on cars. AI receptionist + appointment scheduling would free up their time."
+    },
+    {
+      business: "Player's Lounge Barbershop",
+      owner: "",
+      phone: "305-307-0851",
+      email: "",
+      industry: "Salon / Barbershop",
+      method: "inperson",
+      address: "520 W 29th St, Hialeah, FL 33012",
+      notes: "Scraped by AI — barbershop in your zip code. Walk-in heavy business, probably no online booking. AI could handle call-in appointments and reduce no-shows with automated reminders."
+    }
+  ];
+  seedLeads.forEach(s => {
+    leads.push({
+      id: genId(),
+      ...s,
+      stage: 'lead',
+      dateContacted: '',
+      movedAt: td,
+      createdAt: ts,
+      retryCount: 0,
+      history: [{stage:'lead (scraped)',at:ts}]
+    });
   });
   save();
 }

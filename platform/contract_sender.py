@@ -190,7 +190,25 @@ canvas {{ display: block; cursor: crosshair; }}
 <h2>5. Service Level</h2>
 <p>Provider targets <strong>99.5% uptime</strong> for all AI services. Scheduled maintenance communicated 24 hours in advance. Provider is not liable for third-party service outages.</p>
 
-<h2>6. Client Responsibilities</h2>
+<h2>6. Service Hours</h2>
+<ul>
+<li><strong>AI Services (Receptionist, Automation, Bots):</strong> Available <strong>24 hours a day, 7 days a week</strong>, including holidays. AI systems operate continuously without interruption.</li>
+<li><strong>Human Support &amp; Account Management:</strong> Monday through Friday, <strong>9:00 AM — 6:00 PM (Eastern Time)</strong>. Requests received outside these hours will be addressed the next business day.</li>
+<li><strong>Emergency Support:</strong> Critical system outages will be addressed within <strong>2 hours</strong> regardless of time or day.</li>
+<li><strong>Onboarding &amp; Setup:</strong> Scheduled during business hours by mutual agreement.</li>
+</ul>
+
+<h2>7. Client Communication</h2>
+<ul>
+<li><strong>Primary Contact:</strong> All service-related communication will be conducted via email at the addresses listed in this Agreement, unless otherwise agreed in writing.</li>
+<li><strong>Response Times:</strong> Provider will respond to client inquiries within <strong>1 business day</strong>. Urgent matters will be prioritized and addressed within <strong>4 hours</strong> during business hours.</li>
+<li><strong>Scheduled Check-Ins:</strong> Provider will conduct periodic check-in communications (email or call) to review AI performance, gather feedback, and discuss optimizations. Frequency: at minimum <strong>once per month</strong>.</li>
+<li><strong>Reporting:</strong> Provider will deliver performance reports including call logs, AI response metrics, and system health summaries on a <strong>weekly or monthly basis</strong> as agreed during onboarding.</li>
+<li><strong>Change Requests:</strong> Client may request changes to AI behavior, scripts, greetings, or workflows at any time. Non-critical changes will be implemented within <strong>2 business days</strong>. Major reconfigurations may require up to <strong>5 business days</strong>.</li>
+<li><strong>Escalation Path:</strong> If an issue is not resolved within the stated response time, Client may escalate by calling <strong>+1 (833) 958-9975</strong> directly.</li>
+</ul>
+
+<h2>8. Client Responsibilities</h2>
 <ul>
 <li>Provide accurate business information for AI configuration.</li>
 <li>Respond to onboarding requests within 5 business days.</li>
@@ -198,19 +216,19 @@ canvas {{ display: block; cursor: crosshair; }}
 <li>Not use services for illegal or harmful purposes.</li>
 </ul>
 
-<h2>7. Intellectual Property</h2>
+<h2>9. Intellectual Property</h2>
 <p>All software, AI models, and platform technology remain Janovum LLC property. Client retains ownership of their business data and content.</p>
 
-<h2>8. Confidentiality</h2>
+<h2>10. Confidentiality</h2>
 <p>Both parties agree to keep confidential any proprietary information shared. This obligation survives for 2 years after termination.</p>
 
-<h2>9. Limitation of Liability</h2>
+<h2>11. Limitation of Liability</h2>
 <p>Provider's total liability shall not exceed the total paid by Client in the 3 months preceding any claim. Provider is not liable for indirect or consequential damages.</p>
 
-<h2>10. Dispute Resolution</h2>
+<h2>12. Dispute Resolution</h2>
 <p>Disputes resolved through good-faith negotiation, then binding arbitration if needed.</p>
 
-<h2>11. Entire Agreement</h2>
+<h2>13. Entire Agreement</h2>
 <p>This Agreement constitutes the entire understanding and supersedes all prior agreements.</p>
 
 <hr>

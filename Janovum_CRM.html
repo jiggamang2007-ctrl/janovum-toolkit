@@ -327,7 +327,7 @@ function renderCard(l, section) {
 
   return `<div class="${classes}">
     <div class="lead-info">
-      <div class="lead-name">${esc(l.business)} <span style="font-size:11px;font-weight:400;color:var(--dim);margin-left:8px;">${section==='leads' ? (l.createdAt ? 'Added ' + formatTimestamp(l.createdAt) : '') : section==='pending' ? (l.pendingAt ? 'Entered Pending ' + formatTimestamp(l.pendingAt) : '') : section==='demo' ? (l.demoAt ? 'Scheduled ' + formatTimestamp(l.demoAt) : '') : section==='proposal' ? (l.proposalAt ? 'Proposal Sent ' + formatTimestamp(l.proposalAt) : '') : section==='closed' ? (l.closedAt ? 'Closed ' + formatTimestamp(l.closedAt) : '') : section==='lost' ? (l.lostAt ? 'Lost ' + formatTimestamp(l.lostAt) : '') : ''}</span></div>
+      <div class="lead-name">${esc(l.business)}${l.retryCount ? ' <span style="font-size:10px;padding:2px 7px;background:rgba(74,144,217,.15);color:var(--blue);border-radius:8px;margin-left:6px;">Retry #'+l.retryCount+'</span>' : ''} <span style="font-size:11px;font-weight:400;color:var(--dim);margin-left:8px;">${section==='leads' ? (l.createdAt ? 'Added ' + formatTimestamp(l.createdAt) : '') : section==='pending' ? (l.pendingAt ? 'Entered Pending ' + formatTimestamp(l.pendingAt) : '') : section==='demo' ? (l.demoAt ? 'Scheduled ' + formatTimestamp(l.demoAt) : '') : section==='proposal' ? (l.proposalAt ? 'Proposal Sent ' + formatTimestamp(l.proposalAt) : '') : section==='closed' ? (l.closedAt ? 'Closed ' + formatTimestamp(l.closedAt) : '') : section==='lost' ? (l.lostAt ? 'Lost ' + formatTimestamp(l.lostAt) : '') : ''}</span></div>
       <div class="lead-detail">
         ${l.owner ? esc(l.owner) + ' &middot; ' : ''}
         ${l.phone ? '<a href="tel:'+esc(l.phone)+'">'+esc(l.phone)+'</a> &middot; ' : ''}
@@ -415,7 +415,7 @@ function pitched(id, result) {
   if(!l.history) l.history = [];
   if(result==='yes') { l.stage='pending'; l.pendingAt=ts; l.history.push({stage:'pending',at:ts}); toast('Moved to Pending'); }
   else if(result==='no') { l.stage='lost'; l.lostAt=ts; l.history.push({stage:'lost',at:ts}); toast('Marked as not interested'); }
-  else if(result==='retry') { l.stage='retry'; l.history.push({stage:'retry',at:ts}); l.notes = (l.notes ? l.notes + ' | ' : '') + 'Retry — ' + nowEST(); toast('Will try again (moved to bottom)'); }
+  else if(result==='retry') { l.stage='retry'; l.retryCount=(l.retryCount||0)+1; l.lastRetry=ts; l.history.push({stage:'retry #'+l.retryCount,at:ts}); toast('Try again later (moved to bottom)'); }
   save(); render();
 }
 

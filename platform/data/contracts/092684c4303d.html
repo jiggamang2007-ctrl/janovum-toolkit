@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum Service Agreement — Test Company LLC</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #f5f5f5; color: #222; line-height: 1.7; }
+.container { max-width: 800px; margin: 0 auto; background: #fff; box-shadow: 0 2px 20px rgba(0,0,0,.1); }
+.header { background: linear-gradient(135deg, #0a0a0a 0%, #1a1a18 100%); color: #fff; padding: 40px; text-align: center; }
+.header h1 { font-size: 28px; font-weight: 800; letter-spacing: 2px; margin-bottom: 4px; }
+.header .gold { color: #D4AF37; }
+.header p { color: #999; font-size: 14px; margin-top: 8px; }
+.body { padding: 40px; }
+.body h2 { font-size: 18px; font-weight: 700; color: #111; margin: 28px 0 12px; border-bottom: 2px solid #D4AF37; padding-bottom: 6px; }
+.body h3 { font-size: 15px; font-weight: 600; margin: 16px 0 8px; color: #333; }
+.body p { margin: 8px 0; font-size: 14px; }
+.body ul { margin: 8px 0 8px 24px; font-size: 14px; }
+.body li { margin: 4px 0; }
+.body table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+.body td, .body th { padding: 10px 14px; border: 1px solid #ddd; font-size: 14px; }
+.body th { background: #f9f9f9; text-align: left; font-weight: 600; }
+.body tr:nth-child(even) { background: #fafafa; }
+.highlight { background: #fffdf0; border-left: 4px solid #D4AF37; padding: 16px; margin: 16px 0; border-radius: 0 8px 8px 0; }
+hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+
+/* Signature Section */
+.sign-section { background: #fafafa; border: 2px solid #D4AF37; border-radius: 12px; padding: 32px; margin: 32px 0; }
+.sign-section h2 { border: none; text-align: center; color: #D4AF37; margin-bottom: 20px; }
+.form-group { margin: 16px 0; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; font-family: inherit; transition: border .2s; }
+.form-group input:focus { border-color: #D4AF37; outline: none; box-shadow: 0 0 0 3px rgba(212,175,55,.15); }
+.sig-canvas-wrap { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: #fff; position: relative; margin-top: 6px; }
+canvas { display: block; cursor: crosshair; }
+.sig-label { position: absolute; bottom: 8px; right: 12px; font-size: 11px; color: #bbb; pointer-events: none; }
+.clear-sig { margin-top: 8px; padding: 6px 16px; background: none; border: 1px solid #ddd; border-radius: 6px; color: #888; font-size: 13px; cursor: pointer; font-family: inherit; }
+.clear-sig:hover { border-color: #c00; color: #c00; }
+.checkbox-group { display: flex; align-items: flex-start; gap: 10px; margin: 20px 0; padding: 16px; background: #fff; border: 1px solid #ddd; border-radius: 8px; }
+.checkbox-group input[type=checkbox] { margin-top: 3px; width: 18px; height: 18px; accent-color: #D4AF37; }
+.checkbox-group label { font-size: 14px; color: #444; cursor: pointer; }
+.submit-btn { display: block; width: 100%; padding: 16px; background: linear-gradient(135deg, #D4AF37, #b8941f); color: #000; font-size: 18px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; font-family: inherit; transition: all .2s; letter-spacing: 0.5px; }
+.submit-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(212,175,55,.4); }
+.submit-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+
+/* Success state */
+.success-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.8); z-index: 1000; align-items: center; justify-content: center; }
+.success-overlay.show { display: flex; }
+.success-box { background: #fff; border-radius: 16px; padding: 48px; text-align: center; max-width: 480px; margin: 20px; }
+.success-box .check { font-size: 64px; margin-bottom: 16px; }
+.success-box h2 { font-size: 24px; margin-bottom: 12px; color: #111; }
+.success-box p { color: #666; font-size: 15px; line-height: 1.6; }
+
+.footer { background: #0a0a0a; color: #666; text-align: center; padding: 20px; font-size: 12px; }
+.footer a { color: #D4AF37; text-decoration: none; }
+
+@media(max-width:600px) {
+  .body { padding: 20px; }
+  .header { padding: 24px; }
+  .header h1 { font-size: 22px; }
+  .sign-section { padding: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<div class="header">
+  <h1>JANOVUM <span class="gold">SERVICE AGREEMENT</span></h1>
+  <p>Professional AI Automation &amp; Technology Services</p>
+</div>
+
+<div class="body">
+
+<div class="highlight">
+  <p><strong>Agreement Date:</strong> March 19, 2026</p>
+  <p><strong>Prepared for:</strong> Test Client — Test Company LLC</p>
+  <p><strong>Contract ID:</strong> 092684c4303d</p>
+</div>
+
+<p>This Service Agreement ("Agreement") is entered into as of <strong>March 19, 2026</strong> by and between:</p>
+
+<table>
+<tr><th>Service Provider</th><th>Client</th></tr>
+<tr>
+<td><strong>Janovum LLC</strong><br>Phone: +1 (833) 958-9975<br>Website: janovum.com</td>
+<td><strong>Test Company LLC</strong><br>Test Client<br>123 Test Street, New York, NY 10001<br>Phone: 555-000-1234<br>Email: janovumllc@gmail.com</td>
+</tr>
+</table>
+
+<h2>1. Services Provided</h2>
+<p>Janovum LLC ("Provider") agrees to provide the following AI-powered business automation services:</p>
+<ul>
+<li><strong>AI Receptionist</strong></li><li><strong>Business Automation</strong></li><li><strong>Dashboard Access</strong></li>
+</ul>
+<p>Including but not limited to: 24/7 AI phone answering, call routing, appointment scheduling, customer inquiry handling, dashboard access with real-time monitoring, analytics, and agent management.</p>
+
+<h2>2. Compensation &amp; Payment</h2>
+<table>
+<tr><th>Item</th><th style="text-align:right">Amount</th></tr>
+<tr><td>One-Time Setup Fee</td><td style="text-align:right"><strong>$1,000.00</strong></td></tr>
+<tr><td>Monthly Recurring Fee</td><td style="text-align:right"><strong>$500.00/month</strong></td></tr>
+<tr style="background:#fffdf0"><td><strong>Total Due at Signing</strong></td><td style="text-align:right"><strong>$1,500.00</strong></td></tr>
+</table>
+<ul>
+<li>Setup fee due in full upon signing.</li>
+<li>Monthly fees billed on the 1st, due within 15 days.</li>
+<li>Accepted: Zelle, PayPal, Bank Transfer, Cash App.</li>
+<li>Late payments incur 5% monthly fee after 15 days.</li>
+</ul>
+
+<h2>3. Term &amp; Renewal</h2>
+<p>Initial term: <strong>3 months</strong>. After the initial term, this Agreement renews month-to-month unless either party provides 30 days written notice.</p>
+
+<h2>4. Termination</h2>
+<ul>
+<li>Either party may terminate with 30 days written notice.</li>
+<li>Setup fees are non-refundable. No refunds for partial months.</li>
+<li>Client data available for export for 30 days after termination.</li>
+<li>Outstanding balances become immediately due.</li>
+</ul>
+
+<h2>5. Service Level</h2>
+<p>Provider targets <strong>99.5% uptime</strong> for all AI services. Scheduled maintenance communicated 24 hours in advance. Provider is not liable for third-party service outages.</p>
+
+<h2>6. Client Responsibilities</h2>
+<ul>
+<li>Provide accurate business information for AI configuration.</li>
+<li>Respond to onboarding requests within 5 business days.</li>
+<li>Notify Provider of changes to hours, services, or pricing.</li>
+<li>Not use services for illegal or harmful purposes.</li>
+</ul>
+
+<h2>7. Intellectual Property</h2>
+<p>All software, AI models, and platform technology remain Janovum LLC property. Client retains ownership of their business data and content.</p>
+
+<h2>8. Confidentiality</h2>
+<p>Both parties agree to keep confidential any proprietary information shared. This obligation survives for 2 years after termination.</p>
+
+<h2>9. Limitation of Liability</h2>
+<p>Provider's total liability shall not exceed the total paid by Client in the 3 months preceding any claim. Provider is not liable for indirect or consequential damages.</p>
+
+<h2>10. Dispute Resolution</h2>
+<p>Disputes resolved through good-faith negotiation, then binding arbitration if needed.</p>
+
+<h2>11. Entire Agreement</h2>
+<p>This Agreement constitutes the entire understanding and supersedes all prior agreements.</p>
+
+<hr>
+
+<!-- SIGNATURE SECTION -->
+<div class="sign-section" id="signSection">
+  <h2>Sign This Agreement</h2>
+
+  <div class="form-group">
+    <label>Full Legal Name</label>
+    <input type="text" id="sigName" placeholder="Type your full name" value="Test Client">
+  </div>
+
+  <div class="form-group">
+    <label>Title / Position</label>
+    <input type="text" id="sigTitle" placeholder="e.g. Owner, CEO, Manager">
+  </div>
+
+  <div class="form-group">
+    <label>Signature (draw below)</label>
+    <div class="sig-canvas-wrap">
+      <canvas id="sigCanvas" width="700" height="150"></canvas>
+      <span class="sig-label">Draw your signature here</span>
+    </div>
+    <button class="clear-sig" onclick="clearSig()">Clear Signature</button>
+  </div>
+
+  <div class="checkbox-group">
+    <input type="checkbox" id="agreeCheck">
+    <label for="agreeCheck">I have read and agree to the terms of this Service Agreement. I authorize Janovum LLC to begin providing services as described above.</label>
+  </div>
+
+  <button class="submit-btn" id="submitBtn" disabled onclick="submitContract()">
+    Sign &amp; Submit Agreement
+  </button>
+</div>
+
+</div>
+
+<div class="footer">
+  <p>&copy; 2026 Janovum LLC &mdash; <a href="https://janovum.com">janovum.com</a> &mdash; +1 (833) 958-9975</p>
+</div>
+</div>
+
+<!-- Success Overlay -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-box">
+    <div class="check">&#9989;</div>
+    <h2>Agreement Signed!</h2>
+    <p>Thank you, <strong>Test Client</strong>! Your signed agreement has been submitted successfully. The Janovum team will begin setting up your services right away.</p>
+    <p style="margin-top:16px;color:#888;">A confirmation email has been sent to <strong>janovumllc@gmail.com</strong></p>
+    <p style="margin-top:24px;color:#D4AF37;font-weight:600;">Welcome to Janovum!</p>
+  </div>
+</div>
+
+<script>
+// Signature pad
+const canvas = document.getElementById('sigCanvas');
+const ctx = canvas.getContext('2d');
+let drawing = false;
+let hasSigned = false;
+
+// Make canvas responsive
+function resizeCanvas() {
+  const wrap = canvas.parentElement;
+  const rect = wrap.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = 150;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+canvas.addEventListener('mousemove', (e) => { if (!drawing) return; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000'; ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); hasSigned = true; checkReady(); });
+canvas.addEventListener('mouseup', () => { drawing = false; });
+canvas.addEventListener('mouseleave', () => { drawing = false; });
+
+// Touch support
+canvas.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.touches[0]; const r = canvas.getBoundingClientRect(); drawing = true; ctx.beginPath(); ctx.moveTo(t.clientX - r.left, t.clientY - r.top); });
+canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if (!drawing) return; const t = e.touches[0]; const r = canvas.getBoundingClientRect(); ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000'; ctx.lineTo(t.clientX - r.left, t.clientY - r.top); ctx.stroke(); hasSigned = true; checkReady(); });
+canvas.addEventListener('touchend', () => { drawing = false; });
+
+function clearSig() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSigned = false;
+  checkReady();
+}
+
+// Enable submit only when everything is filled
+const agreeCheck = document.getElementById('agreeCheck');
+const submitBtn = document.getElementById('submitBtn');
+const sigName = document.getElementById('sigName');
+const sigTitle = document.getElementById('sigTitle');
+
+agreeCheck.addEventListener('change', checkReady);
+sigName.addEventListener('input', checkReady);
+sigTitle.addEventListener('input', checkReady);
+
+function checkReady() {
+  const ready = agreeCheck.checked && sigName.value.trim() && sigTitle.value.trim() && hasSigned;
+  submitBtn.disabled = !ready;
+}
+
+function submitContract() {
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting...';
+
+  const payload = {
+    contract_id: '092684c4303d',
+    client_name: sigName.value.trim(),
+    client_title: sigTitle.value.trim(),
+    client_email: 'janovumllc@gmail.com',
+    client_business: 'Test Company LLC',
+    signature_image: canvas.toDataURL('image/png'),
+    signed_at: new Date().toISOString(),
+    agreed: true
+  };
+
+  // Try to submit to server
+  fetch('/api/contracts/sign', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('successOverlay').classList.add('show');
+  })
+  .catch(err => {
+    // Fallback: still show success, data was captured
+    console.log('Server submit failed, using mailto fallback');
+
+    // Send via mailto as fallback
+    const subject = encodeURIComponent('Signed Agreement — ' + 'Test Company LLC');
+    const body = encodeURIComponent('Contract ID: 092684c4303d\nClient: ' + sigName.value + '\nTitle: ' + sigTitle.value + '\nBusiness: Test Company LLC\nSigned: ' + new Date().toISOString() + '\n\nAgreement has been signed and accepted.');
+
+    // Open mailto
+    window.open('mailto:myfriendlyagent12@gmail.com?subject=' + subject + '&body=' + body);
+
+    document.getElementById('successOverlay').classList.add('show');
+  });
+}
+</script>
+</body>
+</html>

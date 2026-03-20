@@ -259,6 +259,14 @@ function daysAgoText(date) {
   if(d<0) return 'In ' + Math.abs(d) + 'd';
   return d + 'd ago';
 }
+function nowEST() {
+  return new Date().toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+}
+function formatTimestamp(ts) {
+  if(!ts) return '';
+  const d = new Date(ts);
+  return d.toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true});
+}
 
 function matchSearch(l) {
   if(!searchQ) return true;
@@ -319,7 +327,7 @@ function renderCard(l, section) {
 
   return `<div class="${classes}">
     <div class="lead-info">
-      <div class="lead-name">${esc(l.business)}</div>
+      <div class="lead-name">${esc(l.business)} <span style="font-size:11px;font-weight:400;color:var(--dim);margin-left:8px;">${section==='leads' ? (l.createdAt ? 'Added ' + formatTimestamp(l.createdAt) : '') : section==='pending' ? (l.pendingAt ? 'Entered Pending ' + formatTimestamp(l.pendingAt) : '') : section==='demo' ? (l.demoAt ? 'Scheduled ' + formatTimestamp(l.demoAt) : '') : section==='proposal' ? (l.proposalAt ? 'Proposal Sent ' + formatTimestamp(l.proposalAt) : '') : section==='closed' ? (l.closedAt ? 'Closed ' + formatTimestamp(l.closedAt) : '') : section==='lost' ? (l.lostAt ? 'Lost ' + formatTimestamp(l.lostAt) : '') : ''}</span></div>
       <div class="lead-detail">
         ${l.owner ? esc(l.owner) + ' &middot; ' : ''}
         ${l.phone ? '<a href="tel:'+esc(l.phone)+'">'+esc(l.phone)+'</a> &middot; ' : ''}
@@ -401,20 +409,27 @@ function render() {
 function pitched(id, result) {
   const l = leads.find(x=>x.id===id);
   if(!l) return;
+  const ts = new Date().toISOString();
   l.dateContacted = l.dateContacted || today();
   l.movedAt = today();
-  if(result==='yes') { l.stage='pending'; toast('Moved to Pending'); }
-  else if(result==='no') { l.stage='lost'; toast('Marked as not interested'); }
-  else if(result==='retry') { l.stage='retry'; l.notes = (l.notes ? l.notes + ' | ' : '') + 'Retry — ' + today(); toast('Will try again (moved to bottom)'); }
+  if(!l.history) l.history = [];
+  if(result==='yes') { l.stage='pending'; l.pendingAt=ts; l.history.push({stage:'pending',at:ts}); toast('Moved to Pending'); }
+  else if(result==='no') { l.stage='lost'; l.lostAt=ts; l.history.push({stage:'lost',at:ts}); toast('Marked as not interested'); }
+  else if(result==='retry') { l.stage='retry'; l.history.push({stage:'retry',at:ts}); l.notes = (l.notes ? l.notes + ' | ' : '') + 'Retry — ' + nowEST(); toast('Will try again (moved to bottom)'); }
   save(); render();
 }
 
 function promote(id, stage) {
   const l = leads.find(x=>x.id===id);
   if(!l) return;
+  const ts = new Date().toISOString();
   l.stage = stage;
   l.movedAt = today();
-  const labels = {demo:'Demo Scheduled',proposal:'Proposal Sent',closed:'CLOSED! 🎉'};
+  if(!l.history) l.history = [];
+  if(stage==='demo') { l.demoAt=ts; l.history.push({stage:'demo',at:ts}); }
+  if(stage==='proposal') { l.proposalAt=ts; l.history.push({stage:'proposal',at:ts}); }
+  if(stage==='closed') { l.closedAt=ts; l.history.push({stage:'closed',at:ts}); }
+  const labels = {demo:'Demo Scheduled',proposal:'Proposal Sent',closed:'CLOSED!'};
   toast(labels[stage] || 'Updated');
   save(); render();
 }
@@ -422,8 +437,11 @@ function promote(id, stage) {
 function revive(id) {
   const l = leads.find(x=>x.id===id);
   if(!l) return;
+  const ts = new Date().toISOString();
   l.stage = 'lead';
   l.movedAt = today();
+  if(!l.history) l.history = [];
+  l.history.push({stage:'lead (revived)',at:ts});
   toast('Moved back to Lead List');
   save(); render();
 }

@@ -83,6 +83,10 @@ input,select,textarea{font-family:inherit;outline:none;}
 .act-del{background:none;border:1px solid var(--border);color:var(--dim);}
 .act-del:hover{border-color:var(--red);color:var(--red);}
 
+/* Duplicate warning glow */
+.lead-card.duplicate{border:1px solid var(--red);box-shadow:0 0 12px rgba(239,68,68,.3);animation:pulseRed 2s infinite;}
+@keyframes pulseRed{0%,100%{box-shadow:0 0 8px rgba(239,68,68,.2);}50%{box-shadow:0 0 18px rgba(239,68,68,.5);}}
+
 /* Search */
 .search-bar{padding:0 24px 12px;display:flex;gap:8px;align-items:center;}
 .search-input{padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:13px;width:260px;transition:border .2s;}
@@ -242,11 +246,25 @@ function matchSearch(l) {
 
 const methodLabel = {inperson:'In-Person',phone:'Phone',email:'Email',social:'Social'};
 
+function isInLostList(lead) {
+  const lostLeads = leads.filter(l => l.stage === 'lost' && l.id !== lead.id);
+  const biz = lead.business.toLowerCase().trim();
+  const phone = (lead.phone||'').replace(/\D/g,'');
+  const email = (lead.email||'').toLowerCase().trim();
+  return lostLeads.some(l => {
+    if (biz && l.business.toLowerCase().trim() === biz) return true;
+    if (phone && phone.length >= 7 && (l.phone||'').replace(/\D/g,'') === phone) return true;
+    if (email && email.length > 3 && (l.email||'').toLowerCase().trim() === email) return true;
+    return false;
+  });
+}
+
 function renderCard(l, section) {
   const da = daysAgoText(l.dateContacted || l.createdAt?.split('T')[0]);
   const pendingDays = l.stage === 'pending' ? daysBetween(l.movedAt || l.createdAt?.split('T')[0] || today(), today()) : 0;
   const isOverdue = l.stage === 'pending' && pendingDays >= 3;
-  const classes = isOverdue ? 'lead-card overdue' : (l.stage === 'pending' && pendingDays >= 2 ? 'lead-card warm' : 'lead-card');
+  const isDuplicate = (l.stage === 'lead' || l.stage === 'retry') && isInLostList(l);
+  const classes = isDuplicate ? 'lead-card duplicate' : (isOverdue ? 'lead-card overdue' : (l.stage === 'pending' && pendingDays >= 2 ? 'lead-card warm' : 'lead-card'));
 
   let actions = '';
   if (section === 'leads') {
@@ -285,7 +303,7 @@ function renderCard(l, section) {
     </div>
     <div class="lead-meta">
       <span class="method m-${l.method}">${methodLabel[l.method]||l.method}</span>
-      <span class="days-ago ${isOverdue?'overdue':''}">${da} ${isOverdue ? '&#9888; Reach out!' : ''}</span>
+      <span class="days-ago ${isOverdue?'overdue':''}">${da} ${isOverdue ? '&#9888; Reach out!' : ''} ${isDuplicate ? '<span style="color:var(--red);font-weight:700;">&#9888; Already said no before!</span>' : ''}</span>
     </div>
     <div class="lead-actions">
       ${actions}

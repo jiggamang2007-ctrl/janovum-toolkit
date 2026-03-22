@@ -217,7 +217,27 @@ def index():
 
 @app.route("/toolkit")
 def toolkit():
-    return send_from_directory(PARENT_DIR, "Janovum_Platform.html")
+    return send_from_directory(PARENT_DIR, "Janovum_Platform_v3.html")
+
+@app.route("/crm")
+def crm():
+    return send_from_directory(PARENT_DIR, "Janovum_CRM.html")
+
+@app.route("/hub")
+def hub():
+    return send_from_directory(PARENT_DIR, "Janovum_Hub.html")
+
+@app.route("/drive")
+def drive():
+    return send_from_directory(PARENT_DIR, "Janovum_Drive.html")
+
+@app.route("/sales-deck")
+def sales_deck():
+    return send_from_directory(PARENT_DIR, "Janovum_Sales_Deck.html")
+
+@app.route("/consultation")
+def consultation():
+    return send_from_directory(PARENT_DIR, "Janovum_Consultation_Deck.html")
 
 @app.route("/api/demo-request", methods=["POST"])
 def demo_request():

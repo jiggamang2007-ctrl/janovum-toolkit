@@ -239,6 +239,10 @@ def sales_deck():
 def consultation():
     return send_from_directory(PARENT_DIR, "Janovum_Consultation_Deck.html")
 
+@app.route("/faq")
+def faq():
+    return send_from_directory(PARENT_DIR, "faq.html")
+
 @app.route("/api/demo-request", methods=["POST"])
 def demo_request():
     """Handle demo request from landing page — save appointment + email Jaden."""

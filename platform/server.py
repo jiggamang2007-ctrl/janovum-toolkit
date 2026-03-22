@@ -18,9 +18,8 @@ import os
 import sys
 import time
 import threading
-from flask import Flask, request, jsonify, send_from_directory, Response, redirect, make_response
+from flask import Flask, request, jsonify, send_from_directory, Response
 from datetime import datetime
-import hashlib
 
 # Setup paths
 PLATFORM_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -31,94 +30,6 @@ from core.config import load_config, save_config, get_api_key, set_api_key, get_
 from core.engine import test_api_key, quick_ask, call_claude, pick_model, get_model_name, MODELS
 
 app = Flask(__name__)
-
-# ══════════════════════════════════════════
-# COOKIE-BASED AUTH (replaces nginx basic auth)
-# ══════════════════════════════════════════
-ADMIN_USER = "jaden"
-ADMIN_PASS = "Janovum2026!"
-AUTH_COOKIE = "janovum_admin"
-AUTH_TOKEN = hashlib.sha256(f"{ADMIN_USER}:{ADMIN_PASS}".encode()).hexdigest()
-
-def is_logged_in():
-    return request.cookies.get(AUTH_COOKIE) == AUTH_TOKEN
-
-LOGIN_PAGE = """<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Janovum — Login</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#06060b;color:#e0e0e0;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
-.bg::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg at 50% 50%,transparent 0deg,rgba(99,102,241,0.03) 60deg,transparent 120deg);animation:spin 30s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.orb{position:fixed;border-radius:50%;filter:blur(120px);opacity:0.15;z-index:0;pointer-events:none}
-.orb-1{width:400px;height:400px;background:#6366f1;top:-100px;right:-100px;animation:float 20s ease-in-out infinite}
-.orb-2{width:300px;height:300px;background:#8b5cf6;bottom:-80px;left:-80px;animation:float 25s ease-in-out infinite reverse}
-@keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
-.login-box{position:relative;z-index:10;width:90%;max-width:380px;background:rgba(12,12,20,0.85);border:1px solid rgba(99,102,241,0.15);border-radius:20px;padding:40px 32px;backdrop-filter:blur(40px);box-shadow:0 0 80px rgba(99,102,241,0.08),0 20px 60px rgba(0,0,0,0.4)}
-.login-box::before{content:'';position:absolute;top:-1px;left:20%;right:20%;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.5),transparent)}
-.logo{text-align:center;margin-bottom:28px}
-.logo h1{font-size:1.4em;font-weight:900;letter-spacing:6px;background:linear-gradient(135deg,#a78bfa,#6366f1,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo p{font-size:0.72em;color:#555;margin-top:6px;letter-spacing:2px;text-transform:uppercase}
-.field{margin-bottom:18px}
-.field input{width:100%;padding:14px 16px;border:1px solid rgba(99,102,241,0.12);border-radius:10px;background:rgba(255,255,255,0.03);color:#e0e0e0;font-size:0.88em;font-family:'Inter',sans-serif;outline:none;transition:all 0.3s}
-.field input:focus{border-color:rgba(99,102,241,0.4);box-shadow:0 0 20px rgba(99,102,241,0.1);background:rgba(255,255,255,0.05)}
-.field input::placeholder{color:#444}
-.btn{width:100%;padding:14px;border:none;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:0.9em;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:all 0.3s;letter-spacing:1px;position:relative;overflow:hidden}
-.btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(99,102,241,0.35)}
-.btn:active{transform:translateY(0)}
-.btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transition:left 0.5s}
-.btn:hover::after{left:100%}
-.error{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;padding:10px 14px;border-radius:8px;font-size:0.78em;margin-bottom:16px;text-align:center;display:none}
-.error.show{display:block;animation:shake 0.4s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
-.footer{text-align:center;margin-top:20px;font-size:0.65em;color:#333}
-.particles{position:fixed;width:100%;height:100%;z-index:1;pointer-events:none}
-.particle{position:absolute;width:2px;height:2px;background:rgba(99,102,241,0.3);border-radius:50%;animation:drift linear infinite}
-@keyframes drift{0%{transform:translateY(100vh) translateX(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) translateX(30px);opacity:0}}
-</style></head><body>
-<div class="bg"></div>
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="particles" id="particles"></div>
-<div class="login-box">
-  <div class="logo"><h1>JANOVUM</h1><p>Admin Dashboard</p></div>
-  <div class="error" id="err">ERRORMSG</div>
-  <form method="POST" action="/admin/login">
-    <input type="hidden" name="next" value="NEXTPAGE">
-    <div class="field"><input name="username" placeholder="Username" autocomplete="username" required></div>
-    <div class="field"><input name="password" type="password" placeholder="Password" autocomplete="current-password" required></div>
-    <button class="btn" type="submit">Sign In</button>
-  </form>
-  <div class="footer">Secured by Janovum</div>
-</div>
-<script>
-const c=document.getElementById('particles');
-for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDuration=(8+Math.random()*12)+'s';p.style.animationDelay=(-Math.random()*20)+'s';p.style.width=p.style.height=(1+Math.random()*2)+'px';c.appendChild(p)}
-</script>
-</body></html>"""
-
-@app.route("/admin/login", methods=["GET"])
-def admin_login_page():
-    next_page = request.args.get("next", "/toolkit")
-    page = LOGIN_PAGE.replace("ERRORMSG", "").replace('class="error"', 'class="error"').replace("NEXTPAGE", next_page)
-    return page
-
-@app.route("/admin/login", methods=["POST"])
-def admin_login_submit():
-    username = request.form.get("username", "")
-    password = request.form.get("password", "")
-    next_page = request.form.get("next", "/toolkit")
-    if username == ADMIN_USER and password == ADMIN_PASS:
-        resp = make_response(redirect(next_page))
-        resp.set_cookie(AUTH_COOKIE, AUTH_TOKEN, max_age=60*60*24*30, httponly=True, samesite="Lax")
-        return resp
-    else:
-        page = LOGIN_PAGE.replace("ERRORMSG", "Wrong username or password").replace('class="error"', 'class="error show"').replace("NEXTPAGE", next_page)
-        return page, 401
 
 
 # ══════════════════════════════════════════
@@ -306,38 +217,26 @@ def index():
 
 @app.route("/toolkit")
 def toolkit():
-    if not is_logged_in():
-        return redirect("/admin/login?next=/toolkit")
     return send_from_directory(PARENT_DIR, "Janovum_Platform_v3.html")
 
 @app.route("/crm")
 def crm():
-    if not is_logged_in():
-        return redirect("/admin/login?next=/crm")
     return send_from_directory(PARENT_DIR, "Janovum_CRM.html")
 
 @app.route("/hub")
 def hub():
-    if not is_logged_in():
-        return redirect("/admin/login?next=/hub")
     return send_from_directory(PARENT_DIR, "Janovum_Hub.html")
 
 @app.route("/drive")
 def drive():
-    if not is_logged_in():
-        return redirect("/admin/login?next=/drive")
     return send_from_directory(PARENT_DIR, "Janovum_Drive.html")
 
 @app.route("/sales-deck")
 def sales_deck():
-    if not is_logged_in():
-        return redirect("/admin/login?next=/sales-deck")
     return send_from_directory(PARENT_DIR, "Janovum_Sales_Deck.html")
 
 @app.route("/consultation")
 def consultation():
-    if not is_logged_in():
-        return redirect("/admin/login?next=/consultation")
     return send_from_directory(PARENT_DIR, "Janovum_Consultation_Deck.html")
 
 @app.route("/api/demo-request", methods=["POST"])

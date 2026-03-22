@@ -49,10 +49,10 @@ try:
 except Exception:
     pass
 TWILIO_AUTH_TOKEN = _tk_auth or CLIENT_CONFIG.get("twilio_auth_token", "")
-DEEPGRAM_KEY = CLIENT_CONFIG.get("deepgram_api_key", "6e304c8a16d16deae3ec7694e60212c4f610ba96")
-GROQ_KEY = CLIENT_CONFIG.get("groq_api_key", "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")
-CEREBRAS_KEY = CLIENT_CONFIG.get("cerebras_api_key", "csk-449rv3mvf9d4m4c5d5w9hx3vd33fjx3em5ht8nvmdvrv448y")
-CARTESIA_KEY = CLIENT_CONFIG.get("cartesia_api_key", "sk_car_7QqSF9RbebzaELHtggdw3E")
+DEEPGRAM_KEY = CLIENT_CONFIG.get("deepgram_api_key", "")
+GROQ_KEY = CLIENT_CONFIG.get("groq_api_key", "")
+CEREBRAS_KEY = CLIENT_CONFIG.get("cerebras_api_key", "")
+CARTESIA_KEY = _cartesia_cfg.get("api_key") or CLIENT_CONFIG.get("cartesia_api_key", "")
 CARTESIA_VOICE = CLIENT_CONFIG.get("cartesia_voice_id", "9626c31c-bec5-4cca-baa8-f8ba9e84c8bc")
 
 # Tunnel URL — reads from tunnel_url.txt (written by start_tunnel.py), env var, or fallback
@@ -326,7 +326,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     )
 
     from pipecat.services.deepgram.stt import DeepgramSTTService
-    stt = DeepgramSTTService(api_key=DEEPGRAM_KEY, audio_passthrough=True, encoding="mulaw", sample_rate=8000)
+    stt = DeepgramSTTService(api_key=DEEPGRAM_KEY)
 
     # Try Groq first, fall back to Cerebras if rate limited
     _use_groq = True
@@ -335,7 +335,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         test = httpx.get("https://api.groq.com/openai/v1/models",
             headers={"Authorization": f"Bearer {GROQ_KEY}"},
             timeout=5)
-        if test.status_code == 429:
+        if test.status_code != 200:
             _use_groq = False
         # Also check remaining tokens from rate limit headers
         remaining = test.headers.get("x-ratelimit-remaining-tokens", "999999")
@@ -423,6 +423,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     system_prompt += (
         "To book: get their name, what service, and when. Check availability with check_time_slot, then book with book_appointment. "
         "After booking, ask if they want confirmation by text or email. "
+        "If they want email, you MUST ask them for their email address — do NOT guess or make up an email. Wait for them to tell you their email before sending. "
         f"Caller's phone is {from_number}. Use send_confirmation_sms for text, send_confirmation_email for email. "
         "NEVER say underscores, function names, tool names, or any technical terms out loud. "
         "NEVER say words like send underscore confirmation or book underscore appointment. Those are internal tool names the caller should never hear. "

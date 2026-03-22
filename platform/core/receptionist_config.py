@@ -41,7 +41,11 @@ DEFAULT_CONFIG = {
         "max_advance_days": 30,
         "slot_duration_minutes": 30,
     },
-    "telnyx": {"api_key": "", "phone_number": ""},
+    "phone_provider": "twilio",
+    "telnyx": {"api_key": "", "phone_number": "", "connection_id": ""},
+    "plivo": {"auth_id": "", "auth_token": "", "phone_number": ""},
+    "vonage": {"api_key": "", "api_secret": "", "phone_number": ""},
+    "signalwire": {"space_url": "", "project_id": "", "api_token": "", "phone_number": ""},
     "cartesia": {"api_key": "", "voice_id": ""},
     "notifications": {
         "email_enabled": False,

@@ -1829,9 +1829,19 @@
         <div class="form-group">
           <label class="form-label">Domain / Tunnel URL</label>
           <input class="form-input" id="tk-domain" placeholder="myserver.janovum.com or abc123.ngrok.io" style="font-family:Consolas,monospace">
-          <div style="font-size:0.7em;color:var(--dim);margin-top:4px">No https:// prefix needed. Twilio webhooks will use https://DOMAIN/incoming</div>
+          <div style="font-size:0.7em;color:var(--dim);margin-top:4px">No https:// prefix needed. Phone webhooks will use https://DOMAIN/incoming</div>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">Phone Provider</label>
+          <select class="form-input" id="tk-phone-provider" onchange="tkUpdateProviderFields()" style="font-size:0.85em">
+            <option value="twilio">Twilio</option>
+            <option value="telnyx">Telnyx</option>
+            <option value="plivo">Plivo</option>
+            <option value="vonage">Vonage</option>
+            <option value="signalwire">SignalWire</option>
+          </select>
+        </div>
+        <div id="tk-provider-fields" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
           <div class="form-group" style="flex:1;min-width:200px">
             <label class="form-label">Twilio Account SID</label>
             <input class="form-input" id="tk-twilio-sid" placeholder="AC..." style="font-family:Consolas,monospace;font-size:0.85em">
@@ -1843,7 +1853,7 @@
         </div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
           <input type="checkbox" id="tk-auto-webhooks" checked style="width:18px;height:18px;accent-color:var(--gold)">
-          <label for="tk-auto-webhooks" style="font-size:0.82em;color:var(--muted);cursor:pointer">Auto-update Twilio webhooks when starting clients or changing domain</label>
+          <label for="tk-auto-webhooks" style="font-size:0.82em;color:var(--muted);cursor:pointer">Auto-update webhooks when starting clients or changing domain</label>
         </div>
         <div style="display:flex;gap:10px">
           <button class="btn" onclick="saveToolkitConfig()">Save Server Config</button>
@@ -7216,7 +7226,7 @@ function swBuildReceptionistForm() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div class="preset-card ${mode==='ai_only'?'selected':''}" onclick="swSetPhoneMode('ai_only')" style="cursor:pointer">
           <h4 style="color:var(--gold)">📞 Mode A: AI-Only Number</h4>
-          <p style="font-size:0.75em;color:var(--muted);margin-top:6px">Client has NO existing business phone. We give them a Twilio number. AI answers ALL calls 24/7. During business hours, caller can press 1 to talk to a real person (rings owner's cell).</p>
+          <p style="font-size:0.75em;color:var(--muted);margin-top:6px">Client has NO existing business phone. We give them an AI phone number. AI answers ALL calls 24/7. During business hours, caller can press 1 to talk to a real person (rings owner's cell).</p>
           <p style="font-size:0.68em;color:var(--green);margin-top:8px;font-weight:700">Best for: new businesses, solo operators, online-first</p>
         </div>
         <div class="preset-card ${mode==='forwarding'?'selected':''}" onclick="swSetPhoneMode('forwarding')" style="cursor:pointer">
@@ -7244,9 +7254,9 @@ function swBuildReceptionistForm() {
     }
     html += `
         <div class="setup-field">
-          <label>Twilio Number (AI Line) *</label>
+          <label>${{'twilio':'Twilio','telnyx':'Telnyx','plivo':'Plivo','vonage':'Vonage','signalwire':'SignalWire'}[rc.phone_provider||'twilio']||'Phone'} Number (AI Line) *</label>
           <input value="${rc.twilio_number||''}" placeholder="e.g. (305) 555-9876" onchange="swModuleConfigs.ai_receptionist.twilio_number=this.value">
-          <div class="hint">Buy from Twilio console → twilio.com/console/phone-numbers</div>
+          <div class="hint">From your ${{'twilio':'Twilio','telnyx':'Telnyx','plivo':'Plivo','vonage':'Vonage','signalwire':'SignalWire'}[rc.phone_provider||'twilio']||'provider'} console</div>
         </div>
         <div class="setup-field">
           <label>Owner's Personal Cell (for transfers) *</label>
@@ -7256,19 +7266,23 @@ function swBuildReceptionistForm() {
       </div>
     </div>
 
-    <!-- STEP 3: Twilio Credentials -->
+    <!-- STEP 3: Phone Provider & Credentials -->
     <div style="margin-bottom:20px">
-      <h4 style="font-size:0.9em;margin-bottom:10px;color:var(--gold)">Step 3: Twilio Credentials</h4>
-      <p style="font-size:0.75em;color:var(--muted);margin-bottom:10px">Get these from <span style="color:var(--blue)">twilio.com/console</span> → Account Info</p>
+      <h4 style="font-size:0.9em;margin-bottom:10px;color:var(--gold)">Step 3: Phone Provider</h4>
+      <p style="font-size:0.75em;color:var(--muted);margin-bottom:10px">Choose which phone carrier to use, then enter your credentials.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+        ${[['twilio','Twilio','#F22F46'],['telnyx','Telnyx','#00C08B'],['plivo','Plivo','#57BA53'],['vonage','Vonage','#7B61FF'],['signalwire','SignalWire','#044CF6']].map(([k,n,c]) => `<div onclick="swModuleConfigs.ai_receptionist.phone_provider='${k}';document.getElementById('swModuleFormContainer').innerHTML='';swRenderModuleForms()" style="cursor:pointer;padding:8px 14px;border-radius:8px;border:2px solid ${(rc.phone_provider||'twilio')===k?c:'#222'};background:${(rc.phone_provider||'twilio')===k?c+'15':'#0a0a0a'};transition:all 0.2s"><span style="font-size:0.82em;font-weight:700;color:${(rc.phone_provider||'twilio')===k?c:'#666'}">${n}</span></div>`).join('')}
+      </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="setup-field">
-          <label>Twilio Account SID *</label>
-          <input value="${rc.twilio_sid||''}" placeholder="AC..." onchange="swModuleConfigs.ai_receptionist.twilio_sid=this.value">
-        </div>
-        <div class="setup-field">
-          <label>Twilio Auth Token *</label>
-          <input value="${rc.twilio_token||''}" placeholder="Your auth token" type="password" onchange="swModuleConfigs.ai_receptionist.twilio_token=this.value">
-        </div>
+        ${(function(){
+          const p = rc.phone_provider || 'twilio';
+          if (p === 'twilio') return '<div class="setup-field"><label>Twilio Account SID *</label><input value="'+(rc.twilio_sid||'')+'" placeholder="AC..." onchange="swModuleConfigs.ai_receptionist.twilio_sid=this.value"></div><div class="setup-field"><label>Twilio Auth Token *</label><input value="'+(rc.twilio_token||'')+'" placeholder="Your auth token" type="password" onchange="swModuleConfigs.ai_receptionist.twilio_token=this.value"></div>';
+          if (p === 'telnyx') return '<div class="setup-field"><label>Telnyx API Key *</label><input value="'+(rc.telnyx_api_key||'')+'" placeholder="KEY..." type="password" onchange="swModuleConfigs.ai_receptionist.telnyx_api_key=this.value"></div><div class="setup-field"><label>Telnyx Connection ID</label><input value="'+(rc.telnyx_connection_id||'')+'" placeholder="Connection ID from portal" onchange="swModuleConfigs.ai_receptionist.telnyx_connection_id=this.value"></div>';
+          if (p === 'plivo') return '<div class="setup-field"><label>Plivo Auth ID *</label><input value="'+(rc.plivo_auth_id||'')+'" placeholder="Auth ID" onchange="swModuleConfigs.ai_receptionist.plivo_auth_id=this.value"></div><div class="setup-field"><label>Plivo Auth Token *</label><input value="'+(rc.plivo_auth_token||'')+'" placeholder="Auth token" type="password" onchange="swModuleConfigs.ai_receptionist.plivo_auth_token=this.value"></div>';
+          if (p === 'vonage') return '<div class="setup-field"><label>Vonage API Key *</label><input value="'+(rc.vonage_api_key||'')+'" placeholder="API Key" onchange="swModuleConfigs.ai_receptionist.vonage_api_key=this.value"></div><div class="setup-field"><label>Vonage API Secret *</label><input value="'+(rc.vonage_api_secret||'')+'" placeholder="API Secret" type="password" onchange="swModuleConfigs.ai_receptionist.vonage_api_secret=this.value"></div>';
+          if (p === 'signalwire') return '<div class="setup-field"><label>SignalWire Space URL *</label><input value="'+(rc.signalwire_space||'')+'" placeholder="your-space.signalwire.com" onchange="swModuleConfigs.ai_receptionist.signalwire_space=this.value"></div><div class="setup-field"><label>SignalWire Project ID *</label><input value="'+(rc.signalwire_project||'')+'" placeholder="Project ID" onchange="swModuleConfigs.ai_receptionist.signalwire_project=this.value"></div><div class="setup-field"><label>SignalWire API Token *</label><input value="'+(rc.signalwire_token||'')+'" placeholder="API Token" type="password" onchange="swModuleConfigs.ai_receptionist.signalwire_token=this.value"></div>';
+          return '';
+        })()}
       </div>
     </div>
 
@@ -7302,13 +7316,13 @@ function swBuildReceptionistForm() {
       <p style="font-size:0.75em;color:var(--muted);margin-bottom:10px">Give these to the client. They do this ONE TIME on their phone:</p>
       <div style="background:#111;border:1px solid #222;border-radius:10px;padding:16px;font-size:0.78em">
         <p style="color:var(--gold);font-weight:700;margin-bottom:10px">Option 1 — iPhone:</p>
-        <p style="color:var(--muted);margin-bottom:12px">Settings → Phone → Call Forwarding → Enter: <span style="color:#fff;font-weight:700">${rc.twilio_number || '(your Twilio number)'}</span></p>
+        <p style="color:var(--muted);margin-bottom:12px">Settings → Phone → Call Forwarding → Enter: <span style="color:#fff;font-weight:700">${rc.twilio_number || '(your AI line number)'}</span></p>
         <p style="color:var(--gold);font-weight:700;margin-bottom:10px">Option 2 — Android:</p>
-        <p style="color:var(--muted);margin-bottom:12px">Phone App → ⋮ Menu → Settings → Calls → Call Forwarding → Forward when unanswered → Enter: <span style="color:#fff;font-weight:700">${rc.twilio_number || '(your Twilio number)'}</span></p>
+        <p style="color:var(--muted);margin-bottom:12px">Phone App → ⋮ Menu → Settings → Calls → Call Forwarding → Forward when unanswered → Enter: <span style="color:#fff;font-weight:700">${rc.twilio_number || '(your AI line number)'}</span></p>
         <p style="color:var(--gold);font-weight:700;margin-bottom:10px">Option 3 — Landline / Business Phone:</p>
-        <p style="color:var(--muted);margin-bottom:12px">Pick up phone → Dial: <span style="color:#fff;font-weight:700">*61*${rc.twilio_number || '(twilio#)'}#</span> → Press Call → Done</p>
+        <p style="color:var(--muted);margin-bottom:12px">Pick up phone → Dial: <span style="color:#fff;font-weight:700">*61*${rc.twilio_number || '(AI line #)'}#</span> → Press Call → Done</p>
         <p style="color:var(--gold);font-weight:700;margin-bottom:10px">Option 4 — Carrier Portal:</p>
-        <p style="color:var(--muted)">Log into AT&T/Verizon/T-Mobile account → Call Settings → Forward when no answer → Enter: <span style="color:#fff;font-weight:700">${rc.twilio_number || '(your Twilio number)'}</span></p>
+        <p style="color:var(--muted)">Log into AT&T/Verizon/T-Mobile account → Call Settings → Forward when no answer → Enter: <span style="color:#fff;font-weight:700">${rc.twilio_number || '(your AI line number)'}</span></p>
       </div>
     </div>`;
     }
@@ -7572,7 +7586,7 @@ let clWizardData = {};
 
 function clResetWizardData() {
   clWizardData = {
-    twilio_phone_number: '', business_name: '', business_type: '',
+    phone_provider: 'twilio', twilio_phone_number: '', business_name: '', business_type: '',
     services: [{ name: '', duration_minutes: 30, price: '' }],
     hours: {
       monday: { open: '09:00', close: '17:00' }, tuesday: { open: '09:00', close: '17:00' },
@@ -7702,12 +7716,12 @@ async function clShowClient(clientId) {
       const webhookUrl = `https://${domain}/incoming`;
       document.getElementById('clDetailWebhook').innerHTML = `
         <div style="font-family:Consolas,monospace;font-size:0.82em;color:var(--blue);word-break:break-all;padding:8px;background:#0a0a0a;border-radius:6px">${esc(webhookUrl)}</div>
-        <div style="font-size:0.72em;color:var(--dim);margin-top:6px">${tkCfg.domain ? 'Webhook is auto-configured via Twilio API.' : 'Set your domain in Settings > Server Setup first.'} Port: ${cfg.port}</div>
+        <div style="font-size:0.72em;color:var(--dim);margin-top:6px">${tkCfg.domain ? 'Webhook is auto-configured via provider API.' : 'Set your domain in Settings > Server Setup first.'} Port: ${cfg.port}</div>
       `;
     } catch(e) {
       document.getElementById('clDetailWebhook').innerHTML = `
         <div style="font-family:Consolas,monospace;font-size:0.82em;color:var(--blue);word-break:break-all;padding:8px;background:#0a0a0a;border-radius:6px">https://YOUR-DOMAIN/incoming</div>
-        <div style="font-size:0.72em;color:var(--dim);margin-top:6px">Set this as the webhook URL for ${cfg.twilio_phone_number} in Twilio console (POST method). Port: ${cfg.port}</div>
+        <div style="font-size:0.72em;color:var(--dim);margin-top:6px">Set this as the webhook URL for ${cfg.twilio_phone_number} in your phone provider console (POST method). Port: ${cfg.port}</div>
       `;
     }
 
@@ -7832,17 +7846,29 @@ function clRenderWizard() {
   const d = clWizardData;
 
   if (clWizardStep === 0) {
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 1: Buy a Twilio Phone Number</div>
-      <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Buy a local phone number for this client from Twilio.</div>
-      <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;padding:14px;margin-bottom:12px">
-        <div style="font-size:0.82em;color:#bbb;padding:4px 0">1. Log into console.twilio.com</div>
-        <div style="font-size:0.82em;color:#bbb;padding:4px 0">2. Phone Numbers &rarr; Buy a Number</div>
-        <div style="font-size:0.82em;color:#bbb;padding:4px 0">3. Search by the client's area code</div>
-        <div style="font-size:0.82em;color:#bbb;padding:4px 0">4. Buy a LOCAL number &mdash; $1.15/mo</div>
-        <div style="font-size:0.82em;color:#bbb;padding:4px 0">5. Copy the full number with +country code</div>
+    const providerInfo = {
+      twilio: { name: 'Twilio', color: '#F22F46', console: 'https://console.twilio.com/us1/develop/phone-numbers/manage/search', price: '$1.15/mo', steps: ['Log into console.twilio.com', 'Phone Numbers &rarr; Buy a Number', 'Search by the client\'s area code', 'Buy a LOCAL number &mdash; $1.15/mo', 'Copy the full number with +country code'] },
+      telnyx: { name: 'Telnyx', color: '#00C08B', console: 'https://portal.telnyx.com/#/app/numbers/search-numbers', price: '$1.00/mo', steps: ['Log into portal.telnyx.com', 'Numbers &rarr; Search &amp; Buy', 'Search by area code or city', 'Buy a number &mdash; $1.00/mo', 'Copy the full number with +country code'] },
+      plivo: { name: 'Plivo', color: '#57BA53', console: 'https://console.plivo.com/phone-numbers/search/', price: '$0.80/mo', steps: ['Log into console.plivo.com', 'Phone Numbers &rarr; Buy Numbers', 'Search by prefix or area code', 'Buy a number &mdash; $0.80/mo', 'Copy the full number with +country code'] },
+      vonage: { name: 'Vonage', color: '#7B61FF', console: 'https://dashboard.nexmo.com/buy-numbers', price: '$1.00/mo', steps: ['Log into dashboard.nexmo.com', 'Numbers &rarr; Buy Numbers', 'Search by country and features', 'Buy a number &mdash; $1.00/mo', 'Copy the full number with +country code'] },
+      signalwire: { name: 'SignalWire', color: '#044CF6', console: 'https://your-space.signalwire.com/phone-numbers', price: '$1.00/mo', steps: ['Log into your SignalWire Space', 'Phone Numbers &rarr; Get a Number', 'Search by area code', 'Buy a number &mdash; ~$1.00/mo', 'Copy the full number with +country code'] },
+    };
+    const prov = d.phone_provider || 'twilio';
+    const info = providerInfo[prov];
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 1: Choose Phone Provider & Number</div>
+      <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Pick which phone carrier to use for this client's AI line.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+        ${Object.entries(providerInfo).map(([key, p]) => `<div onclick="clWizardData.phone_provider='${key}';clRenderWizard()" style="cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid ${prov===key ? p.color : '#222'};background:${prov===key ? p.color+'15' : '#0a0a0a'};transition:all 0.2s;text-align:center;min-width:90px">
+          <div style="font-size:0.88em;font-weight:700;color:${prov===key ? p.color : '#888'}">${p.name}</div>
+          <div style="font-size:0.68em;color:var(--dim);margin-top:2px">${p.price}</div>
+        </div>`).join('')}
       </div>
-      <a href="https://console.twilio.com/us1/develop/phone-numbers/manage/search" target="_blank" style="display:inline-block;font-size:0.8em;color:var(--blue);text-decoration:none;padding:6px 14px;border:1px solid rgba(66,165,245,0.3);border-radius:6px;margin-bottom:16px">&#8599; Open Twilio Console</a>
-      <div class="form-group"><label class="form-label">Twilio Phone Number</label><input class="form-input" id="wPhone" placeholder="+1234567890" value="${d.twilio_phone_number}"><div style="font-size:0.7em;color:var(--dim);margin-top:4px">Include the + and country code</div></div>`;
+      <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;padding:14px;margin-bottom:12px">
+        <div style="font-size:0.76em;font-weight:700;color:${info.color};margin-bottom:8px">How to get a ${info.name} number:</div>
+        ${info.steps.map((s,i) => `<div style="font-size:0.82em;color:#bbb;padding:4px 0">${i+1}. ${s}</div>`).join('')}
+      </div>
+      <a href="${info.console}" target="_blank" style="display:inline-block;font-size:0.8em;color:var(--blue);text-decoration:none;padding:6px 14px;border:1px solid rgba(66,165,245,0.3);border-radius:6px;margin-bottom:16px">&#8599; Open ${info.name} Console</a>
+      <div class="form-group"><label class="form-label">${info.name} Phone Number</label><input class="form-input" id="wPhone" placeholder="+1234567890" value="${d.twilio_phone_number}"><div style="font-size:0.7em;color:var(--dim);margin-top:4px">Include the + and country code</div></div>`;
   } else if (clWizardStep === 1) {
     el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 2: Business Information</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Basic info about the client's business.</div>
@@ -7890,6 +7916,7 @@ function clRenderWizard() {
         <div style="font-size:0.72em;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Business</div>
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Name</span><span style="font-weight:600">${d.business_name||'—'}</span></div>
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Type</span><span style="font-weight:600">${d.business_type||'—'}</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Provider</span><span style="font-weight:600">${(d.phone_provider||'twilio').charAt(0).toUpperCase()+(d.phone_provider||'twilio').slice(1)}</span></div>
         <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Phone</span><span style="font-weight:600">${d.twilio_phone_number||'—'}</span></div>
       </div>
       <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;padding:16px;margin-bottom:12px">
@@ -7901,7 +7928,7 @@ function clRenderWizard() {
         ${openDays.map(([dy,h]) => `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:0.82em"><span style="color:var(--muted);text-transform:capitalize">${dy}</span><span>${h.open} - ${h.close}</span></div>`).join('')||'<span style="color:var(--dim)">Not set</span>'}
       </div>
       <div style="margin-top:12px;padding:12px;background:rgba(247,201,72,0.06);border:1px solid rgba(247,201,72,0.2);border-radius:8px;font-size:0.8em;color:var(--gold)">
-        After creating, set the Twilio webhook for ${d.twilio_phone_number||'the number'} to your server URL.
+        After creating, set the ${(d.phone_provider||'twilio').charAt(0).toUpperCase()+(d.phone_provider||'twilio').slice(1)} webhook for ${d.twilio_phone_number||'the number'} to your server URL.
       </div>`;
   }
 }
@@ -7916,7 +7943,7 @@ function clSaveStep() {
 
 function clWizardNext() {
   clSaveStep();
-  if (clWizardStep === 0 && !clWizardData.twilio_phone_number) { toast('Enter the Twilio phone number', 'error'); return; }
+  if (clWizardStep === 0 && !clWizardData.twilio_phone_number) { toast('Enter the phone number', 'error'); return; }
   if (clWizardStep === 1 && !clWizardData.business_name) { toast('Enter the business name', 'error'); return; }
   if (clWizardStep === CL_TOTAL_STEPS - 1) { clCreateClient(); return; }
   clWizardStep++; clRenderWizard();
@@ -7931,7 +7958,7 @@ async function clCreateClient() {
     const res = await fetch(API + '/api/receptionist/clients/add', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        business_name: d.business_name, twilio_phone_number: d.twilio_phone_number,
+        business_name: d.business_name, phone_provider: d.phone_provider || 'twilio', twilio_phone_number: d.twilio_phone_number,
         business_type: d.business_type, services: d.services, hours: d.hours,
         staff: d.staff, greeting: d.greeting, tone: d.tone,
       }),
@@ -7984,12 +8011,16 @@ async function loadToolkitConfig() {
     if (sidEl) sidEl.value = cfg.twilio_account_sid || '';
     if (autoEl) autoEl.checked = cfg.auto_update_webhooks !== false;
 
+    // Set phone provider dropdown and update fields
+    const provEl = document.getElementById('tk-phone-provider');
+    if (provEl && cfg.phone_provider) { provEl.value = cfg.phone_provider; tkUpdateProviderFields(); }
+
     // Show status
     if (statusEl) {
       if (cfg.domain) {
         statusEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><span class="badge badge-green" style="font-size:0.82em;padding:5px 12px">Domain Set</span><span style="font-size:0.82em;color:var(--muted);font-family:Consolas,monospace">' + esc(cfg.domain) + '</span></div>';
       } else {
-        statusEl.innerHTML = '<span class="badge badge-orange" style="font-size:0.82em;padding:5px 12px">No Domain — Twilio webhooks will not work</span>';
+        statusEl.innerHTML = '<span class="badge badge-orange" style="font-size:0.82em;padding:5px 12px">No Domain — phone webhooks will not work</span>';
       }
     }
 
@@ -8003,15 +8034,30 @@ async function loadToolkitConfig() {
   }
 }
 
+function tkUpdateProviderFields() {
+  const prov = document.getElementById('tk-phone-provider').value || 'twilio';
+  const container = document.getElementById('tk-provider-fields');
+  const fields = {
+    twilio: [['Twilio Account SID','tk-twilio-sid','AC...','text'],['Twilio Auth Token','tk-twilio-token','Auth token','password']],
+    telnyx: [['Telnyx API Key','tk-telnyx-key','KEY...','password'],['Telnyx Connection ID','tk-telnyx-conn','Connection ID','text']],
+    plivo: [['Plivo Auth ID','tk-plivo-id','Auth ID','text'],['Plivo Auth Token','tk-plivo-token','Auth token','password']],
+    vonage: [['Vonage API Key','tk-vonage-key','API Key','text'],['Vonage API Secret','tk-vonage-secret','API Secret','password']],
+    signalwire: [['SignalWire Space URL','tk-sw-space','your-space.signalwire.com','text'],['SignalWire Project ID','tk-sw-project','Project ID','text'],['SignalWire API Token','tk-sw-token','API Token','password']],
+  };
+  container.innerHTML = (fields[prov]||fields.twilio).map(([label,id,ph,type]) =>
+    `<div class="form-group" style="flex:1;min-width:200px"><label class="form-label">${label}</label><input class="form-input" id="${id}" placeholder="${ph}" type="${type}" style="font-family:Consolas,monospace;font-size:0.85em"></div>`
+  ).join('');
+}
+
 async function saveToolkitConfig() {
   const domain = (document.getElementById('tk-domain').value || '').trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-  const sid = (document.getElementById('tk-twilio-sid').value || '').trim();
-  const token = (document.getElementById('tk-twilio-token').value || '').trim();
+  const provider = (document.getElementById('tk-phone-provider')?.value || 'twilio');
   const autoWebhooks = document.getElementById('tk-auto-webhooks').checked;
 
-  const body = { domain: domain, auto_update_webhooks: autoWebhooks };
-  if (sid) body.twilio_account_sid = sid;
-  if (token) body.twilio_auth_token = token;
+  const body = { domain: domain, auto_update_webhooks: autoWebhooks, phone_provider: provider };
+  // Grab whatever credential fields exist
+  const credFields = document.querySelectorAll('#tk-provider-fields input');
+  credFields.forEach(inp => { if (inp.value.trim()) body[inp.id.replace(/^tk-/,'').replace(/-/g,'_')] = inp.value.trim(); });
 
   const resultEl = document.getElementById('toolkitSaveResult');
   resultEl.innerHTML = '<span style="color:var(--muted);font-size:0.82em">Saving...</span>';

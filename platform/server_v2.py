@@ -18,7 +18,7 @@ import os
 import sys
 import time
 import threading
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, request, jsonify, send_from_directory, Response, session, redirect, Blueprint
 from datetime import datetime
 
 # Setup paths
@@ -30,7 +30,8 @@ from core.config import load_config, save_config, get_api_key, set_api_key, get_
 from core.engine import test_api_key, quick_ask, call_claude, pick_model, get_model_name, MODELS
 from core.tools import get_all_tools, execute_tool, get_tool_summary, get_tools_by_category, get_tool_names
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.path.join(PLATFORM_DIR, "templates"))
+app.secret_key = "janovum-toolkit-session-key-2026-secure"
 
 
 # ══════════════════════════════════════════
@@ -1056,6 +1057,51 @@ def voice_set_client(client_id):
     voice = _get_voice()
     voice.set_client_voice(client_id, data["voice"])
     return jsonify({"status": "ok"})
+
+@app.route("/api/cartesia/voices")
+def cartesia_voices():
+    """Fetch all available Cartesia voices (cached for 1 hour)."""
+    import time as _time
+    cache_path = PLATFORM_DIR / "data" / "cartesia_voices_cache.json"
+    # Use cache if less than 1 hour old
+    if cache_path.exists():
+        age = _time.time() - cache_path.stat().st_mtime
+        if age < 3600:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                return jsonify(json.load(f))
+    # Fetch from Cartesia API
+    try:
+        from core.receptionist_config import load_config as _load_rc
+        rc = _load_rc()
+        api_key = rc.get("cartesia", {}).get("api_key", "")
+        if not api_key:
+            return jsonify({"error": "No Cartesia API key configured"}), 400
+        import requests as _req
+        resp = _req.get("https://api.cartesia.ai/voices", headers={
+            "X-API-Key": api_key,
+            "Cartesia-Version": "2024-06-10",
+        }, timeout=15)
+        resp.raise_for_status()
+        all_voices = resp.json()
+        # Filter to English public voices, strip embeddings
+        voices = []
+        for v in all_voices:
+            if v.get("language") == "en" and v.get("is_public"):
+                voices.append({
+                    "id": v["id"],
+                    "name": v["name"],
+                    "description": v.get("description", ""),
+                    "gender": v.get("gender", ""),
+                })
+        voices.sort(key=lambda x: x["name"])
+        result = {"voices": voices, "total": len(voices)}
+        # Cache it
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(result, f)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/voice/files")
 def voice_files():
@@ -3828,6 +3874,506 @@ def api_payments_create():
         return jsonify({"result": result})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ══════════════════════════════════════════
+# MULTI-TENANT TOOLKIT — /toolkit/use
+# User accounts with isolated data directories.
+# ══════════════════════════════════════════
+
+user_bp = Blueprint("user_api", __name__)
+
+
+def _require_user():
+    """Check session for logged-in user. Returns (user_id, None) or (None, error_response)."""
+    user_id = session.get("user_id")
+    if not user_id:
+        return None, (jsonify({"error": "Not logged in", "redirect": "/toolkit/use/login"}), 401)
+    return user_id, None
+
+
+def _get_ucm(user_id):
+    """Get a UserClientManager for this user."""
+    from core.user_client_manager import UserClientManager
+    return UserClientManager(user_id)
+
+
+# ── Auth Routes ─────────────────────────────
+
+@user_bp.route("/auth/signup", methods=["POST"])
+def u_signup():
+    from core.user_auth import signup_user
+    data = request.json
+    result = signup_user(data.get("email", ""), data.get("password", ""), data.get("name", ""))
+    if "error" in result:
+        return jsonify(result), 400
+    session["user_id"] = result["user_id"]
+    session["user_email"] = result["email"]
+    session["user_name"] = result["name"]
+    return jsonify(result)
+
+
+@user_bp.route("/auth/login", methods=["POST"])
+def u_login():
+    from core.user_auth import login_user
+    data = request.json
+    result = login_user(data.get("email", ""), data.get("password", ""))
+    if "error" in result:
+        return jsonify(result), 401
+    session["user_id"] = result["user_id"]
+    session["user_email"] = result["email"]
+    session["user_name"] = result["name"]
+    return jsonify(result)
+
+
+@user_bp.route("/auth/logout", methods=["POST"])
+def u_logout():
+    session.clear()
+    return jsonify({"success": True})
+
+
+@user_bp.route("/auth/me", methods=["GET"])
+def u_me():
+    user_id, err = _require_user()
+    if err:
+        return err
+    from core.user_auth import get_user_profile
+    return jsonify(get_user_profile(user_id))
+
+
+# ── Auth Status (for Settings tab) ──────────
+
+@user_bp.route("/auth/status", methods=["GET"])
+def u_auth_status():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({
+        "auth_method": "session",
+        "has_api_key": False,
+        "oauth_connected": False,
+        "oauth_configured": False,
+    })
+
+
+# ── Client Management Routes ────────────────
+
+@user_bp.route("/receptionist/clients", methods=["GET"])
+def u_clients():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify(_get_ucm(user_id).get_all_stats())
+
+
+@user_bp.route("/receptionist/clients/add", methods=["POST"])
+def u_add_client():
+    user_id, err = _require_user()
+    if err:
+        return err
+    data = request.json
+    result = _get_ucm(user_id).add_client(data)
+    if "error" in result:
+        return jsonify(result), 400
+    return jsonify(result)
+
+
+@user_bp.route("/receptionist/clients/<client_id>", methods=["GET"])
+def u_get_client(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    config = _get_ucm(user_id).get_client(client_id)
+    if not config:
+        return jsonify({"error": "Client not found"}), 404
+    return jsonify(config)
+
+
+@user_bp.route("/receptionist/clients/<client_id>", methods=["POST"])
+def u_update_client(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    data = request.json
+    result = _get_ucm(user_id).update_client(client_id, data)
+    if "error" in result:
+        return jsonify(result), 400
+    return jsonify(result)
+
+
+@user_bp.route("/receptionist/clients/<client_id>", methods=["DELETE"])
+def u_delete_client(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify(_get_ucm(user_id).delete_client(client_id))
+
+
+@user_bp.route("/receptionist/clients/<client_id>/start", methods=["POST"])
+def u_start_client(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    result = _get_ucm(user_id).start_client(client_id)
+    if "error" in result:
+        return jsonify(result), 400
+    return jsonify(result)
+
+
+@user_bp.route("/receptionist/clients/<client_id>/stop", methods=["POST"])
+def u_stop_client(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify(_get_ucm(user_id).stop_client(client_id))
+
+
+@user_bp.route("/receptionist/clients/<client_id>/appointments", methods=["GET"])
+def u_client_appointments(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    appts = _get_ucm(user_id).get_appointments(client_id)
+    return jsonify({"client_id": client_id, "total": len(appts), "appointments": appts})
+
+
+@user_bp.route("/receptionist/clients/<client_id>/health", methods=["GET"])
+def u_client_health(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify(_get_ucm(user_id).check_health(client_id))
+
+
+@user_bp.route("/receptionist/clients/<client_id>/logs", methods=["GET"])
+def u_client_logs(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    lines = request.args.get("lines", 100, type=int)
+    logs = _get_ucm(user_id).get_logs(client_id, lines=lines)
+    return jsonify({"client_id": client_id, "lines": len(logs), "logs": logs})
+
+
+@user_bp.route("/receptionist/clients/<client_id>/logs/clear", methods=["POST"])
+def u_clear_logs(client_id):
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({"success": _get_ucm(user_id).clear_logs(client_id)})
+
+
+# ── Toolkit Config Routes ───────────────────
+
+@user_bp.route("/toolkit/config", methods=["GET"])
+def u_get_toolkit_config():
+    user_id, err = _require_user()
+    if err:
+        return err
+    cfg = _get_ucm(user_id).load_toolkit_config()
+    safe = dict(cfg)
+    if safe.get("twilio_auth_token"):
+        t = safe["twilio_auth_token"]
+        safe["twilio_auth_token_masked"] = t[:4] + "..." + t[-4:] if len(t) > 8 else "***"
+        del safe["twilio_auth_token"]
+    return jsonify(safe)
+
+
+@user_bp.route("/toolkit/config", methods=["POST"])
+def u_save_toolkit_config():
+    user_id, err = _require_user()
+    if err:
+        return err
+    data = request.json
+    ucm = _get_ucm(user_id)
+    cfg = ucm.load_toolkit_config()
+    old_domain = cfg.get("domain", "")
+
+    allowed = ["domain", "twilio_account_sid", "twilio_auth_token", "auto_update_webhooks"]
+    for key in allowed:
+        if key in data:
+            cfg[key] = data[key]
+
+    if cfg.get("domain"):
+        cfg["setup_complete"] = True
+
+    ucm.save_toolkit_config(cfg)
+
+    webhook_results = None
+    new_domain = cfg.get("domain", "")
+    if new_domain and new_domain != old_domain and cfg.get("auto_update_webhooks", True):
+        webhook_results = ucm.update_all_webhooks(new_domain)
+
+    result = {"success": True, "config": {k: v for k, v in cfg.items() if k != "twilio_auth_token"}}
+    if webhook_results:
+        result["webhook_update"] = webhook_results
+    return jsonify(result)
+
+
+# ── Global Config Routes (per-user) ─────────
+
+@user_bp.route("/config", methods=["GET"])
+def u_get_config():
+    user_id, err = _require_user()
+    if err:
+        return err
+    from core.user_auth import get_user_data_dir
+    cfg_path = get_user_data_dir(user_id) / "config.json"
+    cfg = {}
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    masked_key = ""
+    if cfg.get("api_key"):
+        key = cfg["api_key"]
+        masked_key = key[:8] + "..." + key[-4:] if len(key) > 12 else "***set***"
+    return jsonify({
+        "has_key": bool(cfg.get("api_key")),
+        "masked_key": masked_key,
+        "model": cfg.get("model", "claude-sonnet-4-20250514"),
+        "max_monthly_spend": cfg.get("max_monthly_spend_per_client", 300),
+    })
+
+
+@user_bp.route("/config", methods=["POST"])
+def u_update_config():
+    user_id, err = _require_user()
+    if err:
+        return err
+    from core.user_auth import get_user_data_dir
+    data = request.json
+    cfg_path = get_user_data_dir(user_id) / "config.json"
+    cfg = {}
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    if "api_key" in data and data["api_key"]:
+        cfg["api_key"] = data["api_key"]
+    if "model" in data:
+        cfg["model"] = data["model"]
+    if "max_monthly_spend" in data:
+        cfg["max_monthly_spend_per_client"] = data["max_monthly_spend"]
+    wizard_fields = [
+        "business_name", "business_type", "business_description",
+        "business_hours", "business_address", "business_phone",
+        "business_email", "owner_email", "owner_phone",
+        "language", "personality", "llm_provider",
+        "modules_enabled", "module_configs",
+    ]
+    for field in wizard_fields:
+        if field in data:
+            cfg[field] = data[field]
+    with open(cfg_path, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2)
+    return jsonify({"status": "ok"})
+
+
+@user_bp.route("/config/full", methods=["GET"])
+def u_get_config_full():
+    user_id, err = _require_user()
+    if err:
+        return err
+    from core.user_auth import get_user_data_dir
+    cfg_path = get_user_data_dir(user_id) / "config.json"
+    cfg = {}
+    if cfg_path.exists():
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+    safe = {k: v for k, v in cfg.items() if k != "api_key"}
+    return jsonify(safe)
+
+
+# ── Appointments (all clients) ──────────────
+
+@user_bp.route("/receptionist/appointments", methods=["GET"])
+def u_all_appointments():
+    user_id, err = _require_user()
+    if err:
+        return err
+    appts = _get_ucm(user_id).get_all_appointments()
+    return jsonify({"total": len(appts), "appointments": appts})
+
+
+# ── Messages placeholder ────────────────────
+
+@user_bp.route("/receptionist/messages", methods=["GET"])
+def u_messages():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({"total": 0, "messages": []})
+
+
+# ── Wizard Steps (same for all users) ───────
+
+@user_bp.route("/receptionist/wizard/steps", methods=["GET"])
+def u_wizard_steps():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return receptionist_wizard_steps()
+
+
+# ── Status & Heartbeat (per-user view) ──────
+
+@user_bp.route("/status", methods=["GET"])
+def u_status():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({
+        "status": "running",
+        "server": "Janovum Platform",
+        "user": user_id,
+        "uptime": "active",
+    })
+
+
+@user_bp.route("/heartbeat/status", methods=["GET"])
+def u_heartbeat_status():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({"status": "ok", "running": True, "components": {}})
+
+
+@user_bp.route("/heartbeat/log", methods=["GET"])
+def u_heartbeat_log():
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({"entries": []})
+
+
+# ── Test Key ────────────────────────────────
+
+@user_bp.route("/test-key", methods=["POST"])
+def u_test_key():
+    user_id, err = _require_user()
+    if err:
+        return err
+    data = request.json
+    key = data.get("api_key", "")
+    if not key:
+        return jsonify({"valid": False, "message": "No API key provided."})
+    valid, message = test_api_key(key)
+    return jsonify({"valid": valid, "message": message})
+
+
+# ── Marketplace (shared, read-only) ─────────
+
+@user_bp.route("/marketplace", methods=["GET"])
+@user_bp.route("/marketplace/templates", methods=["GET"])
+def u_marketplace():
+    user_id, err = _require_user()
+    if err:
+        return err
+    try:
+        return marketplace()
+    except Exception:
+        return jsonify({"templates": [], "categories": {}})
+
+
+# ── Soul Templates (shared) ─────────────────
+
+@user_bp.route("/soul/templates", methods=["GET"])
+def u_soul_templates():
+    user_id, err = _require_user()
+    if err:
+        return err
+    try:
+        soul = _get_soul()
+        return jsonify({"templates": soul.list_templates()})
+    except Exception:
+        return jsonify({"templates": []})
+
+
+# ── Catch-all for unimplemented /api/u/ routes ──
+
+@user_bp.route("/<path:path>", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
+def u_catchall(path):
+    if request.method == "OPTIONS":
+        return "", 204
+    user_id, err = _require_user()
+    if err:
+        return err
+    return jsonify({"error": f"Route /api/u/{path} not yet available in multi-tenant mode"}), 404
+
+
+# Register the user Blueprint
+app.register_blueprint(user_bp, url_prefix="/api/u")
+
+
+# ── Serve Toolkit HTML for multi-tenant users ──
+
+@app.route("/toolkit/use/login")
+def toolkit_use_login():
+    """Serve the login/signup page."""
+    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "toolkit_login.html")
+
+
+@app.route("/toolkit/use")
+def toolkit_use():
+    """Serve the toolkit HTML with fetch override injection for multi-tenant users."""
+    if not session.get("user_id"):
+        return redirect("/toolkit/use/login")
+
+    html_path = os.path.join(PARENT_DIR, "Janovum_Platform_v2.html")
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except FileNotFoundError:
+        return "Toolkit HTML not found", 404
+
+    # Inject fetch override — rewrites /api/ to /api/u/ for user isolation
+    inject_script = """<script>
+// Janovum Multi-Tenant: Rewrite all API calls to user-scoped endpoints
+(function() {
+    var _origFetch = window.fetch;
+    var origin = window.location.origin;
+    window.fetch = function(url, opts) {
+        if (typeof url === 'string') {
+            if (url.startsWith(origin + '/api/') && !url.startsWith(origin + '/api/u/')) {
+                url = url.replace(origin + '/api/', origin + '/api/u/');
+            }
+            if (url.startsWith('/api/') && !url.startsWith('/api/u/')) {
+                url = url.replace('/api/', '/api/u/');
+            }
+        }
+        return _origFetch.call(this, url, opts);
+    };
+
+    var _origOpen = XMLHttpRequest.prototype.open;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        if (typeof url === 'string') {
+            if (url.startsWith(origin + '/api/') && !url.startsWith(origin + '/api/u/')) {
+                url = url.replace(origin + '/api/', origin + '/api/u/');
+            }
+            if (url.startsWith('/api/') && !url.startsWith('/api/u/')) {
+                url = url.replace('/api/', '/api/u/');
+            }
+        }
+        return _origOpen.apply(this, [method, url].concat(Array.prototype.slice.call(arguments, 2)));
+    };
+})();
+
+// Add logout button + user banner
+window.addEventListener('DOMContentLoaded', function() {
+    var btn = document.createElement('button');
+    btn.textContent = 'Logout';
+    btn.style.cssText = 'position:fixed;top:12px;right:16px;z-index:99999;padding:8px 16px;background:#ff6b35;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;';
+    btn.onclick = function() {
+        fetch('/api/u/auth/logout', {method:'POST'}).then(function() {
+            window.location.href = '/toolkit/use/login';
+        });
+    };
+    document.body.appendChild(btn);
+});
+</script>
+"""
+
+    html = html.replace("<head>", "<head>" + inject_script, 1)
+    return Response(html, mimetype="text/html")
 
 
 # ══════════════════════════════════════════

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum Toolkit — Sign In</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+  }
+  .logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .logo h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff6b35;
+    letter-spacing: 2px;
+  }
+  .logo p {
+    color: #888;
+    font-size: 14px;
+    margin-top: 6px;
+  }
+  .card {
+    background: #141414;
+    border: 1px solid #222;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #222;
+  }
+  .tab {
+    flex: 1;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #888;
+    background: transparent;
+    border: none;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    color: #ff6b35;
+    border-bottom: 2px solid #ff6b35;
+    background: #1a1a1a;
+  }
+  .tab:hover:not(.active) {
+    color: #ccc;
+    background: #1a1a1a;
+  }
+  .form-area {
+    padding: 28px 24px;
+  }
+  .form-group {
+    margin-bottom: 18px;
+  }
+  .form-group label {
+    display: block;
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .form-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background: #0e0e0e;
+    color: #e0e0e0;
+    font-size: 15px;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .form-group input:focus {
+    border-color: #ff6b35;
+  }
+  .btn {
+    width: 100%;
+    padding: 13px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .btn-primary {
+    background: #ff6b35;
+    color: #fff;
+  }
+  .btn-primary:hover {
+    background: #e55a28;
+  }
+  .btn-primary:disabled {
+    background: #663020;
+    cursor: not-allowed;
+  }
+  .toast {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .toast.error {
+    background: #2a1515;
+    color: #ff6b6b;
+    border: 1px solid #3a1a1a;
+    display: block;
+  }
+  .toast.success {
+    background: #152a15;
+    color: #6bff6b;
+    border: 1px solid #1a3a1a;
+    display: block;
+  }
+  .hidden { display: none; }
+  .footer {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 12px;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">
+    <h1>JANOVUM</h1>
+    <p>AI Agent Toolkit</p>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('login')">Log In</button>
+      <button class="tab" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- Login Form -->
+    <div id="loginForm" class="form-area">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="loginEmail" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">Log In</button>
+      <div id="loginToast" class="toast"></div>
+    </div>
+
+    <!-- Signup Form -->
+    <div id="signupForm" class="form-area hidden">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="signupName" placeholder="Your name" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signupEmail" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+      </div>
+      <div class="form-group">
+        <label>Confirm Password</label>
+        <input type="password" id="signupConfirm" placeholder="Confirm your password" autocomplete="new-password">
+      </div>
+      <button class="btn btn-primary" id="signupBtn" onclick="doSignup()">Create Account</button>
+      <div id="signupToast" class="toast"></div>
+    </div>
+  </div>
+
+  <div class="footer">Powered by Janovum AI</div>
+</div>
+
+<script>
+const API = window.location.origin;
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  if (tab === 'login') {
+    document.querySelectorAll('.tab')[0].classList.add('active');
+    document.getElementById('loginForm').classList.remove('hidden');
+    document.getElementById('signupForm').classList.add('hidden');
+  } else {
+    document.querySelectorAll('.tab')[1].classList.add('active');
+    document.getElementById('loginForm').classList.add('hidden');
+    document.getElementById('signupForm').classList.remove('hidden');
+  }
+}
+
+function showToast(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'toast ' + type;
+}
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { showToast('loginToast', 'Please fill in all fields.', 'error'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in...';
+
+  try {
+    const r = await fetch(API + '/api/u/auth/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await r.json();
+    if (data.error) {
+      showToast('loginToast', data.error, 'error');
+    } else {
+      showToast('loginToast', 'Welcome back!', 'success');
+      setTimeout(() => { window.location.href = '/toolkit/use'; }, 500);
+    }
+  } catch (e) {
+    showToast('loginToast', 'Connection failed. Is the server running?', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Log In';
+}
+
+async function doSignup() {
+  const name = document.getElementById('signupName').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const password = document.getElementById('signupPassword').value;
+  const confirm = document.getElementById('signupConfirm').value;
+
+  if (!email || !password) { showToast('signupToast', 'Email and password are required.', 'error'); return; }
+  if (password !== confirm) { showToast('signupToast', 'Passwords do not match.', 'error'); return; }
+  if (password.length < 6) { showToast('signupToast', 'Password must be at least 6 characters.', 'error'); return; }
+
+  const btn = document.getElementById('signupBtn');
+  btn.disabled = true; btn.textContent = 'Creating account...';
+
+  try {
+    const r = await fetch(API + '/api/u/auth/signup', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, password, name})
+    });
+    const data = await r.json();
+    if (data.error) {
+      showToast('signupToast', data.error, 'error');
+    } else {
+      showToast('signupToast', 'Account created! Redirecting...', 'success');
+      setTimeout(() => { window.location.href = '/toolkit/use'; }, 500);
+    }
+  } catch (e) {
+    showToast('signupToast', 'Connection failed. Is the server running?', 'error');
+  }
+  btn.disabled = false; btn.textContent = 'Create Account';
+}
+
+// Enter key submits forms
+document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('signupConfirm').addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+</script>
+</body>
+</html>

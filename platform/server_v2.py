@@ -4451,6 +4451,130 @@ app.register_blueprint(user_bp, url_prefix="/api/u")
 
 # ── Serve Toolkit HTML for multi-tenant users ──
 
+@app.route("/toolkit/guest")
+def toolkit_guest():
+    """Serve the toolkit in guest/preview mode — all API calls return mock empty data."""
+    html_path = os.path.join(PARENT_DIR, "Janovum_Platform_v2.html")
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except FileNotFoundError:
+        return "Toolkit HTML not found", 404
+
+    # Inject a mock fetch layer — intercepts ALL API calls and returns empty defaults
+    guest_script = """<script>
+// Janovum Guest Mode: All API calls return mock data, nothing saves
+(function() {
+    var _origFetch = window.fetch;
+
+    // Mock responses for common endpoints
+    var mocks = {
+        'receptionist/clients': {total_clients:0, running:0, stopped:0, total_appointments:0, clients:[], domain_configured:false},
+        'receptionist/appointments': {total:0, appointments:[]},
+        'receptionist/messages': {total:0, messages:[]},
+        'receptionist/wizard/steps': null,
+        'toolkit/config': {domain:'', twilio_account_sid:'', auto_update_webhooks:true, setup_complete:false},
+        'config': {has_key:false, masked_key:'', model:'claude-sonnet-4-20250514', max_monthly_spend:300},
+        'config/full': {model:'claude-sonnet-4-20250514', modules_enabled:{}},
+        'status': {status:'running', server:'Janovum Platform', user:'guest', uptime:'active'},
+        'heartbeat/status': {status:'ok', running:true, components:{}},
+        'heartbeat/log': {entries:[]},
+        'auth/status': {auth_method:'guest', has_api_key:false, oauth_connected:false, oauth_configured:false},
+        'marketplace': {templates:[], categories:{}},
+        'marketplace/templates': {templates:[], categories:{}},
+        'soul/templates': {templates:[]},
+        'registry/dashboard': {total:0, running:0, agents:[]},
+        'registry/agents': {agents:[]},
+        'costs': {clients:{}},
+        'tools': {total:0, categories:{}, tools:[]},
+        'tools/categories': {},
+        'router/status': {routers:[]},
+        'router/providers': {providers:[]},
+        'guardrails/rules': {rules:[]},
+        'guardrails/log': {entries:[]},
+        'tracing/stats': {total:0},
+        'tracing/recent': {traces:[]},
+        'approval/pending': {requests:[]},
+        'approval/history': {requests:[]},
+        'handoffs/stats': {total:0},
+        'handoffs/pending': {handoffs:[]},
+        'events/recent': {events:[]},
+    };
+
+    // Guest toast notification
+    var toastShown = {};
+    function showGuestToast() {
+        if (toastShown.active) return;
+        toastShown.active = true;
+        var t = document.createElement('div');
+        t.textContent = 'Guest mode — sign up to save changes';
+        t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;padding:10px 24px;background:#a78bfa;color:#fff;border-radius:8px;font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:opacity 0.3s;';
+        document.body.appendChild(t);
+        setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); toastShown.active=false; },300); },2500);
+    }
+
+    window.fetch = function(url, opts) {
+        if (typeof url !== 'string') return _origFetch.call(this, url, opts);
+
+        // Extract the API path
+        var path = '';
+        var origin = window.location.origin;
+        if (url.startsWith(origin + '/api/')) path = url.replace(origin + '/api/', '');
+        else if (url.startsWith('/api/')) path = url.replace('/api/', '');
+        else return _origFetch.call(this, url, opts);
+
+        // Remove leading u/ if present
+        path = path.replace(/^u\\//, '');
+
+        var method = (opts && opts.method) ? opts.method.toUpperCase() : 'GET';
+
+        // POST/PUT/DELETE = write attempt — show toast, return mock success
+        if (method !== 'GET') {
+            showGuestToast();
+            return Promise.resolve(new Response(JSON.stringify({success:true, status:'ok', guest:true}), {status:200, headers:{'Content-Type':'application/json'}}));
+        }
+
+        // GET — check mocks
+        for (var key in mocks) {
+            if (path === key || path.startsWith(key + '?') || path.startsWith(key + '/')) {
+                if (mocks[key] === null) {
+                    // Pass through to real server (e.g. wizard steps are static)
+                    return _origFetch.call(this, url, opts);
+                }
+                return Promise.resolve(new Response(JSON.stringify(mocks[key]), {status:200, headers:{'Content-Type':'application/json'}}));
+            }
+        }
+
+        // Unknown GET — return empty object
+        return Promise.resolve(new Response(JSON.stringify({}), {status:200, headers:{'Content-Type':'application/json'}}));
+    };
+
+    // Also mock XMLHttpRequest
+    var _origOpen = XMLHttpRequest.prototype.open;
+    var _origSend = XMLHttpRequest.prototype.send;
+    XMLHttpRequest.prototype.open = function(method, url) {
+        this._guestUrl = url;
+        this._guestMethod = method;
+        return _origOpen.apply(this, arguments);
+    };
+
+    // Add guest banner + sign-up button after page loads
+    window.addEventListener('DOMContentLoaded', function() {
+        var bar = document.createElement('div');
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#a78bfa,#7c3aed);color:#fff;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:16px;';
+        bar.innerHTML = 'You are viewing as a guest — nothing saves. <a href="/toolkit/use/login" style="color:#fff;background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:6px;text-decoration:none;font-size:13px;">Sign Up Free</a>';
+        document.body.appendChild(bar);
+        // Push body content down
+        document.body.style.paddingTop = '44px';
+    });
+})();
+</script>
+"""
+
+    html = html.replace("<head>", "<head>" + guest_script, 1)
+    return Response(html, mimetype="text/html")
+
+
 @app.route("/toolkit/use/login")
 def toolkit_use_login():
     """Serve the login/signup page."""

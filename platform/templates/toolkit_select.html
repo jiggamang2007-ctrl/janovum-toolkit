@@ -72,10 +72,13 @@
   }
   .card.admin { border-top: 3px solid #ff6b35; }
   .card.user { border-top: 3px solid #4ecdc4; }
+  .card.guest { border-top: 3px solid #a78bfa; }
   .card.admin:hover { border-color: #ff6b35; }
   .card.user:hover { border-color: #4ecdc4; }
+  .card.guest:hover { border-color: #a78bfa; box-shadow: 0 8px 30px rgba(167,139,250,0.15); }
   .card.user h2 { color: #4ecdc4; }
   .card.admin h2 { color: #ff6b35; }
+  .card.guest h2 { color: #a78bfa; }
   .footer {
     margin-top: 48px;
     font-size: 12px;
@@ -102,6 +105,12 @@
       <div class="icon">&#128640;</div>
       <h2>Get Started</h2>
       <p>Sign up or log in to build your own AI receptionist.</p>
+    </a>
+
+    <a href="/toolkit/guest" class="card guest">
+      <div class="icon">&#128065;</div>
+      <h2>Guest</h2>
+      <p>Preview the toolkit. Explore freely — nothing saves.</p>
     </a>
   </div>
 

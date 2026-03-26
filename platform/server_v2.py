@@ -4204,14 +4204,155 @@ def u_messages():
     return jsonify({"total": 0, "messages": []})
 
 
-# ── Wizard Steps (same for all users) ───────
+# ── Wizard Steps (expanded for public users with API key guides) ───────
 
 @user_bp.route("/receptionist/wizard/steps", methods=["GET"])
 def u_wizard_steps():
     user_id, err = _require_user()
     if err:
         return err
-    return receptionist_wizard_steps()
+    steps = [
+        {
+            "step": 1,
+            "title": "Get Your Twilio Account",
+            "description": "Twilio handles phone calls. You'll get a phone number and API credentials.",
+            "instructions": [
+                "Go to twilio.com and create a free account",
+                "Verify your email and phone number",
+                "From the Twilio Console dashboard, copy your Account SID and Auth Token",
+                "Go to Phone Numbers > Buy a Number",
+                "Search by area code (use your client's local area code)",
+                "Buy a LOCAL number (not toll-free) — $1.15/mo",
+                "Copy the phone number (e.g. +1234567890)",
+            ],
+            "link": "https://www.twilio.com/try-twilio",
+            "fields": [
+                {"name": "twilio_account_sid", "label": "Twilio Account SID", "placeholder": "ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "required": True},
+                {"name": "twilio_auth_token", "label": "Twilio Auth Token", "placeholder": "Your auth token from Twilio console", "required": True, "type": "password"},
+                {"name": "twilio_phone_number", "label": "Twilio Phone Number", "placeholder": "+1234567890", "required": True},
+            ],
+            "required": True,
+        },
+        {
+            "step": 2,
+            "title": "Get Your Groq API Key (Free — Powers the AI Brain)",
+            "description": "Groq provides ultra-fast AI responses. The receptionist uses it to understand callers and respond intelligently.",
+            "instructions": [
+                "Go to console.groq.com and sign up (free)",
+                "Click 'API Keys' in the left sidebar",
+                "Click 'Create API Key'",
+                "Give it a name like 'Janovum Receptionist'",
+                "Copy the key (starts with gsk_)",
+            ],
+            "link": "https://console.groq.com/keys",
+            "fields": [
+                {"name": "groq_api_key", "label": "Groq API Key", "placeholder": "gsk_xxxxxxxxxxxx", "required": True, "type": "password"},
+            ],
+            "required": True,
+        },
+        {
+            "step": 3,
+            "title": "Get Your Deepgram API Key (Free — Speech-to-Text)",
+            "description": "Deepgram converts caller speech to text in real-time so the AI can understand what they're saying.",
+            "instructions": [
+                "Go to console.deepgram.com and create a free account",
+                "You get $200 in free credits — enough for thousands of calls",
+                "Go to Settings > API Keys",
+                "Click 'Create Key'",
+                "Copy the key",
+            ],
+            "link": "https://console.deepgram.com/signup",
+            "fields": [
+                {"name": "deepgram_api_key", "label": "Deepgram API Key", "placeholder": "Your Deepgram API key", "required": True, "type": "password"},
+            ],
+            "required": True,
+        },
+        {
+            "step": 4,
+            "title": "Get Your Cartesia API Key (Voice — Text-to-Speech)",
+            "description": "Cartesia gives your receptionist a natural-sounding voice. Pick from dozens of voices.",
+            "instructions": [
+                "Go to play.cartesia.ai and sign up",
+                "Go to Account > API Keys",
+                "Create a new API key",
+                "Copy the key (starts with sk_car_)",
+                "Browse voices at play.cartesia.ai/voices to pick one you like",
+                "Copy the voice ID from the voice you choose",
+            ],
+            "link": "https://play.cartesia.ai",
+            "fields": [
+                {"name": "cartesia_api_key", "label": "Cartesia API Key", "placeholder": "sk_car_xxxxxxxxxxxx", "required": True, "type": "password"},
+                {"name": "cartesia_voice_id", "label": "Voice ID", "placeholder": "f786b574-daa5-4673-aa0c-cbe3e8534c02", "required": False},
+            ],
+            "required": True,
+        },
+        {
+            "step": 5,
+            "title": "Business Information",
+            "description": "Enter your client's business details.",
+            "fields": [
+                {"name": "business_name", "label": "Business Name", "placeholder": "Bob's Barbershop", "required": True},
+                {"name": "business_type", "label": "Business Type", "placeholder": "Barbershop, Dental Office, Auto Shop, etc.", "required": False},
+            ],
+        },
+        {
+            "step": 6,
+            "title": "Services Offered",
+            "description": "What services does the client offer? (People will book these by phone)",
+            "type": "service_list",
+            "fields": [
+                {"name": "name", "label": "Service Name", "placeholder": "Haircut"},
+                {"name": "duration_minutes", "label": "Duration (min)", "placeholder": "30", "type": "number"},
+                {"name": "price", "label": "Price", "placeholder": "$25", "required": False},
+            ],
+        },
+        {
+            "step": 7,
+            "title": "Business Hours",
+            "description": "When is the business open?",
+            "type": "hours",
+        },
+        {
+            "step": 8,
+            "title": "Staff (Optional)",
+            "description": "Who works there? Callers might ask for a specific person.",
+            "type": "staff_list",
+            "fields": [
+                {"name": "name", "label": "Name", "placeholder": "Bob"},
+                {"name": "role", "label": "Role", "placeholder": "Owner / Barber"},
+            ],
+        },
+        {
+            "step": 9,
+            "title": "Voice & Personality",
+            "description": "How should the AI receptionist sound?",
+            "fields": [
+                {"name": "greeting", "label": "Greeting", "placeholder": "Hi! Thanks for calling [Business]. How can I help?"},
+                {"name": "tone", "label": "Tone", "placeholder": "warm and professional", "options": ["warm and professional", "friendly and casual", "formal and polished", "upbeat and energetic"]},
+            ],
+        },
+        {
+            "step": 10,
+            "title": "Server Setup",
+            "description": "Set your domain so Twilio knows where to send calls.",
+            "instructions": [
+                "Enter the domain where your toolkit is hosted",
+                "Twilio webhooks will be auto-configured to point here",
+                "If you don't have a domain yet, you can use a tunnel (like ngrok) for testing",
+            ],
+            "fields": [
+                {"name": "domain", "label": "Your Domain", "placeholder": "yourdomain.com", "required": True},
+            ],
+            "type": "webhook_setup",
+        },
+        {
+            "step": 11,
+            "title": "Launch!",
+            "description": "Review everything and start the receptionist. Your AI receptionist will be live and taking calls!",
+            "type": "review",
+        },
+    ]
+    return jsonify({"steps": steps, "total_steps": len(steps)})
 
 
 # ── Status & Heartbeat (per-user view) ──────

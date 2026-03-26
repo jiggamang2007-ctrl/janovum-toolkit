@@ -235,6 +235,9 @@ class UserClientManager:
                 "api_key": data.get("cartesia_api_key", ""),
                 "voice_id": data.get("cartesia_voice_id", "f786b574-daa5-4673-aa0c-cbe3e8534c02"),
             },
+            "deepgram_api_key": data.get("deepgram_api_key", ""),
+            "groq_api_key": data.get("groq_api_key", ""),
+            "cerebras_api_key": data.get("cerebras_api_key", ""),
             "notification_email": data.get("notification_email", ""),
             "daily_spend_cap": float(data.get("daily_spend_cap", 5.00)),
             "daily_call_limit": int(data.get("daily_call_limit", 50)),
@@ -276,6 +279,7 @@ class UserClientManager:
             "business_name", "business_type", "twilio_phone_number", "timezone",
             "business_hours", "services", "staff", "personality",
             "notification_email", "daily_spend_cap", "daily_call_limit", "cartesia",
+            "deepgram_api_key", "groq_api_key", "cerebras_api_key",
         ]
         for key in updatable:
             if key in data:

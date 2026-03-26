@@ -219,6 +219,10 @@ def index():
 
 @app.route("/toolkit")
 def toolkit():
+    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "toolkit_select.html")
+
+@app.route("/toolkit/admin")
+def toolkit_admin():
     return send_from_directory(PARENT_DIR, "Janovum_Platform_v2.html")
 
 @app.route("/toolkit/v1")

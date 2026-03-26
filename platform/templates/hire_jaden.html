@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jaden — AI Automation Engineer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0a0a0a;
+    color: #e0e0e0;
+    line-height: 1.6;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 20px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,107,53,0.08) 0%, transparent 60%);
+  }
+  .hero-inner { max-width: 700px; }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+    letter-spacing: -1px;
+  }
+  .hero h1 span { color: #ff6b35; }
+  .hero .subtitle {
+    font-size: clamp(18px, 3vw, 22px);
+    color: #999;
+    margin-bottom: 32px;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero .proof {
+    font-size: 15px;
+    color: #666;
+    margin-bottom: 36px;
+  }
+  .hero .proof a { color: #ff6b35; text-decoration: none; }
+  .cta-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-primary { background: #ff6b35; color: #fff; }
+  .btn-primary:hover { background: #e55a28; transform: translateY(-2px); }
+  .btn-outline { border: 1px solid #333; color: #ccc; background: transparent; }
+  .btn-outline:hover { border-color: #ff6b35; color: #ff6b35; }
+
+  /* ── Section base ── */
+  section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+  section h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  section h2 span { color: #ff6b35; }
+  section .section-sub {
+    color: #888;
+    font-size: 16px;
+    margin-bottom: 40px;
+  }
+
+  /* ── Stats bar ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 2px;
+    background: #141414;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 60px;
+  }
+  .stat {
+    padding: 28px 20px;
+    text-align: center;
+    background: #0e0e0e;
+  }
+  .stat .num {
+    font-size: 28px;
+    font-weight: 800;
+    color: #ff6b35;
+  }
+  .stat .label {
+    font-size: 13px;
+    color: #777;
+    margin-top: 4px;
+  }
+
+  /* ── What I Built ── */
+  .builds {
+    display: grid;
+    gap: 20px;
+  }
+  .build-card {
+    background: #141414;
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .build-card:hover { border-color: #333; }
+  .build-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .build-card p {
+    color: #999;
+    font-size: 14px;
+    margin-bottom: 14px;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    padding: 4px 10px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #aaa;
+  }
+
+  /* ── Tech Stack ── */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .stack-item {
+    background: #141414;
+    border: 1px solid #1e1e1e;
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .stack-item h4 {
+    font-size: 14px;
+    color: #ff6b35;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .stack-item ul {
+    list-style: none;
+    font-size: 14px;
+    color: #bbb;
+  }
+  .stack-item li { padding: 3px 0; }
+  .stack-item li::before {
+    content: ">";
+    color: #444;
+    margin-right: 8px;
+    font-family: monospace;
+  }
+
+  /* ── What I Can Do For You ── */
+  .value-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+  .value-card {
+    background: #141414;
+    border: 1px solid #1e1e1e;
+    border-radius: 12px;
+    padding: 28px;
+  }
+  .value-card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 10px;
+  }
+  .value-card p {
+    font-size: 14px;
+    color: #999;
+  }
+
+  /* ── Live proof ── */
+  .live-section {
+    background: #0e0e0e;
+    border: 1px solid #1a1a1a;
+    border-radius: 14px;
+    padding: 36px;
+    text-align: center;
+    margin-top: 40px;
+  }
+  .live-section h3 {
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .live-section p {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .live-links {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .live-link {
+    padding: 10px 20px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    border-radius: 8px;
+    color: #ccc;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .live-link:hover { border-color: #ff6b35; color: #ff6b35; }
+
+  /* ── CTA ── */
+  .cta-section {
+    text-align: center;
+    padding: 80px 24px 100px;
+  }
+  .cta-section h2 {
+    font-size: 32px;
+    margin-bottom: 16px;
+    color: #fff;
+  }
+  .cta-section p {
+    color: #888;
+    font-size: 16px;
+    margin-bottom: 32px;
+  }
+  .contact-info {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+  .contact-item {
+    color: #999;
+    font-size: 14px;
+  }
+  .contact-item a { color: #ff6b35; text-decoration: none; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: #1a1a1a;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 600px) {
+    .hero { min-height: 70vh; padding: 40px 16px; }
+    section { padding: 60px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════ HERO ══════ -->
+<div class="hero">
+  <div class="hero-inner">
+    <h1>I build <span>AI systems</span> that run in production.</h1>
+    <p class="subtitle">Not demos. Not prototypes. Real AI automation — live, handling calls, booking appointments, managing clients right now.</p>
+    <p class="proof">This page is hosted on infrastructure I built and deployed. <a href="/toolkit/guest">See the full platform live &rarr;</a></p>
+    <div class="cta-row">
+      <a href="mailto:janovumllc@gmail.com?subject=AI Automation Role — Let's Talk" class="btn btn-primary">Let's Talk</a>
+      <a href="/toolkit/guest" class="btn btn-outline">See Live Demo</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ STATS ══════ -->
+<div style="max-width:900px;margin:0 auto;padding:0 24px;">
+  <div class="stats">
+    <div class="stat"><div class="num">14</div><div class="label">AI Systems Built</div></div>
+    <div class="stat"><div class="num">$0.023</div><div class="label">Cost Per Minute</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="label">Uptime</div></div>
+    <div class="stat"><div class="num">< 1s</div><div class="label">Response Time</div></div>
+  </div>
+</div>
+
+<!-- ══════ WHAT I BUILT ══════ -->
+<section>
+  <h2>What I <span>Built</span></h2>
+  <p class="section-sub">Production systems — not tutorials, not toy projects. Everything below is live and running.</p>
+
+  <div class="builds">
+    <div class="build-card">
+      <h3>AI Receptionist — Full Voice Pipeline</h3>
+      <p>Answers real phone calls 24/7. Understands callers via real-time speech-to-text, responds with natural AI voice, books appointments, sends confirmations by SMS and email. Handles edge cases: duplicate callers, business hours enforcement, spend caps, rate limit failover between LLM providers.</p>
+      <div class="tags">
+        <span class="tag">Twilio</span>
+        <span class="tag">Deepgram STT</span>
+        <span class="tag">Cartesia TTS</span>
+        <span class="tag">Groq LLM</span>
+        <span class="tag">Cerebras Failover</span>
+        <span class="tag">Pipecat</span>
+        <span class="tag">WebSockets</span>
+      </div>
+    </div>
+
+    <div class="build-card">
+      <h3>Multi-Tenant AI Toolkit Platform</h3>
+      <p>Full SaaS platform where users sign up and deploy their own AI agents. Per-user data isolation, session auth, process management (start/stop per-client receptionists on unique ports), auto Twilio webhook configuration, health monitoring, cost tracking. Guest preview mode for prospects.</p>
+      <div class="tags">
+        <span class="tag">Flask</span>
+        <span class="tag">Multi-Tenancy</span>
+        <span class="tag">Session Auth</span>
+        <span class="tag">Process Management</span>
+        <span class="tag">REST API</span>
+        <span class="tag">Per-User Isolation</span>
+      </div>
+    </div>
+
+    <div class="build-card">
+      <h3>14-System Agent Architecture</h3>
+      <p>Modular platform with independently loadable systems: heartbeat monitoring, API routing (multi-provider), cost tracking per client, guardrails (input/output validation), agent registry, request tracing, approval workflows, agent handoffs, event bus, voice processing, code sandbox, model failover, and a central director agent that routes messages between all systems.</p>
+      <div class="tags">
+        <span class="tag">Modular Architecture</span>
+        <span class="tag">Lazy Loading</span>
+        <span class="tag">Agent Orchestration</span>
+        <span class="tag">Event-Driven</span>
+        <span class="tag">Monitoring</span>
+        <span class="tag">Guardrails</span>
+      </div>
+    </div>
+
+    <div class="build-card">
+      <h3>Client Management & Deployment System</h3>
+      <p>Add a new client through a step-by-step wizard, and the system auto-provisions a receptionist: assigns a port, launches an independent process, configures Twilio webhooks, starts logging, and monitors health — all from a web dashboard. Each client runs as its own isolated process that survives server restarts.</p>
+      <div class="tags">
+        <span class="tag">systemd</span>
+        <span class="tag">Subprocess Management</span>
+        <span class="tag">Auto-Provisioning</span>
+        <span class="tag">Nginx</span>
+        <span class="tag">VPS Deployment</span>
+        <span class="tag">SSL/TLS</span>
+      </div>
+    </div>
+
+    <div class="build-card">
+      <h3>Cost-Optimized API Stack</h3>
+      <p>Researched and integrated the cheapest possible APIs for every capability: free LLM inference via Groq, $0.004/min STT, $0.01/min TTS, automatic failover to backup providers when rate-limited. Total voice call cost: $0.023/minute — fraction of what competitors charge.</p>
+      <div class="tags">
+        <span class="tag">Cost Optimization</span>
+        <span class="tag">Multi-Provider</span>
+        <span class="tag">Rate Limit Handling</span>
+        <span class="tag">Failover Logic</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live proof -->
+  <div class="live-section">
+    <h3>Don't take my word for it — see it running.</h3>
+    <p>Everything above is deployed on a VPS I manage. Click below to explore the actual platform.</p>
+    <div class="live-links">
+      <a href="/toolkit/guest" class="live-link">Explore the Toolkit</a>
+      <a href="/" class="live-link">Landing Page</a>
+      <a href="/toolkit" class="live-link">Platform Login</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════ TECH STACK ══════ -->
+<section>
+  <h2>Tech <span>Stack</span></h2>
+  <p class="section-sub">What I work with daily.</p>
+
+  <div class="stack-grid">
+    <div class="stack-item">
+      <h4>Backend</h4>
+      <ul>
+        <li>Python / Flask / FastAPI</li>
+        <li>REST API Design</li>
+        <li>WebSocket Servers</li>
+        <li>Process Management</li>
+        <li>Multi-Tenancy</li>
+      </ul>
+    </div>
+    <div class="stack-item">
+      <h4>AI / ML</h4>
+      <ul>
+        <li>LLM Integration (Groq, Claude, Cerebras)</li>
+        <li>Speech-to-Text (Deepgram)</li>
+        <li>Text-to-Speech (Cartesia)</li>
+        <li>Agent Orchestration (Pipecat)</li>
+        <li>Prompt Engineering</li>
+      </ul>
+    </div>
+    <div class="stack-item">
+      <h4>Infrastructure</h4>
+      <ul>
+        <li>Linux VPS (Vultr)</li>
+        <li>Nginx Reverse Proxy</li>
+        <li>systemd Services</li>
+        <li>SSL / Let's Encrypt</li>
+        <li>Git / GitHub</li>
+      </ul>
+    </div>
+    <div class="stack-item">
+      <h4>Integrations</h4>
+      <ul>
+        <li>Twilio (Voice, SMS)</li>
+        <li>Selenium / Browser Automation</li>
+        <li>Email (SMTP/IMAP)</li>
+        <li>OAuth / API Auth</li>
+        <li>Webhook Management</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════ WHAT I CAN DO FOR YOU ══════ -->
+<section>
+  <h2>What I bring to <span>your team</span></h2>
+  <p class="section-sub">I don't just understand AI — I ship AI products.</p>
+
+  <div class="value-grid">
+    <div class="value-card">
+      <h3>Build Production AI Systems</h3>
+      <p>I've already built and deployed AI that handles real phone calls, real customers, real money. I know the difference between a demo and a product that actually works at 3 AM.</p>
+    </div>
+    <div class="value-card">
+      <h3>Optimize Costs Aggressively</h3>
+      <p>I find the cheapest API for every job, build failover between providers, and track spend per client. My voice AI costs $0.023/min — I know how to make AI affordable at scale.</p>
+    </div>
+    <div class="value-card">
+      <h3>Full-Stack Deployment</h3>
+      <p>I don't stop at code. I deploy to VPS, configure nginx, manage SSL, set up systemd, handle DNS — the whole stack from Python to production.</p>
+    </div>
+    <div class="value-card">
+      <h3>Ship Fast, Iterate Faster</h3>
+      <p>I built the entire Janovum platform — 14 systems, multi-tenant SaaS, voice pipeline, client management — and deployed it live. I move fast and I don't wait for permission to solve problems.</p>
+    </div>
+    <div class="value-card">
+      <h3>Client-Facing AI Products</h3>
+      <p>I've sold AI automation to real businesses. I understand the client side — onboarding, setup wizards, dashboards, pricing. I build things people actually use.</p>
+    </div>
+    <div class="value-card">
+      <h3>Research & Integrate New Tools</h3>
+      <p>I've evaluated and integrated 13+ AI platforms, mapped their strengths and weaknesses, and built a system that combines the best of all of them. I stay current and move on what works.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══════ CTA ══════ -->
+<div class="cta-section">
+  <h2>Let's build something <span style="color:#ff6b35;">together</span>.</h2>
+  <p>I'm looking for AI automation roles where I can build real products, not just research papers. If your team ships AI — I want in.</p>
+  <div class="cta-row">
+    <a href="mailto:janovumllc@gmail.com?subject=AI Automation Role — Let's Talk" class="btn btn-primary">Email Me</a>
+    <a href="/toolkit/guest" class="btn btn-outline">See My Work Live</a>
+  </div>
+  <div class="contact-info">
+    <span class="contact-item"><a href="mailto:janovumllc@gmail.com">janovumllc@gmail.com</a></span>
+    <span class="contact-item"><a href="https://janovum.com">janovum.com</a></span>
+  </div>
+</div>
+
+</body>
+</html>

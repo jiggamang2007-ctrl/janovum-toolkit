@@ -229,6 +229,10 @@ def toolkit_admin():
 def toolkit_v1():
     return send_from_directory(PARENT_DIR, "Janovum_Platform.html")
 
+@app.route("/hire")
+def hire_page():
+    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "hire_jaden.html")
+
 @app.route("/api/demo-request", methods=["POST"])
 def demo_request():
     """Handle demo request from landing page — save appointment + email Jaden."""

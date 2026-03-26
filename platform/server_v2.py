@@ -229,6 +229,30 @@ def toolkit_admin():
 def toolkit_v1():
     return send_from_directory(PARENT_DIR, "Janovum_Platform.html")
 
+@app.route("/crm")
+def crm():
+    return send_from_directory(PARENT_DIR, "Janovum_CRM.html")
+
+@app.route("/hub")
+def hub():
+    return send_from_directory(PARENT_DIR, "Janovum_Hub.html")
+
+@app.route("/drive")
+def drive():
+    return send_from_directory(PARENT_DIR, "Janovum_Drive.html")
+
+@app.route("/sales-deck")
+def sales_deck():
+    return send_from_directory(PARENT_DIR, "Janovum_Sales_Deck.html")
+
+@app.route("/consultation")
+def consultation():
+    return send_from_directory(PARENT_DIR, "Janovum_Consultation_Deck.html")
+
+@app.route("/faq")
+def faq():
+    return send_from_directory(PARENT_DIR, "faq.html")
+
 @app.route("/hire")
 def hire_page():
     return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "hire_jaden.html")

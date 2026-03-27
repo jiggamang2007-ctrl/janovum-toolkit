@@ -253,6 +253,10 @@ def consultation():
 def faq():
     return send_from_directory(PARENT_DIR, "faq.html")
 
+@app.route("/outreach")
+def outreach_crm():
+    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "outreach_crm.html")
+
 @app.route("/hire")
 def hire_page():
     return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "hire_jaden.html")

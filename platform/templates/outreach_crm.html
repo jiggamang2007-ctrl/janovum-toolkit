@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum — Outreach CRM</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; background:#0a0a0a; color:#e0e0e0; }
+
+.topbar {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 24px; background:#0e0e0e; border-bottom:1px solid #1a1a1a;
+}
+.topbar h1 { font-size:18px; font-weight:700; color:#ff6b35; letter-spacing:1px; }
+.topbar .stats { display:flex; gap:20px; font-size:13px; color:#888; }
+.topbar .stats span b { color:#fff; }
+
+.tabs {
+  display:flex; border-bottom:1px solid #1a1a1a; background:#0c0c0c;
+  padding:0 16px; gap:4px;
+}
+.tab {
+  padding:12px 20px; font-size:13px; font-weight:600; color:#666;
+  cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s;
+}
+.tab:hover { color:#ccc; }
+.tab.active { color:#ff6b35; border-bottom-color:#ff6b35; }
+
+.content { padding:20px; }
+
+.table-wrap {
+  background:#0c0c0c; border:1px solid #1a1a1a; border-radius:10px;
+  overflow:hidden;
+}
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead { background:#111; }
+th {
+  text-align:left; padding:12px 14px; color:#888; font-weight:600;
+  font-size:11px; text-transform:uppercase; letter-spacing:0.5px;
+  border-bottom:1px solid #1a1a1a;
+}
+td { padding:10px 14px; border-bottom:1px solid #111; vertical-align:middle; }
+tr:hover { background:#111; }
+
+.badge {
+  display:inline-block; padding:3px 10px; border-radius:4px;
+  font-size:11px; font-weight:600;
+}
+.badge-sent { background:#1a2a1a; color:#4ecdc4; }
+.badge-replied { background:#2a2a1a; color:#ffd93d; }
+.badge-call { background:#1a1a2a; color:#a78bfa; }
+.badge-closed { background:#1a2a1a; color:#6bff6b; }
+.badge-bounced { background:#2a1515; color:#ff6b6b; }
+.badge-noresponse { background:#1a1a1a; color:#666; }
+
+.check-btn {
+  width:24px; height:24px; border-radius:6px; border:1px solid #333;
+  background:transparent; color:#666; cursor:pointer; font-size:14px;
+  display:inline-flex; align-items:center; justify-content:center;
+  transition:all 0.2s; margin-right:4px;
+}
+.check-btn:hover { border-color:#ff6b35; color:#ff6b35; }
+.check-btn.checked { background:#1a2a1a; border-color:#4ecdc4; color:#4ecdc4; }
+.check-btn.x-mark { background:#2a1515; border-color:#ff6b6b; color:#ff6b6b; }
+
+.email-link { color:#4ecdc4; text-decoration:none; font-size:12px; }
+.email-link:hover { text-decoration:underline; }
+
+.company-name { color:#fff; font-weight:600; }
+.contact-name { color:#aaa; font-size:12px; }
+
+.pipeline {
+  display:flex; gap:6px; align-items:center;
+}
+.pipe-step {
+  display:flex; align-items:center; gap:4px; font-size:11px; color:#666;
+}
+.pipe-step.active { color:#ff6b35; }
+.pipe-step.done { color:#4ecdc4; }
+.pipe-arrow { color:#333; font-size:10px; }
+
+.filter-bar {
+  display:flex; gap:10px; margin-bottom:16px; align-items:center;
+}
+.filter-bar input {
+  padding:8px 14px; background:#0e0e0e; border:1px solid #222; border-radius:6px;
+  color:#e0e0e0; font-size:13px; outline:none; flex:1; max-width:300px;
+}
+.filter-bar input:focus { border-color:#ff6b35; }
+.filter-bar .count { font-size:12px; color:#666; }
+
+.notes-input {
+  width:100%; padding:6px 10px; background:#0a0a0a; border:1px solid #222;
+  border-radius:4px; color:#ccc; font-size:12px; outline:none;
+}
+.notes-input:focus { border-color:#ff6b35; }
+
+.hidden { display:none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>JANOVUM OUTREACH</h1>
+  <div class="stats">
+    <span>Total: <b id="totalCount">0</b></span>
+    <span>Sent: <b id="sentCount">0</b></span>
+    <span>Replied: <b id="repliedCount">0</b></span>
+    <span>Calls: <b id="callCount">0</b></span>
+    <span>Bounced: <b id="bouncedCount">0</b></span>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('all')">All</div>
+  <div class="tab" onclick="switchTab('investors')">Investors</div>
+  <div class="tab" onclick="switchTab('jobs')">Jobs</div>
+</div>
+
+<div class="content">
+  <div class="filter-bar">
+    <input type="text" id="searchBox" placeholder="Search company, contact, email..." oninput="renderTable()">
+    <span class="count" id="filterCount"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Contact</th>
+          <th>Email</th>
+          <th>Type</th>
+          <th>Sent</th>
+          <th>Status</th>
+          <th>Pipeline</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// Outreach data — all emails sent
+var outreach = [
+  // JOBS
+  {id:1, company:"AutomateNexus", contact:"Erin Moore (CEO)", email:"info@automatenexus.com", type:"job", sent:"2026-03-26 13:29", status:"replied", replied:true, callScheduled:false, callClosed:false, notes:"Wants to hire! Asked for resume + non-compete. Resume sent. Waiting for call link."},
+  {id:2, company:"Buster Digital Media", contact:"Buster Cox (CEO)", email:"b@busterdigitalmedia.com", type:"job", sent:"2026-03-26 13:29", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"AI automation agency, Miami. Same thing we do."},
+  {id:3, company:"Avenue Z", contact:"Team", email:"hello@avenuez.com", type:"job", sent:"2026-03-26 13:29", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"AI marketing + automation, Miami. 3050 Biscayne Blvd."},
+  {id:4, company:"DonQuijotech", contact:"Team", email:"info@donquijotech.com", type:"job", sent:"2026-03-26 14:41", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"AI consulting for small biz, Miami Beach. Bilingual."},
+  {id:5, company:"AutoCraft Studios", contact:"Laura & Nathan Ooley", email:"info@autocraftstudios.com", type:"job", sent:"2026-03-26 14:41", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"AI agents + workflow automation, FL."},
+
+  // INVESTORS
+  {id:6, company:"Miami Angels", contact:"Team", email:"hello@miamiangels.vc", type:"investor", sent:"2026-03-26 14:12", status:"replied", replied:true, callScheduled:false, callClosed:false, notes:"Auto-reply: merged with New World Angels. Contact info@newworldangels.com"},
+  {id:7, company:"New World Angels", contact:"Team", email:"info@newworldangels.com", type:"investor", sent:"2026-03-26 15:33", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"FL longest-running angel syndicate, $20M+ deployed."},
+  {id:8, company:"New World Angels", contact:"Jessica Miley (MD)", email:"jessica@newworldangels.com", type:"investor", sent:"2026-03-26 17:41", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"Managing Director. Direct contact."},
+  {id:9, company:"Florida Funders", contact:"Saxon Baum (Partner)", email:"saxonb@floridafunders.com", type:"investor", sent:"2026-03-26 15:33", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"VC/angel hybrid, B2B SaaS + AI, $300M deployed. Tampa."},
+  {id:10, company:"Cane Angel Network", contact:"Sonja Markova (ED)", email:"smarkova@miami.edu", type:"investor", sent:"2026-03-26 15:17", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"University of Miami angel network. PDF attached."},
+  {id:11, company:"Cane Angel Network", contact:"J. Camp", email:"j.camp@miami.edu", type:"investor", sent:"2026-03-26 15:17", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"Same network, second contact."},
+  {id:12, company:"Glasswing Ventures", contact:"Rudina Seseri (GP)", email:"rudina@glasswing.vc", type:"investor", sent:"2026-03-26 17:41", status:"replied", replied:true, callScheduled:false, callClosed:false, notes:"OOO until March 30. Contact tyler@glasswing.vc. $200M AI fund."},
+  {id:13, company:"Glasswing Ventures", contact:"Tyler Fohrman (CoS)", email:"tyler@glasswing.vc", type:"investor", sent:"2026-03-26 20:43", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"Referred by Rudina while she's OOO."},
+  {id:14, company:"Forum Ventures", contact:"Team", email:"hello@forumvc.com", type:"investor", sent:"2026-03-26 17:41", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"B2B AI pre-seed accelerator. 430 companies funded."},
+  {id:15, company:"boldstart ventures", contact:"Team", email:"info@boldstart.vc", type:"investor", sent:"2026-03-26 17:41", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"Enterprise/dev-first seed. NYC."},
+  {id:16, company:"Bee Partners", contact:"Team", email:"hello@beepartners.vc", type:"investor", sent:"2026-03-26 20:43", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"Pre-seed $500K-$1.5M. Deep tech/AI. SF. (Corrected from info@)"},
+  {id:17, company:"Tamiami Angel Funds", contact:"Danielle", email:"danielle@tamiamiangels.com", type:"investor", sent:"2026-03-26 20:43", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"$36.6M deployed, 48 companies. Naples FL. (Corrected from typo)"},
+  {id:18, company:"Speedinvest", contact:"Team", email:"pitch@speedinvest.com", type:"investor", sent:"2026-03-26 20:43", status:"sent", replied:false, callScheduled:false, callClosed:false, notes:"EU/global SaaS pre-seed/seed. (Corrected from info@)"},
+];
+
+var currentTab = 'all';
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+function getStatusBadge(item) {
+  if (item.status === 'bounced') return '<span class="badge badge-bounced">Bounced</span>';
+  if (item.callClosed) return '<span class="badge badge-closed">Closed</span>';
+  if (item.callScheduled) return '<span class="badge badge-call">Call Set</span>';
+  if (item.replied) return '<span class="badge badge-replied">Replied</span>';
+  return '<span class="badge badge-sent">Sent</span>';
+}
+
+function toggleCheck(id, field) {
+  var item = outreach.find(o => o.id === id);
+  if (!item) return;
+  item[field] = !item[field];
+  if (field === 'replied' && item.replied) item.status = 'replied';
+  if (field === 'callScheduled' && item.callScheduled) item.status = 'call_scheduled';
+  if (field === 'callClosed' && item.callClosed) item.status = 'closed';
+  saveData();
+  renderTable();
+  updateStats();
+}
+
+function updateNotes(id) {
+  var item = outreach.find(o => o.id === id);
+  var input = document.getElementById('notes-' + id);
+  if (item && input) { item.notes = input.value; saveData(); }
+}
+
+function saveData() {
+  localStorage.setItem('janovum_outreach', JSON.stringify(outreach));
+}
+
+function loadData() {
+  var saved = localStorage.getItem('janovum_outreach');
+  if (saved) {
+    try {
+      var parsed = JSON.parse(saved);
+      // Merge: keep saved statuses but don't lose new entries
+      parsed.forEach(function(s) {
+        var existing = outreach.find(o => o.id === s.id);
+        if (existing) {
+          existing.replied = s.replied;
+          existing.callScheduled = s.callScheduled;
+          existing.callClosed = s.callClosed;
+          existing.notes = s.notes;
+          existing.status = s.status;
+        }
+      });
+    } catch(e) {}
+  }
+}
+
+function updateStats() {
+  var filtered = outreach;
+  if (currentTab !== 'all') filtered = outreach.filter(o => o.type === (currentTab === 'investors' ? 'investor' : 'job'));
+  document.getElementById('totalCount').textContent = filtered.length;
+  document.getElementById('sentCount').textContent = filtered.filter(o => o.status !== 'bounced').length;
+  document.getElementById('repliedCount').textContent = filtered.filter(o => o.replied).length;
+  document.getElementById('callCount').textContent = filtered.filter(o => o.callScheduled).length;
+  document.getElementById('bouncedCount').textContent = filtered.filter(o => o.status === 'bounced').length;
+}
+
+function renderTable() {
+  var search = document.getElementById('searchBox').value.toLowerCase();
+  var filtered = outreach;
+
+  if (currentTab === 'investors') filtered = filtered.filter(o => o.type === 'investor');
+  else if (currentTab === 'jobs') filtered = filtered.filter(o => o.type === 'job');
+
+  if (search) {
+    filtered = filtered.filter(o =>
+      o.company.toLowerCase().includes(search) ||
+      o.contact.toLowerCase().includes(search) ||
+      o.email.toLowerCase().includes(search) ||
+      o.notes.toLowerCase().includes(search)
+    );
+  }
+
+  document.getElementById('filterCount').textContent = filtered.length + ' of ' + outreach.length;
+
+  var html = '';
+  filtered.forEach(function(o) {
+    var repliedClass = o.replied ? 'checked' : '';
+    var callClass = o.callScheduled ? 'checked' : '';
+    var closedClass = o.callClosed ? 'checked' : '';
+
+    html += '<tr>' +
+      '<td><div class="company-name">' + o.company + '</div></td>' +
+      '<td><div class="contact-name">' + o.contact + '</div></td>' +
+      '<td><a class="email-link" href="mailto:' + o.email + '">' + o.email + '</a></td>' +
+      '<td><span class="badge ' + (o.type === 'investor' ? 'badge-call' : 'badge-sent') + '">' + (o.type === 'investor' ? 'Investor' : 'Job') + '</span></td>' +
+      '<td style="font-size:11px;color:#666;white-space:nowrap">' + o.sent + '</td>' +
+      '<td>' + getStatusBadge(o) + '</td>' +
+      '<td><div class="pipeline">' +
+        '<button class="check-btn ' + repliedClass + '" onclick="toggleCheck(' + o.id + ',\'replied\')" title="Replied">' + (o.replied ? '\u2713' : '') + '</button>' +
+        '<span class="pipe-arrow">\u203a</span>' +
+        '<button class="check-btn ' + callClass + '" onclick="toggleCheck(' + o.id + ',\'callScheduled\')" title="Call Scheduled">' + (o.callScheduled ? '\u2713' : '') + '</button>' +
+        '<span class="pipe-arrow">\u203a</span>' +
+        '<button class="check-btn ' + closedClass + '" onclick="toggleCheck(' + o.id + ',\'callClosed\')" title="Closed">' + (o.callClosed ? '\u2713' : '') + '</button>' +
+      '</div></td>' +
+      '<td><input class="notes-input" id="notes-' + o.id + '" value="' + (o.notes || '').replace(/"/g, '&quot;') + '" onchange="updateNotes(' + o.id + ')" placeholder="Add notes..."></td>' +
+    '</tr>';
+  });
+
+  document.getElementById('tableBody').innerHTML = html;
+  updateStats();
+}
+
+// Init
+loadData();
+renderTable();
+</script>
+</body>
+</html>

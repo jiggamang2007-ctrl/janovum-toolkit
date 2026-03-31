@@ -80,10 +80,39 @@ DEFAULT_CONFIG = {
     "s2_volume_spike_multiplier": 3,   # Volume must be 3x normal in last 5 min
     "s2_min_buy_ratio": 0.55,          # 55%+ of recent txns must be buys
 
-    # === STRATEGY 3: Social Sentiment ===
-    "s3_enabled": False,               # Disabled by default (needs Twitter scraping)
-    "s3_min_mentions": 5,              # Min mentions in last hour
-    "s3_max_mc_at_mention": 50000,     # MC must be under $50k when mentioned
+    # === STRATEGY 3: "Dev Diamond Hands" ===
+    # If the dev HASN'T sold, they believe in the coin. Dev holding + dumped price
+    # = dev will promote it again. Most rugs happen when devs dump immediately.
+    # A dev still holding 1-5% on a crashed coin is actually BULLISH.
+    "s3_enabled": True,
+    "s3_min_mc": 4000,
+    "s3_max_mc": 20000,
+    "s3_dev_must_hold": True,          # Dev must still be holding (not 0%)
+    "s3_dev_min_hold_pct": 0.5,        # Dev holds at least 0.5%
+    "s3_dev_max_hold_pct": 8,          # But not more than 8% (not suspicious)
+    "s3_min_age_minutes": 30,          # At least 30 min old (dev had time to sell but didn't)
+
+    # === STRATEGY 4: "Reply Velocity" ===
+    # pump.fun has a comment section. When replies suddenly spike on a low-MC coin,
+    # attention is coming. More replies = more eyeballs = buyers incoming.
+    # A coin at $8k with 5 replies that suddenly gets 20 more = about to move.
+    "s4_enabled": True,
+    "s4_min_mc": 4000,
+    "s4_max_mc": 20000,
+    "s4_min_reply_count": 15,          # At least 15 replies (shows real engagement)
+    "s4_reply_to_mc_ratio": 0.003,     # replies/mc — higher ratio = undervalued attention
+
+    # === STRATEGY 5: "Second Wave / Comeback Kid" ===
+    # Some coins pump, dump, go QUIET for 30-60 min, then get a second wave.
+    # Pattern: $5k → $40k → $8k → quiet 30min → new buyers discover it → $25k+
+    # The key: after being quiet, trading suddenly picks back up.
+    "s5_enabled": True,
+    "s5_min_mc": 5000,
+    "s5_max_mc": 15000,
+    "s5_quiet_period_minutes": 20,     # Must have been quiet for 20+ min
+    "s5_quiet_max_trades_per_min": 1,  # During quiet period, < 1 trade/min
+    "s5_wakeup_min_trades_per_min": 4, # Then suddenly 4+ trades/min
+    "s5_min_peak_mc": 25000,           # Must have peaked above $25k (proves it can pump)
 
     # === Narrative keywords ===
     "narrative_keywords": [
@@ -595,15 +624,39 @@ class AIAnalyst:
         dex_vol = pair_data.get('volume', {}).get('h24', 0) if isinstance(pair_data.get('volume'), dict) else 0
         dex_liq = pair_data.get('liquidity', {}).get('usd', 0) if isinstance(pair_data.get('liquidity'), dict) else 0
 
-        prompt = f"""You are an expert Solana pump.fun memecoin trader. Your ONLY job: decide if this token is a good RETRACE ENTRY.
+        # Use Sonnet for high-confidence decisions, Haiku for initial screening
+        model_to_use = self.model
+        strategy = token_data.get("source", "")
 
-THE STRATEGY (proven profitable):
-We find pump.fun coins that pumped then crashed to $5k-$15k market cap. These coins had real interest (people bought in, there's a community) but the initial hype faded. We wait for the coin to hit bottom — you can tell because:
-1. It dropped 50%+ from its peak
-2. There are still active trades happening (not dead)
-3. Buying pressure starts returning (more buys than sells)
-4. The narrative/name is catchy enough to attract new buyers
-When these conditions align, the coin often retraces 30-100% from the bottom. We ride that bounce.
+        prompt = f"""You are a Solana pump.fun memecoin trading AI. You are VERY selective — you only say YES to perfect setups. Your win rate must stay above 65%.
+
+THE EXACT STRATEGY (this has been proven profitable):
+
+We ONLY trade pump.fun coins that follow this specific pattern:
+1. A coin launches on pump.fun with a catchy name/meme
+2. It pumps — people buy in, it runs up to $20k-$60k+ market cap
+3. Early sellers take profit, it CRASHES back down to $5k-$15k
+4. Most people leave, but the coin is NOT dead — trades are still happening every 5-20 seconds
+5. The name/idea is still good (it's not a random string, it's something people would share)
+6. At some point, NEW BUYERS discover the coin at these low prices
+7. More buys than sells start happening — this is THE SIGNAL
+8. The coin retraces 30-100%+ from the bottom as a new wave of buyers comes in
+
+We buy at step 7 (when buying pressure returns) and sell during step 8 (the retrace).
+
+WHY THIS WORKS:
+- Coins that pumped once have PROVEN they can attract attention
+- At $7k-$12k MC, the downside is small but upside is 2-10x
+- The narrative already exists — you don't need to find new buyers, they find the coin
+- Active volume means it's not a dead coin — people are still interested
+- Not bundled + dev didn't rug = organic growth, real community
+
+WHAT TO REJECT:
+- Names that are gibberish or offensive (no one will share it)
+- Zero buying pressure (all sells = it's dying, not bottoming)
+- Too few trades (< 2/min = dead, the bounce won't happen)
+- Anything bundled or dev-dumped (even if other metrics look good)
+- Coins that haven't dropped enough (if it's still at $30k, the dump isn't over)
 
 TOKEN:
 - Symbol: {token_data.get('symbol', '???')}
@@ -865,9 +918,17 @@ class MemecoinTrader:
         if self.cfg.get("s2_enabled", True):
             await self._strategy_volume_spike()
 
-        # === STRATEGY 3: Social Sentiment (if enabled) ===
-        if self.cfg.get("s3_enabled", False):
-            await self._strategy_social_sentiment()
+        # === STRATEGY 3: Dev Diamond Hands ===
+        if self.cfg.get("s3_enabled", True):
+            await self._strategy_dev_diamond_hands()
+
+        # === STRATEGY 4: Reply Velocity ===
+        if self.cfg.get("s4_enabled", True):
+            await self._strategy_reply_velocity()
+
+        # === STRATEGY 5: Second Wave Comeback ===
+        if self.cfg.get("s5_enabled", True):
+            await self._strategy_second_wave()
 
         # Also re-check watchlist items for entry signals
         await self._recheck_watchlist()
@@ -1159,13 +1220,355 @@ class MemecoinTrader:
 
             await asyncio.sleep(0.3)
 
-    async def _strategy_social_sentiment(self):
-        """STRATEGY 3: Social Sentiment Scanner.
-        Check Twitter/X for trending Solana tickers. Placeholder — needs Twitter API or scraping."""
-        # TODO: Implement when Twitter scraping is set up
-        # For now this is a placeholder that can be wired to a Twitter feed
-        self.status = "S3: checking social buzz"
-        pass
+    async def _strategy_dev_diamond_hands(self):
+        """STRATEGY 3: Dev Diamond Hands.
+        Why this works: When a pump.fun dev DOESN'T sell after a dump, they have skin in the game.
+        Most scam devs dump within the first 5 minutes. A dev still holding at 30+ minutes on a
+        crashed coin means they believe it can recover — and they'll often promote it again.
+        A coin where the dev holds 1-5% at $8k MC is way safer than one where dev already dumped."""
+
+        self.status = "S3: checking dev diamond hands"
+
+        active = await self.pump.get_active_coins(limit=50, sort="last_trade_timestamp")
+        if not isinstance(active, list):
+            return
+
+        min_mc = self.cfg.get("s3_min_mc", 4000)
+        max_mc = self.cfg.get("s3_max_mc", 20000)
+
+        for token in active:
+            mint = token.get("mint", "")
+            if not mint or mint in self.scanned_tokens:
+                continue
+
+            mc = self.pump.estimate_market_cap(token)
+            if mc < min_mc or mc > max_mc:
+                continue
+
+            # Age check — dev needs to have had TIME to sell but chose not to
+            created = token.get("created_timestamp")
+            if created:
+                try:
+                    age_min = (time.time() * 1000 - created) / 60000
+                except (TypeError, ValueError):
+                    continue
+                if age_min < self.cfg.get("s3_min_age_minutes", 30):
+                    continue
+
+            # Check if creator still holds via pump.fun data
+            # pump.fun API sometimes includes creator balance info
+            creator = token.get("creator", "")
+            creator_balance = token.get("creator_balance_percentage")
+
+            # If we can't get dev balance from pump.fun, try rugcheck
+            if creator_balance is None:
+                try:
+                    url = f"https://api.rugcheck.xyz/v1/tokens/{mint}/report/summary"
+                    async with self.session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as r:
+                        if r.status == 200:
+                            report = await r.json()
+                            # Check if creator is in top holders
+                            for holder in report.get("topHolders", []):
+                                if holder.get("address", "") == creator:
+                                    creator_balance = holder.get("pct", 0)
+                                    break
+                except Exception:
+                    continue
+
+            if creator_balance is None:
+                continue
+
+            dev_min = self.cfg.get("s3_dev_min_hold_pct", 0.5)
+            dev_max = self.cfg.get("s3_dev_max_hold_pct", 8)
+
+            if creator_balance < dev_min or creator_balance > dev_max:
+                continue  # Dev sold everything (bad) or holds too much (suspicious)
+
+            # Dev is diamond handing! Check trade activity
+            trades = await self.pump.get_token_trades(mint, limit=20)
+            if not trades or len(trades) < 5:
+                continue
+
+            recent_buys = sum(1 for t in trades[:10] if t.get("is_buy", False))
+            buy_ratio = recent_buys / min(len(trades), 10)
+
+            self.stats["passed_filter"] += 1
+            self.scanned_tokens.add(mint)
+
+            symbol = token.get("symbol", "???")
+            log.info(f"S3 DEV HOLDING: {symbol} | MC: ${mc:,.0f} | Dev holds {creator_balance:.1f}% | "
+                     f"Age: {age_min:.0f}min | Buy ratio: {buy_ratio:.0%}")
+
+            wl_entry = {
+                "address": mint,
+                "symbol": symbol,
+                "name": token.get("name", ""),
+                "market_cap": mc,
+                "dev_holding_pct": round(creator_balance, 2),
+                "age_minutes": round(age_min),
+                "buy_ratio": round(buy_ratio, 2),
+                "narrative": True,
+                "strategy": "s3_dev_diamond_hands",
+                "added_at": datetime.now(timezone.utc).isoformat(),
+            }
+            self.watchlist = [w for w in self.watchlist if w["address"] != mint]
+            self.watchlist.insert(0, wl_entry)
+            save_watchlist(self.watchlist)
+
+            # If buy ratio is good, evaluate for immediate entry
+            if buy_ratio >= 0.55:
+                pair_data = None
+                dex_pairs = await self.dex.get_token_pairs(mint)
+                if dex_pairs:
+                    pair_data = dex_pairs[0]
+
+                rug_result = await self.rug_checker.check(mint, pair_data, token, trades)
+                if rug_result.get("is_bundled") or not rug_result["is_safe"]:
+                    continue
+
+                candidate = {
+                    "address": mint, "symbol": symbol, "name": token.get("name", ""),
+                    "description": token.get("description", ""), "source": "s3_dev_diamond_hands",
+                    "market_cap": mc, "buy_ratio": buy_ratio, "dev_holding_pct": creator_balance,
+                }
+                ai_result = await self.ai.analyze_entry(candidate, pair_data or {}, rug_result)
+                if ai_result.get("should_enter", False):
+                    log.info(f"S3 ENTRY: {symbol} — Dev still holding {creator_balance:.1f}%, AI {ai_result.get('confidence')}%")
+                    await self._enter_trade(mint, pair_data or {"baseToken": {"symbol": symbol, "name": token.get("name", "")}},
+                                            rug_result, True, ai_result)
+
+            await asyncio.sleep(0.3)
+
+    async def _strategy_reply_velocity(self):
+        """STRATEGY 4: Reply Velocity.
+        Why this works: pump.fun comments are social proof. When a coin suddenly gets a burst of
+        replies, it means people are talking about it. On a low-MC coin, attention = price movement.
+        A coin at $8k MC with 30+ replies is UNDERVALUED — that level of engagement usually
+        corresponds to $20k+ MC. The replies got there before the price did."""
+
+        self.status = "S4: checking reply velocity"
+
+        active = await self.pump.get_active_coins(limit=50, sort="last_reply_timestamp")
+        if not isinstance(active, list):
+            return
+
+        min_mc = self.cfg.get("s4_min_mc", 4000)
+        max_mc = self.cfg.get("s4_max_mc", 20000)
+        min_replies = self.cfg.get("s4_min_reply_count", 15)
+
+        for token in active:
+            mint = token.get("mint", "")
+            if not mint or mint in self.scanned_tokens:
+                continue
+
+            mc = self.pump.estimate_market_cap(token)
+            if mc < min_mc or mc > max_mc:
+                continue
+
+            replies = token.get("reply_count", 0)
+            if replies < min_replies:
+                continue
+
+            # Reply-to-MC ratio: high replies on low MC = undervalued attention
+            # A $8k coin with 40 replies = ratio of 0.005 (very high)
+            # A $50k coin with 40 replies = ratio of 0.0008 (normal)
+            ratio = replies / max(mc, 1)
+            min_ratio = self.cfg.get("s4_reply_to_mc_ratio", 0.003)
+            if ratio < min_ratio:
+                continue
+
+            # Check trade activity
+            trades = await self.pump.get_token_trades(mint, limit=20)
+            if not trades or len(trades) < 3:
+                continue
+
+            recent_buys = sum(1 for t in trades[:10] if t.get("is_buy", False))
+            buy_ratio = recent_buys / min(len(trades), 10)
+
+            self.stats["passed_filter"] += 1
+            self.scanned_tokens.add(mint)
+
+            symbol = token.get("symbol", "???")
+            log.info(f"S4 HIGH ENGAGEMENT: {symbol} | MC: ${mc:,.0f} | Replies: {replies} | "
+                     f"Ratio: {ratio:.4f} | Buys: {buy_ratio:.0%}")
+
+            wl_entry = {
+                "address": mint,
+                "symbol": symbol,
+                "name": token.get("name", ""),
+                "market_cap": mc,
+                "reply_count": replies,
+                "reply_mc_ratio": round(ratio, 5),
+                "buy_ratio": round(buy_ratio, 2),
+                "narrative": True,  # High replies = narrative exists
+                "strategy": "s4_reply_velocity",
+                "added_at": datetime.now(timezone.utc).isoformat(),
+            }
+            self.watchlist = [w for w in self.watchlist if w["address"] != mint]
+            self.watchlist.insert(0, wl_entry)
+            save_watchlist(self.watchlist)
+
+            if buy_ratio >= 0.50:  # Slightly lower threshold — replies are strong signal
+                pair_data = None
+                dex_pairs = await self.dex.get_token_pairs(mint)
+                if dex_pairs:
+                    pair_data = dex_pairs[0]
+
+                rug_result = await self.rug_checker.check(mint, pair_data, token, trades)
+                if rug_result.get("is_bundled") or not rug_result["is_safe"]:
+                    continue
+
+                candidate = {
+                    "address": mint, "symbol": symbol, "name": token.get("name", ""),
+                    "description": token.get("description", ""), "source": "s4_reply_velocity",
+                    "market_cap": mc, "buy_ratio": buy_ratio, "reply_count": replies,
+                }
+                ai_result = await self.ai.analyze_entry(candidate, pair_data or {}, rug_result)
+                if ai_result.get("should_enter", False):
+                    log.info(f"S4 ENTRY: {symbol} — {replies} replies on ${mc:,.0f} MC, AI {ai_result.get('confidence')}%")
+                    await self._enter_trade(mint, pair_data or {"baseToken": {"symbol": symbol, "name": token.get("name", "")}},
+                                            rug_result, True, ai_result)
+
+            await asyncio.sleep(0.3)
+
+    async def _strategy_second_wave(self):
+        """STRATEGY 5: Second Wave / Comeback Kid.
+        Why this works: The most profitable pump.fun pattern is the DOUBLE PUMP.
+        Coin launches → pumps to $30k-$60k → dumps to $8k → goes quiet for 20-60 min →
+        new people discover it → second pump to $20k+.
+
+        The quiet period is KEY. It shakes out weak hands. The people who buy after the quiet
+        period are fresh buyers who just found the coin. If the coin had enough hype to pump
+        once, and the narrative is good, a second wave is very likely.
+
+        We look for: peaked high, crashed, went quiet, NOW waking up."""
+
+        self.status = "S5: hunting second waves"
+
+        active = await self.pump.get_active_coins(limit=50, sort="last_trade_timestamp")
+        if not isinstance(active, list):
+            return
+
+        min_mc = self.cfg.get("s5_min_mc", 5000)
+        max_mc = self.cfg.get("s5_max_mc", 15000)
+        min_peak = self.cfg.get("s5_min_peak_mc", 25000)
+
+        for token in active:
+            mint = token.get("mint", "")
+            if not mint or mint in self.scanned_tokens:
+                continue
+
+            mc = self.pump.estimate_market_cap(token)
+            if mc < min_mc or mc > max_mc:
+                continue
+
+            # Must have peaked high (proves it CAN pump)
+            peak_mc = self.pump.get_peak_mc(token)
+            if peak_mc < min_peak:
+                continue
+
+            # Get trade history to analyze the pattern
+            trades = await self.pump.get_token_trades(mint, limit=50)
+            if not trades or len(trades) < 10:
+                continue
+
+            # Analyze trade pattern: look for quiet period followed by activity
+            now_ms = time.time() * 1000
+            quiet_threshold = self.cfg.get("s5_quiet_max_trades_per_min", 1)
+            wakeup_threshold = self.cfg.get("s5_wakeup_min_trades_per_min", 4)
+            quiet_period_min = self.cfg.get("s5_quiet_period_minutes", 20)
+
+            # Split trades into time windows (5-min buckets)
+            buckets = {}
+            for t in trades:
+                ts = t.get("timestamp", 0)
+                if not ts:
+                    continue
+                bucket = int((now_ms - ts) / 300000)  # Which 5-min window (0 = most recent)
+                buckets[bucket] = buckets.get(bucket, 0) + 1
+
+            if not buckets:
+                continue
+
+            # Recent activity (last 5 min)
+            recent_count = buckets.get(0, 0)
+            recent_tpm = recent_count / 5  # trades per minute in last 5 min
+
+            if recent_tpm < wakeup_threshold:
+                continue  # Not waking up yet
+
+            # Check if there was a quiet period before the current activity
+            had_quiet = False
+            for b in range(1, 12):  # Check 5-min buckets going back 1 hour
+                b_count = buckets.get(b, 0)
+                b_tpm = b_count / 5
+                if b_tpm <= quiet_threshold:
+                    # Check if this quiet period lasted at least quiet_period_min
+                    quiet_buckets = 0
+                    for qb in range(b, min(b + int(quiet_period_min / 5) + 1, 12)):
+                        if buckets.get(qb, 0) / 5 <= quiet_threshold:
+                            quiet_buckets += 1
+                    if quiet_buckets >= quiet_period_min / 5:
+                        had_quiet = True
+                        break
+
+            if not had_quiet:
+                continue  # No quiet period detected — this isn't a second wave
+
+            # Check buy ratio in the wakeup
+            recent_trades = [t for t in trades if (now_ms - (t.get("timestamp", 0) or 0)) < 300000]
+            if len(recent_trades) < 3:
+                continue
+            recent_buys = sum(1 for t in recent_trades if t.get("is_buy", False))
+            buy_ratio = recent_buys / len(recent_trades)
+
+            self.stats["passed_filter"] += 1
+            self.scanned_tokens.add(mint)
+
+            symbol = token.get("symbol", "???")
+            log.info(f"S5 SECOND WAVE: {symbol} | MC: ${mc:,.0f} (peaked ~${peak_mc:,.0f}) | "
+                     f"Waking up: {recent_tpm:.1f} TPM | Buy ratio: {buy_ratio:.0%}")
+
+            wl_entry = {
+                "address": mint,
+                "symbol": symbol,
+                "name": token.get("name", ""),
+                "market_cap": mc,
+                "estimated_peak": peak_mc,
+                "wakeup_tpm": round(recent_tpm, 1),
+                "buy_ratio": round(buy_ratio, 2),
+                "narrative": True,
+                "strategy": "s5_second_wave",
+                "added_at": datetime.now(timezone.utc).isoformat(),
+            }
+            self.watchlist = [w for w in self.watchlist if w["address"] != mint]
+            self.watchlist.insert(0, wl_entry)
+            save_watchlist(self.watchlist)
+
+            # Second wave with buying pressure = strong entry signal
+            if buy_ratio >= 0.55:
+                pair_data = None
+                dex_pairs = await self.dex.get_token_pairs(mint)
+                if dex_pairs:
+                    pair_data = dex_pairs[0]
+
+                rug_result = await self.rug_checker.check(mint, pair_data, token, trades)
+                if rug_result.get("is_bundled") or not rug_result["is_safe"]:
+                    continue
+
+                candidate = {
+                    "address": mint, "symbol": symbol, "name": token.get("name", ""),
+                    "description": token.get("description", ""), "source": "s5_second_wave",
+                    "market_cap": mc, "peak_mc": peak_mc, "buy_ratio": buy_ratio,
+                    "wakeup_tpm": recent_tpm,
+                }
+                ai_result = await self.ai.analyze_entry(candidate, pair_data or {}, rug_result)
+                if ai_result.get("should_enter", False):
+                    log.info(f"S5 ENTRY: {symbol} — Second wave! Peaked ${peak_mc:,.0f}, now ${mc:,.0f}, waking up at {recent_tpm:.1f} TPM")
+                    await self._enter_trade(mint, pair_data or {"baseToken": {"symbol": symbol, "name": token.get("name", "")}},
+                                            rug_result, True, ai_result)
+
+            await asyncio.sleep(0.3)
 
     async def _recheck_watchlist(self):
         """Re-check watchlisted tokens for entry signals (buy pressure returning)."""

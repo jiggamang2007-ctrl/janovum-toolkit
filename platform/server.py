@@ -1425,19 +1425,21 @@ def auth_set_client_key():
 # Admin approves via email link → account activated
 # ══════════════════════════════════════════
 
-USERS_FILE = PLATFORM_DIR / "data" / "users" / "users.json"
-USERS_FILE.parent.mkdir(parents=True, exist_ok=True)
+USERS_FILE = os.path.join(PLATFORM_DIR, "data", "users", "users.json")
+os.makedirs(os.path.dirname(USERS_FILE), exist_ok=True)
 
 def _load_users():
-    if USERS_FILE.exists():
+    if os.path.exists(USERS_FILE):
         try:
-            return json.loads(USERS_FILE.read_text())
+            with open(USERS_FILE) as f:
+                return json.load(f)
         except Exception:
             pass
     return {}
 
 def _save_users(users):
-    USERS_FILE.write_text(json.dumps(users, indent=2))
+    with open(USERS_FILE, "w") as f:
+        json.dump(users, f, indent=2)
 
 def _send_approval_email(user_data, domain="janovum.com"):
     """Send approval request email to admin."""

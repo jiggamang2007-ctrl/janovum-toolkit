@@ -20,6 +20,7 @@ import time
 import threading
 from flask import Flask, request, jsonify, send_from_directory, Response
 from datetime import datetime
+import secrets
 
 # Setup paths
 PLATFORM_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -1415,6 +1416,260 @@ def auth_set_client_key():
     auth = _get_auth()
     auth.set_client_api_key(data["client_id"], data["api_key"])
     return jsonify({"status": "ok"})
+
+
+# ══════════════════════════════════════════
+# USER SIGNUP + APPROVAL SYSTEM
+# Guest = can look, can't use features
+# Signup = creates PENDING account, emails admin
+# Admin approves via email link → account activated
+# ══════════════════════════════════════════
+
+USERS_FILE = PLATFORM_DIR / "data" / "users" / "users.json"
+USERS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+def _load_users():
+    if USERS_FILE.exists():
+        try:
+            return json.loads(USERS_FILE.read_text())
+        except Exception:
+            pass
+    return {}
+
+def _save_users(users):
+    USERS_FILE.write_text(json.dumps(users, indent=2))
+
+def _send_approval_email(user_data, domain="janovum.com"):
+    """Send approval request email to admin."""
+    import smtplib
+    from email.mime.text import MIMEText
+    smtp_user = "myfriendlyagent12@gmail.com"
+    smtp_pass = "pdcvjroclstugncx"
+    user_id = user_data["id"]
+    token = user_data["approval_token"]
+
+    approve_url = f"https://{domain}/api/users/approve/{user_id}?token={token}"
+    deny_url = f"https://{domain}/api/users/deny/{user_id}?token={token}"
+
+    body = f"""New Janovum Account Request!
+
+Name: {user_data.get('name', 'Unknown')}
+Email: {user_data.get('email', 'Unknown')}
+Company: {user_data.get('company', 'N/A')}
+Reason: {user_data.get('reason', 'N/A')}
+Signed up: {user_data.get('created_at', 'Unknown')}
+
+APPROVE: {approve_url}
+
+DENY: {deny_url}
+
+(Click approve to give them full access to the Janovum dashboard)
+"""
+    try:
+        msg = MIMEText(body)
+        msg["Subject"] = f"[Janovum] Account Request — {user_data.get('name', 'New User')}"
+        msg["From"] = smtp_user
+        msg["To"] = smtp_user  # Send to admin (the agent email Jaden controls)
+        with smtplib.SMTP("smtp.gmail.com", 587) as s:
+            s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.send_message(msg)
+            # Also send to Jaden's business email
+            msg2 = MIMEText(body)
+            msg2["Subject"] = msg["Subject"]
+            msg2["From"] = smtp_user
+            msg2["To"] = "janovumllc@gmail.com"
+            s.send_message(msg2)
+        return True
+    except Exception as e:
+        print(f"[!] Approval email error: {e}")
+        return False
+
+
+@app.route("/api/users/signup", methods=["POST"])
+def user_signup():
+    """Create a pending account. Sends approval request email."""
+    data = request.json or {}
+    name = data.get("name", "").strip()
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    company = data.get("company", "")
+    reason = data.get("reason", "")
+
+    if not name or not email or not password:
+        return jsonify({"error": "Name, email, and password are required"}), 400
+
+    users = _load_users()
+
+    # Check if email already exists
+    for uid, u in users.items():
+        if u.get("email", "").lower() == email.lower():
+            if u.get("status") == "pending":
+                return jsonify({"error": "Account already pending approval. Check your email."}), 400
+            elif u.get("status") == "approved":
+                return jsonify({"error": "Account already exists. Try logging in."}), 400
+            elif u.get("status") == "denied":
+                return jsonify({"error": "Account was denied. Contact janovumllc@gmail.com for help."}), 400
+
+    # Create user
+    import hashlib
+    user_id = hashlib.md5(email.lower().encode()).hexdigest()[:12]
+    approval_token = secrets.token_urlsafe(32)
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+
+    user = {
+        "id": user_id,
+        "name": name,
+        "email": email.lower(),
+        "password_hash": password_hash,
+        "company": company,
+        "reason": reason,
+        "status": "pending",  # pending | approved | denied
+        "approval_token": approval_token,
+        "created_at": datetime.now().isoformat(),
+        "approved_at": None,
+        "role": "user",  # user | admin
+    }
+
+    users[user_id] = user
+    _save_users(users)
+
+    # Send approval email
+    cfg = load_config()
+    domain = cfg.get("domain", "janovum.com")
+    _send_approval_email(user, domain)
+
+    return jsonify({
+        "status": "pending",
+        "message": "Account created! Waiting for admin approval. You'll get an email when approved."
+    })
+
+
+@app.route("/api/users/login", methods=["POST"])
+def user_login():
+    """Login — only works for approved accounts."""
+    data = request.json or {}
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "")
+
+    if not email or not password:
+        return jsonify({"error": "Email and password required"}), 400
+
+    import hashlib
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    users = _load_users()
+
+    for uid, u in users.items():
+        if u.get("email") == email:
+            if u.get("password_hash") != password_hash:
+                return jsonify({"error": "Wrong password"}), 401
+            if u.get("status") == "pending":
+                return jsonify({"error": "Account pending approval. You'll get an email when approved.", "status": "pending"}), 403
+            if u.get("status") == "denied":
+                return jsonify({"error": "Account was denied.", "status": "denied"}), 403
+            if u.get("status") == "approved":
+                # Generate session token
+                session_token = secrets.token_urlsafe(32)
+                u["session_token"] = session_token
+                u["last_login"] = datetime.now().isoformat()
+                _save_users(users)
+                return jsonify({
+                    "status": "approved",
+                    "token": session_token,
+                    "user": {"id": uid, "name": u["name"], "email": u["email"], "role": u.get("role", "user")}
+                })
+
+    return jsonify({"error": "Account not found. Sign up first."}), 404
+
+
+@app.route("/api/users/approve/<user_id>")
+def user_approve(user_id):
+    """Approve a user account (clicked from email link)."""
+    token = request.args.get("token", "")
+    users = _load_users()
+
+    if user_id not in users:
+        return "<html><body style='background:#0a0a0a;color:#e0e0e0;font-family:sans-serif;text-align:center;padding:80px'><h1 style='color:#ff5252'>User Not Found</h1></body></html>"
+
+    user = users[user_id]
+    if user.get("approval_token") != token:
+        return "<html><body style='background:#0a0a0a;color:#e0e0e0;font-family:sans-serif;text-align:center;padding:80px'><h1 style='color:#ff5252'>Invalid Token</h1></body></html>"
+
+    user["status"] = "approved"
+    user["approved_at"] = datetime.now().isoformat()
+    _save_users(users)
+
+    # Send welcome email to user
+    try:
+        import smtplib
+        from email.mime.text import MIMEText
+        smtp_user = "myfriendlyagent12@gmail.com"
+        smtp_pass = "pdcvjroclstugncx"
+        msg = MIMEText(f"Hi {user['name']},\n\nYour Janovum account has been approved! You can now log in at https://janovum.com\n\nWelcome to the future of AI automation.\n\n— Janovum Team")
+        msg["Subject"] = "Your Janovum Account is Approved!"
+        msg["From"] = smtp_user
+        msg["To"] = user["email"]
+        with smtplib.SMTP("smtp.gmail.com", 587) as s:
+            s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.send_message(msg)
+    except Exception:
+        pass
+
+    return f"""<html><body style='background:#0a0a0a;color:#e0e0e0;font-family:sans-serif;text-align:center;padding:80px'>
+    <h1 style='color:#2ecc71'>Account Approved!</h1>
+    <p><strong style='color:#f7c948'>{user['name']}</strong> ({user['email']}) now has full access to Janovum.</p>
+    <p style='color:#888;margin-top:20px'>They've been sent a welcome email.</p>
+    </body></html>"""
+
+
+@app.route("/api/users/deny/<user_id>")
+def user_deny(user_id):
+    """Deny a user account."""
+    token = request.args.get("token", "")
+    users = _load_users()
+
+    if user_id not in users or users[user_id].get("approval_token") != token:
+        return "<html><body style='background:#0a0a0a;color:#e0e0e0;font-family:sans-serif;text-align:center;padding:80px'><h1 style='color:#ff5252'>Invalid Request</h1></body></html>"
+
+    users[user_id]["status"] = "denied"
+    _save_users(users)
+
+    return f"""<html><body style='background:#0a0a0a;color:#e0e0e0;font-family:sans-serif;text-align:center;padding:80px'>
+    <h1 style='color:#ff5252'>Account Denied</h1>
+    <p>{users[user_id]['name']} ({users[user_id]['email']}) has been denied access.</p>
+    </body></html>"""
+
+
+@app.route("/api/users/verify", methods=["POST"])
+def user_verify():
+    """Verify a session token — used by frontend to check if user is logged in."""
+    data = request.json or {}
+    token = data.get("token", "")
+    if not token:
+        return jsonify({"valid": False})
+
+    users = _load_users()
+    for uid, u in users.items():
+        if u.get("session_token") == token and u.get("status") == "approved":
+            return jsonify({"valid": True, "user": {"id": uid, "name": u["name"], "email": u["email"], "role": u.get("role", "user")}})
+
+    return jsonify({"valid": False})
+
+
+@app.route("/api/users/list")
+def user_list():
+    """List all users (admin only)."""
+    users = _load_users()
+    safe = []
+    for uid, u in users.items():
+        safe.append({
+            "id": uid, "name": u.get("name"), "email": u.get("email"),
+            "company": u.get("company"), "status": u.get("status"),
+            "created_at": u.get("created_at"), "approved_at": u.get("approved_at"),
+            "role": u.get("role", "user"), "last_login": u.get("last_login"),
+        })
+    return jsonify(safe)
 
 
 # ══════════════════════════════════════════

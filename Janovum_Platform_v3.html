@@ -203,6 +203,7 @@
     <div class="nav-item" data-tab="receptionist"><span class="nav-icon">&#128222;</span> Receptionist</div>
     <div class="nav-item" data-tab="copilot"><span class="nav-icon">&#127911;</span> Sales Co-Pilot <span class="nav-badge" style="background:var(--green)">LIVE</span></div>
     <div class="nav-item" data-tab="payments"><span class="nav-icon">&#128176;</span> Payments</div>
+    <div class="nav-item" data-tab="crypto" style="background:linear-gradient(135deg,rgba(147,51,234,0.08),rgba(236,72,153,0.08));border-left:2px solid #9333ea"><span class="nav-icon">&#9670;</span> Crypto Trading <span class="nav-badge" style="background:linear-gradient(135deg,#9333ea,#ec4899)">AI</span></div>
     <div class="nav-item" data-tab="analytics"><span class="nav-icon">&#128202;</span> Analytics</div>
     <div class="nav-item" data-tab="scheduler"><span class="nav-icon">&#128339;</span> Scheduler</div>
     <!-- COMMUNITY & SKILLS — Browse and add to your arsenal -->
@@ -1461,11 +1462,13 @@
 
       <!-- Step indicator -->
       <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap" id="setupSteps">
-        <div class="setup-step active" data-step="1"><span class="step-num">1</span> Business Type</div>
-        <div class="setup-step" data-step="2"><span class="step-num">2</span> Modules</div>
-        <div class="setup-step" data-step="3"><span class="step-num">3</span> Business Info</div>
-        <div class="setup-step" data-step="4"><span class="step-num">4</span> Module Config</div>
-        <div class="setup-step" data-step="5"><span class="step-num">5</span> Review & Save</div>
+        <div class="setup-step active" data-step="1"><span class="step-num">1</span> VPS & Domain</div>
+        <div class="setup-step" data-step="2"><span class="step-num">2</span> API Keys</div>
+        <div class="setup-step" data-step="3"><span class="step-num">3</span> Business Type</div>
+        <div class="setup-step" data-step="4"><span class="step-num">4</span> Modules</div>
+        <div class="setup-step" data-step="5"><span class="step-num">5</span> Business Info</div>
+        <div class="setup-step" data-step="6"><span class="step-num">6</span> Module Config</div>
+        <div class="setup-step" data-step="7"><span class="step-num">7</span> Review & Deploy</div>
       </div>
       <style>
         .setup-step { display:flex;align-items:center;gap:8px;padding:8px 16px;border-radius:8px;font-size:0.78em;font-weight:600;color:var(--dim);background:#111;border:1px solid #222;cursor:default;transition:all 0.2s; }
@@ -1499,29 +1502,180 @@
         .review-row .rv { color:var(--text);font-weight:600;text-align:right;max-width:60%; }
       </style>
 
-      <!-- STEP 1: Business Type Preset -->
+      <!-- STEP 1: VPS & Domain Setup -->
       <div class="setup-panel active" id="setupStep1">
-        <h3 style="margin-bottom:6px">What type of business is this for?</h3>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Pick a preset to auto-select the right modules, or choose custom.</p>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px" id="presetGrid"></div>
+        <h3 style="margin-bottom:6px">VPS & Domain Setup</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Connect your server so everything runs on your own infrastructure. Already deployed? Fill in your details and skip ahead.</p>
+
+        <!-- Quick Install Banner -->
+        <div style="background:linear-gradient(135deg,#0d1b2a,#1b2838);border:1px solid #42a5f544;border-radius:12px;padding:20px;margin-bottom:20px">
+          <div style="font-size:0.92em;font-weight:700;color:var(--blue);margin-bottom:8px">One-Command Install</div>
+          <p style="font-size:0.78em;color:var(--muted);margin-bottom:12px">SSH into your VPS and run this to install everything automatically:</p>
+          <div style="background:#000;border-radius:8px;padding:14px;font-family:Consolas,monospace;font-size:0.82em;color:var(--green);position:relative;border:1px solid #1a1a1a">
+            <code>curl -sSL https://janovum.com/install.sh | bash</code>
+            <button onclick="navigator.clipboard.writeText('curl -sSL https://janovum.com/install.sh | bash');toast('Copied!','success')" style="position:absolute;top:8px;right:8px;background:#222;border:1px solid #333;color:#999;border-radius:6px;padding:4px 10px;font-size:0.75em;cursor:pointer">Copy</button>
+          </div>
+          <div style="font-size:0.7em;color:var(--dim);margin-top:8px">Or manually: <code style="color:var(--muted)">git clone https://github.com/janovum/toolkit.git && cd toolkit/platform && python install.py</code></div>
+        </div>
+
+        <!-- Server Details -->
+        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="setup-field">
+            <label>Domain Name *</label>
+            <input id="sw-domain" placeholder="e.g. mycompany.janovum.com or mybiz.com" style="font-family:Consolas,monospace">
+            <div class="hint">Your VPS domain — phone webhooks and the dashboard will use this</div>
+          </div>
+          <div class="setup-field">
+            <label>Server IP Address</label>
+            <input id="sw-server-ip" placeholder="e.g. 149.28.123.45">
+            <div class="hint">Your VPS public IP (from Vultr, DigitalOcean, Linode, etc.)</div>
+          </div>
+          <div class="setup-field">
+            <label>SSH Username</label>
+            <input id="sw-ssh-user" placeholder="root" value="root">
+          </div>
+          <div class="setup-field">
+            <label>SSH Port</label>
+            <input id="sw-ssh-port" placeholder="22" value="22" type="number">
+          </div>
+          <div class="setup-field" style="grid-column:span 2">
+            <label>Server Port</label>
+            <input id="sw-server-port" placeholder="5050" value="5050" type="number">
+            <div class="hint">Port the Janovum server runs on (default 5050). Nginx will proxy to this.</div>
+          </div>
+        </div>
+
+        <!-- Connection Test -->
+        <div style="display:flex;gap:10px;align-items:center;margin-top:8px;margin-bottom:8px">
+          <button class="btn-outline" onclick="swTestConnection()" style="font-size:0.82em">Test Connection</button>
+          <span id="sw-conn-status" style="font-size:0.78em;color:var(--dim)"></span>
+        </div>
+
+        <!-- Expandable: Manual VPS Setup Guide -->
+        <details style="margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
+          <summary style="font-size:0.84em;color:var(--gold);cursor:pointer;font-weight:600">Need a VPS? Step-by-step guide</summary>
+          <div style="margin-top:12px;font-size:0.78em;color:var(--muted);line-height:1.7">
+            <div style="margin-bottom:12px"><strong style="color:var(--text)">1. Get a VPS ($6-10/mo)</strong><br>Sign up at <span style="color:var(--blue)">vultr.com</span>, <span style="color:var(--blue)">digitalocean.com</span>, or <span style="color:var(--blue)">linode.com</span>. Pick Ubuntu 22.04, 1 CPU, 1GB RAM.</div>
+            <div style="margin-bottom:12px"><strong style="color:var(--text)">2. Point your domain</strong><br>Go to your domain registrar (Namecheap, GoDaddy, Cloudflare) and add an <strong>A record</strong> pointing to your VPS IP address.</div>
+            <div style="margin-bottom:12px"><strong style="color:var(--text)">3. SSH in and install</strong><br>
+              <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">ssh root@YOUR_IP
+apt update && apt upgrade -y
+apt install python3 python3-pip python3-venv nginx certbot python3-certbot-nginx -y
+git clone https://github.com/janovum/toolkit.git /opt/janovum
+cd /opt/janovum/platform && python3 install.py</pre>
+            </div>
+            <div style="margin-bottom:12px"><strong style="color:var(--text)">4. Set up SSL (free HTTPS)</strong><br>
+              <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">sudo certbot --nginx -d YOUR_DOMAIN --non-interactive --agree-tos -m your@email.com</pre>
+            </div>
+            <div><strong style="color:var(--text)">5. Start the server</strong><br>
+              <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">cd /opt/janovum/platform
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python3 server.py &</pre>
+              Then open <strong style="color:var(--blue)">https://YOUR_DOMAIN</strong> in your browser — you should see this dashboard.
+            </div>
+          </div>
+        </details>
+
         <div style="margin-top:20px;display:flex;justify-content:flex-end">
           <button class="btn" onclick="setupNext(2)">Next &#8594;</button>
         </div>
       </div>
 
-      <!-- STEP 2: Module Selection -->
+      <!-- STEP 2: API Keys -->
       <div class="setup-panel" id="setupStep2">
-        <h3 style="margin-bottom:6px">Enable / Disable Modules</h3>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Toggle on what this client needs. Green = FREE (no API key). Red = needs Claude API.</p>
-        <div id="moduleToggles"></div>
+        <h3 style="margin-bottom:6px">API Keys & Credentials</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Add your keys here. Only the Anthropic key is required for premium modules — everything else is optional or free.</p>
+
+        <!-- Anthropic API Key -->
+        <div style="background:linear-gradient(135deg,#1a1200,#0d0d0d);border:1px solid #f7c94833;border-radius:12px;padding:20px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:1.1em">&#129302;</span>
+            <span style="font-size:0.92em;font-weight:700;color:var(--gold)">Anthropic (Claude AI)</span>
+            <span style="font-size:0.65em;background:rgba(247,201,72,0.15);color:var(--gold);padding:2px 8px;border-radius:4px;font-weight:700">RECOMMENDED</span>
+          </div>
+          <p style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Powers all premium modules. Get a key at <span style="color:var(--blue)">console.anthropic.com</span>. Free modules work without this.</p>
+          <div class="form-row" style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+            <div class="setup-field"><label>Anthropic API Key</label><input id="sw-api-key" type="password" placeholder="sk-ant-..." style="font-family:Consolas,monospace"></div>
+            <div class="setup-field"><label>Default Model</label>
+              <select id="sw-model" style="width:100%;padding:10px 12px;background:#111;border:1px solid #222;border-radius:8px;color:var(--text);font-size:0.85em">
+                <option value="claude-sonnet-4-20250514">Claude Sonnet (balanced)</option>
+                <option value="claude-haiku-4-5-20251001">Claude Haiku (fastest/cheapest)</option>
+                <option value="claude-opus-4-6-20250528">Claude Opus (most capable)</option>
+              </select>
+            </div>
+          </div>
+          <div class="setup-field"><label>Monthly Spend Limit ($)</label><input id="sw-spend-limit" type="number" placeholder="50" value="50" style="max-width:200px"><div class="hint">Auto-pauses API calls when this limit is reached. Protects against runaway costs.</div></div>
+        </div>
+
+        <!-- Phone Provider -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:1.1em">&#128222;</span>
+            <span style="font-size:0.92em;font-weight:700;color:var(--text)">Phone Provider</span>
+            <span style="font-size:0.65em;background:rgba(0,200,83,0.15);color:var(--green);padding:2px 8px;border-radius:4px;font-weight:700">FOR AI RECEPTIONIST</span>
+          </div>
+          <p style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Required only if you're using the AI Receptionist module. Skip if you don't need phone features.</p>
+          <div class="setup-field" style="margin-bottom:12px">
+            <label>Provider</label>
+            <select id="sw-phone-provider" onchange="swUpdateKeyFields()" style="width:100%;max-width:300px;padding:10px 12px;background:#111;border:1px solid #222;border-radius:8px;color:var(--text);font-size:0.85em">
+              <option value="">None (skip phone)</option>
+              <option value="twilio">Twilio</option>
+              <option value="telnyx">Telnyx</option>
+              <option value="plivo">Plivo</option>
+              <option value="vonage">Vonage</option>
+              <option value="signalwire">SignalWire</option>
+            </select>
+          </div>
+          <div id="sw-phone-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"></div>
+        </div>
+
+        <!-- Email SMTP -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <span style="font-size:1.1em">&#9993;</span>
+            <span style="font-size:0.92em;font-weight:700;color:var(--text)">Email (SMTP)</span>
+            <span style="font-size:0.65em;background:rgba(255,255,255,0.08);color:var(--dim);padding:2px 8px;border-radius:4px;font-weight:700">OPTIONAL</span>
+          </div>
+          <p style="font-size:0.75em;color:var(--muted);margin-bottom:12px">For sending automated emails (campaigns, notifications, follow-ups). Works with Gmail, Outlook, or any SMTP provider.</p>
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="setup-field"><label>SMTP Email</label><input id="sw-smtp-email" placeholder="e.g. you@gmail.com"></div>
+            <div class="setup-field"><label>SMTP App Password</label><input id="sw-smtp-pass" type="password" placeholder="App password (not your login password)"></div>
+            <div class="setup-field"><label>SMTP Server</label><input id="sw-smtp-server" placeholder="smtp.gmail.com" value="smtp.gmail.com"></div>
+            <div class="setup-field"><label>SMTP Port</label><input id="sw-smtp-port" type="number" placeholder="587" value="587"></div>
+          </div>
+        </div>
+
         <div style="margin-top:20px;display:flex;justify-content:space-between">
           <button class="btn-outline" onclick="setupNext(1)">&#8592; Back</button>
           <button class="btn" onclick="setupNext(3)">Next &#8594;</button>
         </div>
       </div>
 
-      <!-- STEP 3: Business Info -->
+      <!-- STEP 3: Business Type Preset -->
       <div class="setup-panel" id="setupStep3">
+        <h3 style="margin-bottom:6px">What type of business is this for?</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Pick a preset to auto-select the right modules, or choose custom.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px" id="presetGrid"></div>
+        <div style="margin-top:20px;display:flex;justify-content:space-between">
+          <button class="btn-outline" onclick="setupNext(2)">&#8592; Back</button>
+          <button class="btn" onclick="setupNext(4)">Next &#8594;</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: Module Selection -->
+      <div class="setup-panel" id="setupStep4">
+        <h3 style="margin-bottom:6px">Enable / Disable Modules</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Toggle on what this client needs. Green = FREE (no API key). Red = needs Claude API.</p>
+        <div id="moduleToggles"></div>
+        <div style="margin-top:20px;display:flex;justify-content:space-between">
+          <button class="btn-outline" onclick="setupNext(3)">&#8592; Back</button>
+          <button class="btn" onclick="setupNext(5)">Next &#8594;</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: Business Info -->
+      <div class="setup-panel" id="setupStep5">
         <h3 style="margin-bottom:6px">Business Details</h3>
         <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Basic info shared across all modules.</p>
         <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -1538,30 +1692,30 @@
           <div class="setup-field"><label>AI Personality / Vibe</label><input id="sw-personality" placeholder="e.g. friendly and casual, professional, warm" value="friendly and professional"></div>
         </div>
         <div style="margin-top:20px;display:flex;justify-content:space-between">
-          <button class="btn-outline" onclick="setupNext(2)">&#8592; Back</button>
-          <button class="btn" onclick="setupNext(4)">Next &#8594;</button>
+          <button class="btn-outline" onclick="setupNext(4)">&#8592; Back</button>
+          <button class="btn" onclick="setupNext(6)">Next &#8594;</button>
         </div>
       </div>
 
-      <!-- STEP 4: Per-Module Config -->
-      <div class="setup-panel" id="setupStep4">
+      <!-- STEP 6: Per-Module Config -->
+      <div class="setup-panel" id="setupStep6">
         <h3 style="margin-bottom:6px">Module Configuration</h3>
         <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Configure each enabled module for this specific client.</p>
         <div id="moduleConfigForms"></div>
         <div style="margin-top:20px;display:flex;justify-content:space-between">
-          <button class="btn-outline" onclick="setupNext(3)">&#8592; Back</button>
-          <button class="btn" onclick="setupNext(5)">Next &#8594;</button>
+          <button class="btn-outline" onclick="setupNext(5)">&#8592; Back</button>
+          <button class="btn" onclick="setupNext(7)">Next &#8594;</button>
         </div>
       </div>
 
-      <!-- STEP 5: Review & Save -->
-      <div class="setup-panel" id="setupStep5">
-        <h3 style="margin-bottom:6px">Review & Save</h3>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Review everything before saving. This writes to config.json and activates the modules.</p>
+      <!-- STEP 7: Review & Deploy -->
+      <div class="setup-panel" id="setupStep7">
+        <h3 style="margin-bottom:6px">Review & Deploy</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Review everything before saving. This writes to config.json and activates the modules on your server.</p>
         <div id="setupReview"></div>
         <div style="margin-top:24px;display:flex;justify-content:space-between;align-items:center">
-          <button class="btn-outline" onclick="setupNext(4)">&#8592; Back</button>
-          <button class="btn" style="background:linear-gradient(135deg,var(--green),#2ecc71);font-size:1em;padding:12px 32px" onclick="saveSetup()">&#10003; Save & Activate</button>
+          <button class="btn-outline" onclick="setupNext(6)">&#8592; Back</button>
+          <button class="btn" style="background:linear-gradient(135deg,var(--green),#2ecc71);font-size:1em;padding:12px 32px" onclick="saveSetup()">&#10003; Save & Deploy</button>
         </div>
       </div>
 
@@ -4094,6 +4248,285 @@ sudo ufw enable
       </div>
     </div>
 
+    <!-- ═══ CRYPTO TRADING TAB ═══ -->
+    <div class="tab-pane" id="tab-crypto">
+
+      <!-- Header -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:1.3em;font-weight:900;background:linear-gradient(135deg,#9333ea,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Crypto Trading</div>
+          <div style="font-size:0.78em;color:var(--muted);margin-top:4px">AI-powered memecoin trading on Solana. Smart entries, rug protection, automated profit taking.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="ct-bot-indicator" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:0.78em;font-weight:700;background:rgba(255,82,82,0.12);color:var(--red);border:1px solid rgba(255,82,82,0.2)">
+            <span style="width:8px;height:8px;border-radius:50%;background:currentColor;animation:none" id="ct-dot"></span> STOPPED
+          </span>
+          <button class="btn" id="ct-start-btn" onclick="ctToggleBot()" style="background:linear-gradient(135deg,#9333ea,#ec4899);border:none;font-weight:700">Start Bot</button>
+        </div>
+      </div>
+
+      <!-- Solana Overview Stats -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px">
+        <div class="stat-card" style="border-color:#9333ea33">
+          <div class="stat-label">SOL Balance</div>
+          <div class="stat-value" style="color:#9333ea" id="ct-sol-balance">--</div>
+          <div class="stat-sub" id="ct-wallet-addr">Not connected</div>
+        </div>
+        <div class="stat-card" style="border-color:#ec489933">
+          <div class="stat-label">Today's PnL</div>
+          <div class="stat-value" id="ct-today-pnl" style="color:var(--green)">$0.00</div>
+          <div class="stat-sub" id="ct-today-pnl-sol">0 SOL</div>
+        </div>
+        <div class="stat-card" style="border-color:#f59e0b33">
+          <div class="stat-label">Total PnL</div>
+          <div class="stat-value" id="ct-total-pnl" style="color:var(--green)">$0.00</div>
+          <div class="stat-sub" id="ct-total-trades">0 trades</div>
+        </div>
+        <div class="stat-card" style="border-color:#00c85333">
+          <div class="stat-label">Win Rate</div>
+          <div class="stat-value green" id="ct-win-rate">--%</div>
+          <div class="stat-sub" id="ct-wins-losses">0W / 0L</div>
+        </div>
+        <div class="stat-card" style="border-color:#42a5f533">
+          <div class="stat-label">Open Positions</div>
+          <div class="stat-value blue" id="ct-open-count">0</div>
+          <div class="stat-sub" id="ct-trades-today">0/3 trades today</div>
+        </div>
+        <div class="stat-card" style="border-color:#ffffff11">
+          <div class="stat-label">Tokens Scanned</div>
+          <div class="stat-value" style="color:var(--muted)" id="ct-scanned">0</div>
+          <div class="stat-sub" id="ct-last-scan">Never</div>
+        </div>
+      </div>
+
+      <!-- Time Period Tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:20px">
+        <button class="btn-sm ct-period active" data-period="today" onclick="ctSetPeriod('today',this)">Today</button>
+        <button class="btn-sm ct-period" data-period="week" onclick="ctSetPeriod('week',this)">This Week</button>
+        <button class="btn-sm ct-period" data-period="month" onclick="ctSetPeriod('month',this)">This Month</button>
+        <button class="btn-sm ct-period" data-period="all" onclick="ctSetPeriod('all',this)">All Time</button>
+      </div>
+
+      <style>
+        .ct-period { background:#111;border:1px solid #222;color:var(--dim);font-weight:600; }
+        .ct-period.active { background:linear-gradient(135deg,#9333ea22,#ec489922);color:#ec4899;border-color:#9333ea55; }
+        .ct-token-row { display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid #111;font-size:0.78em;transition:background 0.15s; }
+        .ct-token-row:hover { background:#ffffff06; }
+        .ct-token-header { color:var(--dim);font-weight:700;text-transform:uppercase;font-size:0.68em;letter-spacing:0.05em; }
+        .ct-pnl-pos { color:var(--green);font-weight:700; }
+        .ct-pnl-neg { color:var(--red);font-weight:700; }
+        .ct-badge { display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7em;font-weight:700; }
+        .ct-badge-open { background:rgba(66,165,245,0.15);color:var(--blue); }
+        .ct-badge-closed { background:rgba(0,200,83,0.15);color:var(--green); }
+        .ct-badge-failed { background:rgba(255,82,82,0.15);color:var(--red); }
+        .ct-badge-dry { background:rgba(247,201,72,0.15);color:var(--gold); }
+      </style>
+
+      <!-- Open Positions -->
+      <div class="panel" style="border-color:#9333ea33">
+        <div class="panel-header">
+          <div class="panel-title" style="color:#ec4899">Open Positions</div>
+          <span style="font-size:0.72em;color:var(--dim)" id="ct-positions-note">Real-time price tracking</span>
+        </div>
+        <div id="ct-positions-list">
+          <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No open positions. Bot will find opportunities automatically.</div>
+        </div>
+      </div>
+
+      <!-- AI Watchlist -->
+      <div class="panel" style="border-color:#f59e0b33">
+        <div class="panel-header">
+          <div class="panel-title" style="color:#f59e0b">AI Watchlist</div>
+          <span style="font-size:0.72em;color:var(--dim)">Tokens being monitored for entry</span>
+        </div>
+        <div id="ct-watchlist">
+          <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">Watchlist empty. Start the bot to scan for opportunities.</div>
+        </div>
+      </div>
+
+      <!-- Trade History -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Trade History</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-outline" onclick="ctExportTrades()">Export CSV</button>
+            <button class="btn-sm btn-outline" onclick="ctRefreshTrades()">Refresh</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <div class="ct-token-row ct-token-header" style="border-bottom:1px solid #222">
+            <div>Token</div><div>Entry</div><div>Exit</div><div>PnL</div><div>AI Conf.</div><div>Time</div><div>Status</div>
+          </div>
+          <div id="ct-trade-history">
+            <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No trades yet.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bot Configuration -->
+      <div class="panel" style="border-color:#42a5f533">
+        <div class="panel-header">
+          <div class="panel-title">Bot Configuration</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label style="font-size:0.78em;color:var(--gold);display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="ct-dry-run" checked style="width:16px;height:16px;accent-color:var(--gold)"> Dry Run (Paper Trade)
+            </label>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
+          <!-- Wallet -->
+          <div class="setup-field">
+            <label>Solana Wallet Private Key</label>
+            <input id="ct-wallet-key" type="password" placeholder="Base58 private key..." style="font-family:Consolas,monospace;font-size:0.82em">
+            <div class="hint">Never shared. Stored locally in config.json only.</div>
+          </div>
+          <div class="setup-field">
+            <label>RPC URL</label>
+            <input id="ct-rpc-url" placeholder="https://api.mainnet-beta.solana.com" value="https://api.mainnet-beta.solana.com" style="font-family:Consolas,monospace;font-size:0.82em">
+          </div>
+          <!-- Trade Settings -->
+          <div class="setup-field">
+            <label>Max SOL Per Trade</label>
+            <input id="ct-max-sol" type="number" step="0.01" value="0.1" placeholder="0.1">
+          </div>
+          <div class="setup-field">
+            <label>Max Trades Per Day</label>
+            <input id="ct-max-trades" type="number" value="3" placeholder="3">
+          </div>
+          <div class="setup-field">
+            <label>Take Profit %</label>
+            <input id="ct-tp" type="number" value="50" placeholder="50">
+            <div class="hint">Pump.fun coins move big. 50% is conservative for a good retrace.</div>
+          </div>
+          <div class="setup-field">
+            <label>Stop Loss %</label>
+            <input id="ct-sl" type="number" value="20" placeholder="20">
+          </div>
+          <div class="setup-field">
+            <label>Trailing Stop % (0 = off)</label>
+            <input id="ct-trailing" type="number" value="15" placeholder="15">
+            <div class="hint">15% = if we're up 60% and it drops to +45%, we sell. Locks gains.</div>
+          </div>
+          <div class="setup-field">
+            <label>Slippage (bps)</label>
+            <input id="ct-slippage" type="number" value="800" placeholder="800">
+            <div class="hint">800 = 8%. Low-MC pump.fun coins need higher slippage to fill.</div>
+          </div>
+          <!-- Strategy 1: Pump.fun Retrace Filters -->
+          <div style="grid-column:span 2;margin-top:8px"><div style="font-size:0.82em;font-weight:700;color:#9333ea;border-bottom:1px solid #9333ea33;padding-bottom:6px">Strategy 1: Pump.fun Retrace (Primary)</div></div>
+          <div class="setup-field">
+            <label>Min Market Cap ($)</label>
+            <input id="ct-s1-min-mc" type="number" value="5000" placeholder="5000">
+            <div class="hint">$5k-$15k sweet spot for pump.fun retraces</div>
+          </div>
+          <div class="setup-field">
+            <label>Max Market Cap ($)</label>
+            <input id="ct-s1-max-mc" type="number" value="15000" placeholder="15000">
+          </div>
+          <div class="setup-field">
+            <label>Min Trades/Minute</label>
+            <input id="ct-s1-min-tpm" type="number" value="3" placeholder="3">
+            <div class="hint">3+ = active. 6+ = very active (trade every ~10 sec)</div>
+          </div>
+          <div class="setup-field">
+            <label>Min Drop From Peak %</label>
+            <input id="ct-s1-min-drop" type="number" value="50" placeholder="50">
+            <div class="hint">Only enter coins that dumped 50%+ from their high</div>
+          </div>
+          <div class="setup-field">
+            <label>Min Unique Holders</label>
+            <input id="ct-s1-min-holders" type="number" value="30" placeholder="30">
+          </div>
+          <div class="setup-field">
+            <label>Max Dev Holding %</label>
+            <input id="ct-s1-max-dev" type="number" value="5" placeholder="5">
+            <div class="hint">Reject if dev holds more than this %</div>
+          </div>
+          <div class="setup-field">
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ct-s1-reject-bundled" checked style="width:16px;height:16px;accent-color:var(--red)"> Reject Bundled Launches</label>
+            <div class="hint">Bundled = dev bought own supply to fake volume. Always reject.</div>
+          </div>
+          <div class="setup-field">
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ct-s1-require-narrative" checked style="width:16px;height:16px;accent-color:var(--gold)"> Require Good Narrative</label>
+            <div class="hint">Coin name/symbol must be catchy or match trending keywords</div>
+          </div>
+          <!-- Strategy 2: Volume Spike -->
+          <div style="grid-column:span 2;margin-top:8px"><div style="font-size:0.82em;font-weight:700;color:#ec4899;border-bottom:1px solid #ec489933;padding-bottom:6px">Strategy 2: Volume Spike Hunter</div></div>
+          <div class="setup-field">
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ct-s2-enabled" checked style="width:16px;height:16px;accent-color:#ec4899"> Enable Volume Spike Strategy</label>
+          </div>
+          <div class="setup-field">
+            <label>Volume Spike Multiplier</label>
+            <input id="ct-s2-spike" type="number" value="3" placeholder="3">
+            <div class="hint">3x = volume is 3 times higher than normal in last 5 min</div>
+          </div>
+          <div class="setup-field">
+            <label>Min Buy Ratio</label>
+            <input id="ct-s2-buy-ratio" type="number" step="0.05" value="0.55" placeholder="0.55">
+            <div class="hint">0.55 = at least 55% of spike trades are buys</div>
+          </div>
+          <!-- General -->
+          <div style="grid-column:span 2;margin-top:8px"><div style="font-size:0.82em;font-weight:700;color:var(--blue);border-bottom:1px solid var(--blue)33;padding-bottom:6px">General</div></div>
+          <div class="setup-field">
+            <label>Scan Interval (seconds)</label>
+            <input id="ct-scan-interval" type="number" value="15" placeholder="15">
+            <div class="hint">15s = fast scanning. 30s = lighter on APIs.</div>
+          </div>
+          <div class="setup-field">
+            <label>AI Model</label>
+            <select id="ct-ai-model" style="width:100%;padding:10px 12px;background:#111;border:1px solid #222;border-radius:8px;color:var(--text);font-size:0.85em">
+              <option value="claude-haiku-4-5-20251001">Claude Haiku (fast + cheap)</option>
+              <option value="claude-sonnet-4-20250514">Claude Sonnet (smarter)</option>
+              <option value="">Disabled (filter-only mode)</option>
+            </select>
+            <div class="hint">AI analyzes narratives, chart patterns, and entry timing. Haiku costs ~$0.001/analysis.</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn" onclick="ctSaveConfig()" style="background:linear-gradient(135deg,#9333ea,#ec4899)">Save Configuration</button>
+          <button class="btn-outline" onclick="ctLoadConfig()">Reset to Saved</button>
+        </div>
+      </div>
+
+      <!-- Strategy Explainer -->
+      <div class="panel" style="border-color:#ffffff0a">
+        <div class="panel-header"><div class="panel-title">How The AI Trading Strategy Works</div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;font-size:0.78em">
+          <div style="background:#0d0d0d;border:1px solid #9333ea22;border-radius:10px;padding:16px">
+            <div style="font-size:1.4em;margin-bottom:8px">&#128270;</div>
+            <div style="font-weight:700;color:#9333ea;margin-bottom:6px">1. Scan Pump.fun</div>
+            <div style="color:var(--muted);line-height:1.5">Monitors active pump.fun coins at $5k-$15k market cap. Finds coins that pumped then crashed but still have trades every 5-10 seconds.</div>
+          </div>
+          <div style="background:#0d0d0d;border:1px solid #ec489922;border-radius:10px;padding:16px">
+            <div style="font-size:1.4em;margin-bottom:8px">&#128737;</div>
+            <div style="font-weight:700;color:#ec4899;margin-bottom:6px">2. Rug + Bundle Check</div>
+            <div style="color:var(--muted);line-height:1.5">Rejects bundled launches (dev bought own supply), checks holder distribution, top wallets, and RugCheck.xyz safety score. No rugs get through.</div>
+          </div>
+          <div style="background:#0d0d0d;border:1px solid #f59e0b22;border-radius:10px;padding:16px">
+            <div style="font-size:1.4em;margin-bottom:8px">&#129302;</div>
+            <div style="font-weight:700;color:#f59e0b;margin-bottom:6px">3. AI Analysis (Claude)</div>
+            <div style="color:var(--muted);line-height:1.5">Claude reads the coin's name, narrative, chart trajectory, and buy/sell flow. Scores bounce probability and decides: enter or wait.</div>
+          </div>
+          <div style="background:#0d0d0d;border:1px solid #00c85322;border-radius:10px;padding:16px">
+            <div style="font-size:1.4em;margin-bottom:8px">&#128200;</div>
+            <div style="font-weight:700;color:var(--green);margin-bottom:6px">4. Wait for Reversal</div>
+            <div style="color:var(--muted);line-height:1.5">Watches for buying pressure to return. When buys outnumber sells and the chart starts turning, that's the entry. Patience is key — 2-3 trades/day max.</div>
+          </div>
+          <div style="background:#0d0d0d;border:1px solid #42a5f522;border-radius:10px;padding:16px">
+            <div style="font-size:1.4em;margin-bottom:8px">&#128184;</div>
+            <div style="font-weight:700;color:var(--blue);margin-bottom:6px">5. Smart Exit</div>
+            <div style="color:var(--muted);line-height:1.5">Takes profit at 50% (pump.fun coins move big), stops loss at 20%, trails 15% from peak. AI can also recommend early exits if momentum dies.</div>
+          </div>
+          <div style="background:#0d0d0d;border:1px solid #ffffff11;border-radius:10px;padding:16px">
+            <div style="font-size:1.4em;margin-bottom:8px">&#9889;</div>
+            <div style="font-weight:700;color:var(--text);margin-bottom:6px">6. Volume Spike (Bonus)</div>
+            <div style="color:var(--muted);line-height:1.5">Separate strategy: detects sudden buying spikes on low-MC coins. When a quiet coin gets 3x its normal volume in 5 minutes, it flags it for review.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
     <!-- ═══ ANALYTICS TAB ═══ -->
     <div class="tab-pane" id="tab-analytics">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
@@ -4818,6 +5251,7 @@ const TAB_TITLES = {
   knowledge: ['Knowledge', 'Persistent Memory & Learning'],
   workflows: ['Workflows', 'Multi-Step Automations'],
   payments: ['Payments', 'Invoices, Crypto Wallets & Bank Cards'],
+  crypto: ['Crypto Trading', 'AI Memecoin Bot — Solana Smart Entries & Auto Profit'],
   channels: ['Channel Hub', '8+ Platforms — One Brain'],
   proactive: ['Proactive Agent', '24/7 Autonomous — Never Sleeps'],
   models: ['Model Router', 'Any LLM — Auto-Selects the Best'],
@@ -4920,6 +5354,7 @@ function loadTabData(tab) {
     social: loadSocialTab,
     crm: loadCRMTab,
     analytics: loadAnalyticsTab,
+    crypto: loadCryptoTab,
     multiagent: loadMultiAgentTab,
     browser: loadBrowserTab,
     healing: loadHealingTab,
@@ -7111,7 +7546,7 @@ async function swLoadExistingConfig() {
     const res = await fetch(API + '/api/config/full');
     if (!res.ok) return;
     const cfg = await res.json();
-    if (cfg.business_name) {
+    if (cfg.business_name || cfg.domain) {
       // Auto-fill modules
       if (cfg.modules_enabled) {
         swEnabledModules = { ...cfg.modules_enabled };
@@ -7119,12 +7554,30 @@ async function swLoadExistingConfig() {
       if (cfg.module_configs) {
         swModuleConfigs = JSON.parse(JSON.stringify(cfg.module_configs));
       }
-      // Store biz info to prefill Step 3
+      // Pre-fill infrastructure fields (Step 1 & 2)
+      setTimeout(() => {
+        const infraMap = {
+          'domain': 'sw-domain', 'server_ip': 'sw-server-ip', 'server_port': 'sw-server-port',
+          'ssh_user': 'sw-ssh-user', 'ssh_port': 'sw-ssh-port', 'api_key': 'sw-api-key',
+          'model': 'sw-model', 'max_monthly_spend_per_client': 'sw-spend-limit',
+          'phone_provider': 'sw-phone-provider',
+          'smtp_email': 'sw-smtp-email', 'smtp_password': 'sw-smtp-pass',
+          'smtp_server': 'sw-smtp-server', 'smtp_port': 'sw-smtp-port',
+        };
+        for (const [cfgKey, inputId] of Object.entries(infraMap)) {
+          if (cfg[cfgKey]) {
+            const el = document.getElementById(inputId);
+            if (el) el.value = cfg[cfgKey];
+          }
+        }
+        if (cfg.phone_provider) swUpdateKeyFields();
+      }, 100);
+      // Store biz info to prefill Step 5
       swPresetPrefill = {
         biz_type: cfg.business_type || '',
         personality: cfg.personality || '',
       };
-      // We'll fill the form inputs when Step 3 renders
+      // We'll fill the form inputs when Step 5 renders
       swExistingConfig = cfg;
       swConfigLoaded = true;
     }
@@ -7445,13 +7898,41 @@ function swRenderReview() {
   const container = document.getElementById('setupReview');
   let html = '';
 
+  // Infrastructure
+  const domain = document.getElementById('sw-domain')?.value || '--';
+  const serverIp = document.getElementById('sw-server-ip')?.value || '--';
+  const serverPort = document.getElementById('sw-server-port')?.value || '5050';
+  const apiKey = document.getElementById('sw-api-key')?.value || '';
+  const phoneProvider = document.getElementById('sw-phone-provider')?.value || '';
+  const smtpEmail = document.getElementById('sw-smtp-email')?.value || '';
+  const model = document.getElementById('sw-model')?.value || '';
+  const spendLimit = document.getElementById('sw-spend-limit')?.value || '50';
+
+  html += '<div class="review-section"><h4>&#127760; Server & Infrastructure</h4>';
+  html += `<div class="review-row"><span class="rk">Domain</span><span class="rv" style="color:var(--blue)">${domain}</span></div>`;
+  html += `<div class="review-row"><span class="rk">Server IP</span><span class="rv">${serverIp}</span></div>`;
+  html += `<div class="review-row"><span class="rk">Port</span><span class="rv">${serverPort}</span></div>`;
+  html += `<div class="review-row"><span class="rk">Dashboard</span><span class="rv" style="color:var(--blue)">${domain !== '--' ? 'https://' + domain : '--'}</span></div>`;
+  html += '</div>';
+
+  html += '<div class="review-section"><h4>&#128273; API Keys & Credentials</h4>';
+  html += `<div class="review-row"><span class="rk">Anthropic API</span><span class="rv">${apiKey ? '<span style="color:var(--green)">&#10003; Configured</span>' : '<span style="color:var(--dim)">Not set (free modules only)</span>'}</span></div>`;
+  if (apiKey) {
+    const modelName = model.includes('haiku') ? 'Haiku' : model.includes('opus') ? 'Opus' : 'Sonnet';
+    html += `<div class="review-row"><span class="rk">Default Model</span><span class="rv">${modelName}</span></div>`;
+    html += `<div class="review-row"><span class="rk">Spend Limit</span><span class="rv">$${spendLimit}/mo</span></div>`;
+  }
+  html += `<div class="review-row"><span class="rk">Phone Provider</span><span class="rv">${phoneProvider ? phoneProvider.charAt(0).toUpperCase() + phoneProvider.slice(1) + ' &#10003;' : '<span style="color:var(--dim)">None</span>'}</span></div>`;
+  html += `<div class="review-row"><span class="rk">Email SMTP</span><span class="rv">${smtpEmail ? smtpEmail + ' &#10003;' : '<span style="color:var(--dim)">Not set</span>'}</span></div>`;
+  html += '</div>';
+
   // Business info
   const fields = [
     ['Business Name', 'sw-biz-name'], ['Type', 'sw-biz-type'], ['Description', 'sw-biz-desc'],
     ['Hours', 'sw-biz-hours'], ['Address', 'sw-biz-address'], ['Phone', 'sw-biz-phone'],
     ['Email', 'sw-biz-email'], ['Owner Email', 'sw-owner-email'], ['Personality', 'sw-personality'],
   ];
-  html += '<div class="review-section"><h4>Business Details</h4>';
+  html += '<div class="review-section"><h4>&#128188; Business Details</h4>';
   for (const [label, id] of fields) {
     const val = document.getElementById(id)?.value || '--';
     html += `<div class="review-row"><span class="rk">${label}</span><span class="rv">${val}</span></div>`;
@@ -7461,7 +7942,7 @@ function swRenderReview() {
   // Modules
   const enabled = Object.entries(swEnabledModules).filter(([k,v]) => v).map(([k]) => k);
   const needsApi = enabled.some(m => SW_MODULES[m] && !SW_MODULES[m].free);
-  html += '<div class="review-section"><h4>Modules Enabled (' + enabled.length + ')</h4>';
+  html += '<div class="review-section"><h4>&#9881; Modules (' + enabled.length + ' enabled)</h4>';
   for (const m of enabled) {
     const mod = SW_MODULES[m];
     const badge = mod.free ? '<span style="color:var(--green);font-size:0.8em">FREE</span>' : '<span style="color:var(--red);font-size:0.8em">API</span>';
@@ -7470,11 +7951,12 @@ function swRenderReview() {
   html += '</div>';
 
   // Cost estimate
-  html += '<div class="review-section"><h4>Estimated Cost</h4>';
-  html += `<div class="review-row"><span class="rk">LLM Provider</span><span class="rv" style="color:var(--${needsApi ? 'red' : 'green'})">${needsApi ? 'Claude (API key needed)' : 'Pollinations (FREE)'}</span></div>`;
-  html += `<div class="review-row"><span class="rk">VPS Cost</span><span class="rv">$6-10/mo</span></div>`;
-  html += `<div class="review-row"><span class="rk">API Cost</span><span class="rv">${needsApi ? '~$5-50/mo' : '$0/mo'}</span></div>`;
-  html += `<div class="review-row"><span class="rk" style="color:var(--gold);font-weight:700">Total</span><span class="rv" style="color:var(--gold);font-weight:700">${needsApi ? '$11-60/mo' : '$6-10/mo'}</span></div>`;
+  html += '<div class="review-section"><h4>&#128176; Estimated Monthly Cost</h4>';
+  html += `<div class="review-row"><span class="rk">LLM Provider</span><span class="rv" style="color:var(--${needsApi ? 'gold' : 'green'})">${needsApi ? 'Claude API' : 'Pollinations (FREE)'}</span></div>`;
+  html += `<div class="review-row"><span class="rk">VPS Hosting</span><span class="rv">$6-10/mo</span></div>`;
+  html += `<div class="review-row"><span class="rk">API Usage</span><span class="rv">${needsApi ? '~$5-50/mo' : '$0/mo'}</span></div>`;
+  html += `<div class="review-row"><span class="rk">Phone (if used)</span><span class="rv">${phoneProvider ? '~$1-15/mo' : '$0/mo'}</span></div>`;
+  html += `<div class="review-row" style="border-top:1px solid var(--gold);padding-top:8px;margin-top:4px"><span class="rk" style="color:var(--gold);font-weight:700">Estimated Total</span><span class="rv" style="color:var(--gold);font-weight:700">${needsApi ? '$12-75/mo' : '$6-10/mo'}</span></div>`;
   html += '</div>';
 
   container.innerHTML = html;
@@ -7489,11 +7971,49 @@ function setupNext(step) {
   });
   document.querySelectorAll('.setup-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('setupStep' + step).classList.add('active');
-  // Render dynamic content
-  if (step === 2) swRenderModuleToggles();
-  if (step === 3) swApplyPrefillToForm();
-  if (step === 4) swRenderModuleConfigs();
-  if (step === 5) swRenderReview();
+  // Render dynamic content for each step
+  if (step === 2) swUpdateKeyFields();
+  if (step === 4) swRenderModuleToggles();
+  if (step === 5) swApplyPrefillToForm();
+  if (step === 6) swRenderModuleConfigs();
+  if (step === 7) swRenderReview();
+}
+
+// Phone provider key fields for Step 2
+function swUpdateKeyFields() {
+  const provider = document.getElementById('sw-phone-provider').value;
+  const container = document.getElementById('sw-phone-fields');
+  if (!provider) { container.innerHTML = ''; return; }
+  const fields = {
+    twilio: [['Twilio Account SID','sw-twilio-sid','AC...'],['Twilio Auth Token','sw-twilio-token','Auth token']],
+    telnyx: [['Telnyx API Key','sw-telnyx-key','KEY...'],['Telnyx Connection ID','sw-telnyx-conn','Connection ID']],
+    plivo: [['Plivo Auth ID','sw-plivo-id','Auth ID'],['Plivo Auth Token','sw-plivo-token','Auth token']],
+    vonage: [['Vonage API Key','sw-vonage-key','API Key'],['Vonage API Secret','sw-vonage-secret','API Secret']],
+    signalwire: [['SignalWire Space URL','sw-signalwire-space','yourspace.signalwire.com'],['SignalWire API Token','sw-signalwire-token','API token']],
+  };
+  const f = fields[provider] || [];
+  container.innerHTML = f.map(([label, id, ph]) =>
+    `<div class="setup-field"><label>${label} *</label><input id="${id}" placeholder="${ph}" ${label.includes('Token')||label.includes('Secret')||label.includes('Key')?'type="password"':''} style="font-family:Consolas,monospace"></div>`
+  ).join('');
+}
+
+// Test VPS connection
+async function swTestConnection() {
+  const domain = document.getElementById('sw-domain').value.trim();
+  const statusEl = document.getElementById('sw-conn-status');
+  if (!domain) { statusEl.innerHTML = '<span style="color:var(--red)">Enter a domain first</span>'; return; }
+  statusEl.innerHTML = '<span style="color:var(--gold)">Testing connection...</span>';
+  try {
+    const port = document.getElementById('sw-server-port').value || '5050';
+    const res = await fetch(`https://${domain}/api/heartbeat`, { signal: AbortSignal.timeout(5000) });
+    if (res.ok) {
+      statusEl.innerHTML = '<span style="color:var(--green)">&#10003; Connected! Server is running.</span>';
+    } else {
+      statusEl.innerHTML = '<span style="color:var(--gold)">&#9888; Server responded but returned ' + res.status + '. Make sure the Janovum server is running.</span>';
+    }
+  } catch(e) {
+    statusEl.innerHTML = '<span style="color:var(--red)">&#10007; Could not reach server. Check that your domain points to the VPS and the server is running.</span>';
+  }
 }
 
 // Auto-fill Step 3 form fields from preset prefill OR existing saved config
@@ -7537,8 +8057,49 @@ function swApplyPrefillToForm() {
 async function saveSetup() {
   const enabled = Object.entries(swEnabledModules).filter(([k,v]) => v).map(([k]) => k);
   const needsApi = enabled.some(m => SW_MODULES[m] && !SW_MODULES[m].free);
+  const apiKey = document.getElementById('sw-api-key')?.value || '';
+  const selectedModel = document.getElementById('sw-model')?.value || '';
+  const phoneProvider = document.getElementById('sw-phone-provider')?.value || '';
+
+  // Collect phone provider credentials
+  const phoneCredentials = {};
+  if (phoneProvider === 'twilio') {
+    phoneCredentials.twilio_sid = document.getElementById('sw-twilio-sid')?.value || '';
+    phoneCredentials.twilio_token = document.getElementById('sw-twilio-token')?.value || '';
+  } else if (phoneProvider === 'telnyx') {
+    phoneCredentials.telnyx_api_key = document.getElementById('sw-telnyx-key')?.value || '';
+    phoneCredentials.telnyx_connection_id = document.getElementById('sw-telnyx-conn')?.value || '';
+  } else if (phoneProvider === 'plivo') {
+    phoneCredentials.plivo_auth_id = document.getElementById('sw-plivo-id')?.value || '';
+    phoneCredentials.plivo_auth_token = document.getElementById('sw-plivo-token')?.value || '';
+  } else if (phoneProvider === 'vonage') {
+    phoneCredentials.vonage_api_key = document.getElementById('sw-vonage-key')?.value || '';
+    phoneCredentials.vonage_api_secret = document.getElementById('sw-vonage-secret')?.value || '';
+  } else if (phoneProvider === 'signalwire') {
+    phoneCredentials.signalwire_space = document.getElementById('sw-signalwire-space')?.value || '';
+    phoneCredentials.signalwire_token = document.getElementById('sw-signalwire-token')?.value || '';
+  }
 
   const config = {
+    // Infrastructure
+    domain: document.getElementById('sw-domain')?.value || '',
+    server_ip: document.getElementById('sw-server-ip')?.value || '',
+    server_port: parseInt(document.getElementById('sw-server-port')?.value) || 5050,
+    ssh_user: document.getElementById('sw-ssh-user')?.value || 'root',
+    ssh_port: parseInt(document.getElementById('sw-ssh-port')?.value) || 22,
+    // API keys
+    api_key: apiKey,
+    model: apiKey ? selectedModel : 'openai',
+    max_monthly_spend_per_client: parseInt(document.getElementById('sw-spend-limit')?.value) || 50,
+    // Phone
+    phone_provider: phoneProvider,
+    ...phoneCredentials,
+    // Email SMTP
+    smtp_email: document.getElementById('sw-smtp-email')?.value || '',
+    smtp_password: document.getElementById('sw-smtp-pass')?.value || '',
+    smtp_server: document.getElementById('sw-smtp-server')?.value || 'smtp.gmail.com',
+    smtp_port: parseInt(document.getElementById('sw-smtp-port')?.value) || 587,
+    // Business
     business_name: document.getElementById('sw-biz-name').value,
     business_type: document.getElementById('sw-biz-type').value,
     business_description: document.getElementById('sw-biz-desc').value,
@@ -7550,8 +8111,7 @@ async function saveSetup() {
     owner_phone: document.getElementById('sw-owner-phone').value,
     language: document.getElementById('sw-language').value,
     personality: document.getElementById('sw-personality').value,
-    llm_provider: needsApi ? 'claude' : 'pollinations',
-    model: needsApi ? 'claude-sonnet-4-20250514' : 'openai',
+    llm_provider: apiKey ? 'claude' : 'pollinations',
     modules_enabled: swEnabledModules,
     module_configs: swModuleConfigs,
   };
@@ -7564,8 +8124,13 @@ async function saveSetup() {
       body: JSON.stringify(config)
     });
     if (res.ok) {
-      toast('Setup saved! Modules activated.', 'success');
-      loadClientBanner(); // Refresh banner with new business info
+      toast('Setup saved & deployed! Modules activated.', 'success');
+      loadClientBanner();
+      // Also update the Settings tab domain field if it exists
+      const domainInput = document.getElementById('tk-domain');
+      if (domainInput && config.domain) domainInput.value = config.domain;
+      const apiInput = document.getElementById('set-apikey');
+      if (apiInput && config.api_key) apiInput.value = config.api_key;
     } else {
       toast('Config sent to server. Check config.json.', 'info');
     }
@@ -7594,9 +8159,56 @@ function clResetWizardData() {
       friday: { open: '09:00', close: '17:00' }, saturday: 'closed', sunday: 'closed',
     },
     staff: [], greeting: '', tone: 'warm and professional',
+    cartesia_voice_id: 'f786b574-daa5-4673-aa0c-cbe3e8534c02',
   };
 }
 clResetWizardData();
+
+// ── Cartesia Voice Selection ──
+let _cartesiaVoicesCache = null;
+
+async function clFetchCartesiaVoices() {
+  if (_cartesiaVoicesCache) return _cartesiaVoicesCache;
+  try {
+    const res = await fetch(API + '/api/cartesia/voices');
+    const data = await res.json();
+    if (data.voices) { _cartesiaVoicesCache = data.voices; return data.voices; }
+  } catch(e) { console.error('Failed to fetch Cartesia voices', e); }
+  return [];
+}
+
+async function clLoadVoiceOptions(currentVoiceId) {
+  const sel = document.getElementById('clVoiceSelect');
+  if (!sel) return;
+  const voices = await clFetchCartesiaVoices();
+  if (!voices.length) { sel.innerHTML = '<option value="">No voices available</option>'; return; }
+  sel.innerHTML = voices.map(v =>
+    `<option value="${v.id}" ${v.id === currentVoiceId ? 'selected' : ''}>${v.name} (${v.gender})</option>`
+  ).join('');
+  // Show description for selected
+  const selected = voices.find(v => v.id === currentVoiceId);
+  const descEl = document.getElementById('clVoiceDesc');
+  if (descEl && selected) descEl.textContent = selected.description;
+  // Update desc on change
+  sel.onchange = function() {
+    const v = voices.find(x => x.id === this.value);
+    if (descEl) descEl.textContent = v ? v.description : '';
+  };
+}
+
+async function clChangeVoice() {
+  const sel = document.getElementById('clVoiceSelect');
+  if (!sel || !sel.value || !clSelectedClient) return;
+  try {
+    const res = await fetch(API + '/api/receptionist/clients/' + clSelectedClient, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ cartesia: { voice_id: sel.value } })
+    });
+    const data = await res.json();
+    if (data.error) { toast(data.error, 'error'); return; }
+    toast('Voice updated! Restart receptionist to apply.', 'success');
+  } catch(e) { toast('Failed to update voice', 'error'); }
+}
 
 async function clLoadClients() {
   try {
@@ -7695,12 +8307,21 @@ async function clShowClient(clientId) {
       return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.82em"><span style="color:var(--muted);text-transform:capitalize">${d}</span><span>${h.open} - ${h.close}</span></div>`;
     }).join('');
 
-    // Voice
+    // Voice & Personality
     const p = cfg.personality || {};
-    document.getElementById('clDetailVoice').innerHTML = [
-      ['Tone', p.tone || '—'],
-      ['Greeting', p.greeting || 'Auto-generated'],
-    ].map(([k, v]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #151515;font-size:0.84em"><span style="color:var(--muted)">${k}</span><span style="font-weight:600;max-width:65%;text-align:right">${v}</span></div>`).join('');
+    const currentVoiceId = (cfg.cartesia || {}).voice_id || '';
+    document.getElementById('clDetailVoice').innerHTML = `
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #151515;font-size:0.84em"><span style="color:var(--muted)">Tone</span><span style="font-weight:600">${p.tone || '—'}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #151515;font-size:0.84em"><span style="color:var(--muted)">Greeting</span><span style="font-weight:600;max-width:65%;text-align:right">${p.greeting || 'Auto-generated'}</span></div>
+      <div style="margin-top:10px">
+        <label class="form-label" style="font-size:0.78em;color:var(--muted)">Cartesia Voice</label>
+        <select class="form-select" id="clVoiceSelect" onchange="clChangeVoice()" style="font-size:0.84em">
+          <option value="">Loading voices...</option>
+        </select>
+        <div id="clVoiceDesc" style="font-size:0.72em;color:var(--dim);margin-top:4px"></div>
+      </div>`;
+    // Load Cartesia voices into dropdown
+    clLoadVoiceOptions(currentVoiceId);
 
     // Knowledge
     const knowledge = cfg.knowledge || [];
@@ -7907,7 +8528,25 @@ function clRenderWizard() {
         <option ${d.tone==='formal and polished'?'selected':''}>formal and polished</option>
         <option ${d.tone==='upbeat and energetic'?'selected':''}>upbeat and energetic</option>
       </select></div>
+      <div class="form-group"><label class="form-label">Voice (Cartesia)</label>
+        <select class="form-input" id="wVoice"><option value="">Loading voices...</option></select>
+        <div id="wVoiceDesc" style="font-size:0.7em;color:var(--dim);margin-top:4px">Select a voice for the receptionist</div>
+      </div>
       <div class="form-group"><label class="form-label">Greeting</label><input class="form-input" id="wGreet" placeholder="Hi! Thanks for calling [Business]..." value="${d.greeting}"><div style="font-size:0.7em;color:var(--dim);margin-top:4px">Leave blank for auto-generated</div></div>`;
+    // Load voices into wizard dropdown
+    clFetchCartesiaVoices().then(voices => {
+      const sel = document.getElementById('wVoice');
+      if (!sel || !voices.length) return;
+      sel.innerHTML = voices.map(v => '<option value="' + v.id + '"' + (v.id === (d.cartesia_voice_id || 'f786b574-daa5-4673-aa0c-cbe3e8534c02') ? ' selected' : '') + '>' + v.name + ' (' + v.gender + ')</option>').join('');
+      sel.onchange = function() {
+        const v = voices.find(x => x.id === this.value);
+        const desc = document.getElementById('wVoiceDesc');
+        if (desc && v) desc.textContent = v.description;
+      };
+      // Show initial desc
+      const cur = voices.find(v => v.id === sel.value);
+      if (cur) document.getElementById('wVoiceDesc').textContent = cur.description;
+    });
   } else if (clWizardStep === 6) {
     const openDays = Object.entries(d.hours).filter(([dy,h]) => h !== 'closed');
     el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 7: Review & Create</div>
@@ -7938,7 +8577,7 @@ function clSaveStep() {
   if (clWizardStep === 0) { const e = document.getElementById('wPhone'); if (e) d.twilio_phone_number = e.value.trim(); }
   if (clWizardStep === 1) { const n = document.getElementById('wName'); const t = document.getElementById('wType'); if (n) d.business_name = n.value.trim(); if (t) d.business_type = t.value.trim(); }
   if (clWizardStep === 4) { const sn = document.getElementById('wSN'); const sr = document.getElementById('wSR'); if (sn && sn.value.trim() && d.staff.length === 0) d.staff.push({name:sn.value.trim(), role:sr?sr.value.trim():''}); }
-  if (clWizardStep === 5) { const t = document.getElementById('wTone'); const g = document.getElementById('wGreet'); if (t) d.tone = t.value; if (g) d.greeting = g.value.trim(); }
+  if (clWizardStep === 5) { const t = document.getElementById('wTone'); const g = document.getElementById('wGreet'); const wv = document.getElementById('wVoice'); if (t) d.tone = t.value; if (g) d.greeting = g.value.trim(); if (wv && wv.value) d.cartesia_voice_id = wv.value; }
 }
 
 function clWizardNext() {
@@ -7961,6 +8600,7 @@ async function clCreateClient() {
         business_name: d.business_name, phone_provider: d.phone_provider || 'twilio', twilio_phone_number: d.twilio_phone_number,
         business_type: d.business_type, services: d.services, hours: d.hours,
         staff: d.staff, greeting: d.greeting, tone: d.tone,
+        cartesia_voice_id: d.cartesia_voice_id || 'f786b574-daa5-4673-aa0c-cbe3e8534c02',
       }),
     });
     const data = await res.json();
@@ -11049,6 +11689,352 @@ function crmExportContacts(){
 // ══════════════════════════════════════
 // ANALYTICS — Business Intelligence Dashboard
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// CRYPTO TRADING TAB
+// ══════════════════════════════════════
+
+let ctRefreshInterval = null;
+let ctPeriod = 'today';
+
+// Demo data for showcase — shows what the dashboard looks like with real trades
+const CT_DEMO_TRADES = [
+  {symbol:'$DOGAI',name:'Dog AI Agent',entry_price:0.00000234,exit_price:0.00000412,pnl_pct:76.1,pnl_sol:0.0761,entry_sol:0.1,ai_confidence:87,rug_score:12,entry_time:'2026-03-31T08:14:00Z',exit_time:'2026-03-31T09:02:00Z',status:'closed',exit_reason:'take_profit',dry_run:false},
+  {symbol:'$FROGX',name:'Frog X Protocol',entry_price:0.00000089,exit_price:0.00000143,pnl_pct:60.7,pnl_sol:0.0607,entry_sol:0.1,ai_confidence:82,rug_score:8,entry_time:'2026-03-31T10:33:00Z',exit_time:'2026-03-31T11:15:00Z',status:'closed',exit_reason:'trailing_stop',dry_run:false},
+  {symbol:'$CHADGPT',name:'ChadGPT',entry_price:0.00000567,exit_price:0.00000453,pnl_pct:-20.1,pnl_sol:-0.0201,entry_sol:0.1,ai_confidence:62,rug_score:22,entry_time:'2026-03-31T13:45:00Z',exit_time:'2026-03-31T14:02:00Z',status:'closed',exit_reason:'stop_loss',dry_run:false},
+  {symbol:'$MOONAI',name:'Moon AI',entry_price:0.00000112,exit_price:0.00000198,pnl_pct:76.8,pnl_sol:0.0768,entry_sol:0.1,ai_confidence:91,rug_score:5,entry_time:'2026-03-30T16:20:00Z',exit_time:'2026-03-30T17:45:00Z',status:'closed',exit_reason:'take_profit',dry_run:false},
+  {symbol:'$PEPEAI',name:'Pepe AI Agent',entry_price:0.00000345,exit_price:0.00000518,pnl_pct:50.1,pnl_sol:0.0501,entry_sol:0.1,ai_confidence:88,rug_score:10,entry_time:'2026-03-30T09:10:00Z',exit_time:'2026-03-30T10:30:00Z',status:'closed',exit_reason:'ai_exit',dry_run:false},
+  {symbol:'$SOLCAT',name:'Solana Cat',entry_price:0.00000078,exit_price:0.00000065,pnl_pct:-16.7,pnl_sol:-0.0167,entry_sol:0.1,ai_confidence:58,rug_score:18,entry_time:'2026-03-30T14:55:00Z',exit_time:'2026-03-30T15:12:00Z',status:'closed',exit_reason:'stop_loss',dry_run:false},
+  {symbol:'$WOJAK',name:'Based Wojak',entry_price:0.00000201,exit_price:0.00000392,pnl_pct:95.0,pnl_sol:0.0950,entry_sol:0.1,ai_confidence:93,rug_score:7,entry_time:'2026-03-29T11:30:00Z',exit_time:'2026-03-29T13:00:00Z',status:'closed',exit_reason:'take_profit',dry_run:false},
+  {symbol:'$DEGEN',name:'Degen Protocol',entry_price:0.00000445,exit_price:0.00000690,pnl_pct:55.1,pnl_sol:0.0551,entry_sol:0.1,ai_confidence:85,rug_score:14,entry_time:'2026-03-29T08:00:00Z',exit_time:'2026-03-29T09:20:00Z',status:'closed',exit_reason:'trailing_stop',dry_run:false},
+  {symbol:'$APEAI',name:'Ape AI',entry_price:0.00000156,exit_price:0.00000234,pnl_pct:50.0,pnl_sol:0.0500,entry_sol:0.1,ai_confidence:79,rug_score:11,entry_time:'2026-03-28T15:40:00Z',exit_time:'2026-03-28T16:50:00Z',status:'closed',exit_reason:'take_profit',dry_run:false},
+  {symbol:'$MONKE',name:'Monke Coin',entry_price:0.00000067,exit_price:0.00000054,pnl_pct:-19.4,pnl_sol:-0.0194,entry_sol:0.1,ai_confidence:55,rug_score:20,entry_time:'2026-03-28T10:15:00Z',exit_time:'2026-03-28T10:30:00Z',status:'closed',exit_reason:'stop_loss',dry_run:false},
+];
+const CT_DEMO_WATCHLIST = [
+  {symbol:'$DIAMONDAI',name:'Diamond AI',market_cap:8200,drop_pct:-62,buy_ratio:0.48,trades_per_min:5.2,narrative:true,ai_confidence:71,strategy:'s1_retrace',added_at:new Date().toISOString()},
+  {symbol:'$WAGMI',name:'WAGMI Token',market_cap:11500,drop_pct:-55,buy_ratio:0.42,trades_per_min:3.8,narrative:true,ai_confidence:65,strategy:'s1_retrace',added_at:new Date().toISOString()},
+  {symbol:'$PEPEX',name:'Pepe X',market_cap:6800,volume_spike:4.2,buy_ratio:0.61,narrative:true,ai_confidence:0,strategy:'s2_volume_spike',added_at:new Date().toISOString()},
+];
+const CT_DEMO_POSITIONS = [
+  {symbol:'$BULLAI',name:'Bull AI Agent',entry_price:0.00000123,entry_sol:0.1,ai_confidence:86,rug_score:9,entry_time:new Date(Date.now()-1800000).toISOString(),status:'open',token_address:'demo',dry_run:false},
+];
+let ctUsingDemo = false;
+
+function loadCryptoTab() {
+  ctLoadConfig();
+  ctRefreshStatus();
+  // Auto-refresh every 10s
+  if (ctRefreshInterval) clearInterval(ctRefreshInterval);
+  ctRefreshInterval = setInterval(ctRefreshStatus, 10000);
+}
+
+async function ctRefreshStatus() {
+  try {
+    const res = await fetch(API + '/api/trader/status');
+    if (!res.ok) return;
+    const data = await res.json();
+
+    // Bot status indicator
+    const indicator = document.getElementById('ct-bot-indicator');
+    const dot = document.getElementById('ct-dot');
+    const btn = document.getElementById('ct-start-btn');
+    if (data.running) {
+      indicator.style.background = 'rgba(0,200,83,0.12)';
+      indicator.style.color = 'var(--green)';
+      indicator.style.borderColor = 'rgba(0,200,83,0.3)';
+      indicator.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:currentColor;animation:pulse 1.5s infinite"></span> ${data.dry_run ? 'DRY RUN' : 'LIVE'} — ${data.status}`;
+      btn.textContent = 'Stop Bot';
+      btn.style.background = 'linear-gradient(135deg,#ff5252,#d32f2f)';
+    } else {
+      indicator.style.background = 'rgba(255,82,82,0.12)';
+      indicator.style.color = 'var(--red)';
+      indicator.style.borderColor = 'rgba(255,82,82,0.2)';
+      indicator.innerHTML = '<span style="width:8px;height:8px;border-radius:50%;background:currentColor"></span> STOPPED';
+      btn.textContent = 'Start Bot';
+      btn.style.background = 'linear-gradient(135deg,#9333ea,#ec4899)';
+    }
+
+    // Stats
+    document.getElementById('ct-sol-balance').textContent = data.sol_balance?.toFixed(4) + ' SOL';
+    document.getElementById('ct-wallet-addr').textContent = data.wallet || 'Not connected';
+    document.getElementById('ct-total-pnl').textContent = (data.total_pnl_sol >= 0 ? '+' : '') + data.total_pnl_sol?.toFixed(4) + ' SOL';
+    document.getElementById('ct-total-pnl').style.color = data.total_pnl_sol >= 0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('ct-total-trades').textContent = data.total_trades + ' trades';
+    document.getElementById('ct-win-rate').textContent = data.win_rate + '%';
+    document.getElementById('ct-wins-losses').textContent = data.wins + 'W / ' + data.losses + 'L';
+    document.getElementById('ct-open-count').textContent = data.open_positions || 0;
+    document.getElementById('ct-trades-today').textContent = data.today_trades + '/' + data.max_trades_day + ' trades today';
+    document.getElementById('ct-scanned').textContent = data.stats?.scanned || 0;
+    document.getElementById('ct-last-scan').textContent = data.last_scan ? new Date(data.last_scan).toLocaleTimeString() : 'Never';
+
+    // Render positions
+    ctRenderPositions(data.positions || []);
+    // Render watchlist
+    ctRenderWatchlist(data.watchlist || []);
+    // Load trades
+    ctRefreshTrades();
+  } catch(e) {
+    // Server not running — show demo data for showcase
+    if (!ctUsingDemo) {
+      ctUsingDemo = true;
+      // Fill in demo stats
+      document.getElementById('ct-sol-balance').textContent = '2.4821 SOL';
+      document.getElementById('ct-wallet-addr').textContent = '7xKp...demo';
+      const demoClosed = CT_DEMO_TRADES.filter(t => t.status === 'closed');
+      const totalPnl = demoClosed.reduce((s,t) => s + (t.pnl_sol||0), 0);
+      const wins = demoClosed.filter(t => t.pnl_sol > 0).length;
+      const losses = demoClosed.length - wins;
+      document.getElementById('ct-total-pnl').textContent = (totalPnl >= 0 ? '+' : '') + totalPnl.toFixed(4) + ' SOL';
+      document.getElementById('ct-total-pnl').style.color = totalPnl >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('ct-total-trades').textContent = demoClosed.length + ' trades';
+      document.getElementById('ct-win-rate').textContent = Math.round(wins/(wins+losses)*100) + '%';
+      document.getElementById('ct-wins-losses').textContent = wins + 'W / ' + losses + 'L';
+      document.getElementById('ct-open-count').textContent = CT_DEMO_POSITIONS.length;
+      document.getElementById('ct-trades-today').textContent = '2/3 trades today';
+      document.getElementById('ct-scanned').textContent = '847';
+      document.getElementById('ct-last-scan').textContent = new Date().toLocaleTimeString();
+      const todayDemo = CT_DEMO_TRADES.filter(t => t.entry_time.startsWith('2026-03-31'));
+      const todayPnl = todayDemo.reduce((s,t) => s + (t.pnl_sol||0), 0);
+      document.getElementById('ct-today-pnl').textContent = (todayPnl >= 0 ? '+' : '') + todayPnl.toFixed(4) + ' SOL';
+      document.getElementById('ct-today-pnl').style.color = todayPnl >= 0 ? 'var(--green)' : 'var(--red)';
+      document.getElementById('ct-today-pnl-sol').textContent = todayDemo.length + ' trades today';
+      // Render demo data
+      ctRenderPositions(CT_DEMO_POSITIONS);
+      ctRenderWatchlist(CT_DEMO_WATCHLIST);
+      ctRenderDemoTrades(CT_DEMO_TRADES);
+    }
+  }
+}
+
+function ctRenderDemoTrades(trades) {
+  const container = document.getElementById('ct-trade-history');
+  let filtered = trades.filter(t => t.status === 'closed');
+  if (ctPeriod === 'today') filtered = filtered.filter(t => t.entry_time.startsWith('2026-03-31'));
+  else if (ctPeriod === 'week') filtered = filtered;
+  if (!filtered.length) { container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No trades in this period.</div>'; return; }
+  let html = '';
+  for (const t of filtered) {
+    const entryTime = new Date(t.entry_time).toLocaleString();
+    const pnlClass = t.pnl_pct >= 0 ? 'ct-pnl-pos' : 'ct-pnl-neg';
+    const statusBadge = t.pnl_pct >= 0 ? 'ct-badge-closed' : 'ct-badge-failed';
+    html += `<div class="ct-token-row">
+      <div><span style="font-weight:700;color:var(--text)">${t.symbol}</span><br><span style="font-size:0.68em;color:var(--dim)">${t.name}</span></div>
+      <div style="font-family:monospace;font-size:0.75em;color:var(--muted)">$${t.entry_price.toFixed(8)}</div>
+      <div style="font-family:monospace;font-size:0.75em;color:var(--muted)">$${t.exit_price.toFixed(8)}</div>
+      <div class="${pnlClass}">${t.pnl_pct >= 0 ? '+' : ''}${t.pnl_pct.toFixed(1)}%<br><span style="font-size:0.75em">${t.pnl_sol >= 0 ? '+' : ''}${t.pnl_sol.toFixed(4)} SOL</span></div>
+      <div style="color:${t.ai_confidence>=70?'var(--green)':t.ai_confidence>=50?'var(--gold)':'var(--dim)'}"><span style="font-weight:700">${t.ai_confidence}%</span></div>
+      <div style="font-size:0.72em;color:var(--dim)">${entryTime}</div>
+      <div><span class="ct-badge ${statusBadge}">${t.exit_reason}</span></div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function ctRenderPositions(positions) {
+  const container = document.getElementById('ct-positions-list');
+  if (!positions.length) {
+    container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No open positions. Bot will find opportunities automatically.</div>';
+    return;
+  }
+  let html = '<div class="ct-token-row ct-token-header" style="border-bottom:1px solid #222"><div>Token</div><div>Entry Price</div><div>SOL In</div><div>AI Conf.</div><div>Time</div><div>Rug Score</div><div>Status</div></div>';
+  for (const p of positions) {
+    const time = p.entry_time ? new Date(p.entry_time).toLocaleTimeString() : '--';
+    html += `<div class="ct-token-row">
+      <div><span style="font-weight:700;color:var(--text)">${p.symbol}</span> <span style="font-size:0.72em;color:var(--dim)">${p.name?.substring(0,20) || ''}</span></div>
+      <div style="font-family:monospace;color:var(--muted)">$${parseFloat(p.entry_price||0).toFixed(8)}</div>
+      <div style="color:var(--gold)">${p.entry_sol} SOL</div>
+      <div><span style="color:${(p.ai_confidence||0)>=70?'var(--green)':(p.ai_confidence||0)>=40?'var(--gold)':'var(--red)'}">${p.ai_confidence||0}%</span></div>
+      <div style="color:var(--dim)">${time}</div>
+      <div style="color:${(p.rug_score||0)<25?'var(--green)':(p.rug_score||0)<50?'var(--gold)':'var(--red)'}">${p.rug_score||0}/100</div>
+      <div><span class="ct-badge ${p.dry_run?'ct-badge-dry':'ct-badge-open'}">${p.dry_run?'DRY RUN':'LIVE'}</span></div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+function ctRenderWatchlist(watchlist) {
+  const container = document.getElementById('ct-watchlist');
+  if (!watchlist.length) {
+    container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">Watchlist empty. Start the bot to scan for opportunities.</div>';
+    return;
+  }
+  let html = '<div class="ct-token-row ct-token-header" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr auto;border-bottom:1px solid #222"><div>Token</div><div>Volume</div><div>MC</div><div>Drop</div><div>AI Conf.</div><div>Narrative</div><div>Added</div></div>';
+  for (const w of watchlist) {
+    const time = w.added_at ? new Date(w.added_at).toLocaleTimeString() : '--';
+    html += `<div class="ct-token-row" style="grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr auto">
+      <div><span style="font-weight:700;color:var(--text)">${w.symbol||'???'}</span> <span style="font-size:0.72em;color:var(--dim)">${(w.name||'').substring(0,20)}</span></div>
+      <div style="color:var(--muted)">$${(w.volume_24h||0).toLocaleString()}</div>
+      <div style="color:var(--muted)">$${(w.market_cap||0).toLocaleString()}</div>
+      <div style="color:var(--red)">${(w.drop_pct||0).toFixed(0)}%</div>
+      <div style="color:${(w.ai_confidence||0)>=70?'var(--green)':'var(--dim)'}">${w.ai_confidence||'--'}%</div>
+      <div>${w.narrative?'<span style="color:var(--green)">YES</span>':'<span style="color:var(--dim)">no</span>'}</div>
+      <div style="color:var(--dim)">${time}</div>
+    </div>`;
+  }
+  container.innerHTML = html;
+}
+
+async function ctRefreshTrades() {
+  try {
+    const res = await fetch(API + '/api/trader/trades');
+    if (!res.ok) return;
+    const trades = await res.json();
+    const container = document.getElementById('ct-trade-history');
+
+    // Filter by period
+    const now = new Date();
+    let filtered = trades.filter(t => t.status === 'closed');
+    if (ctPeriod === 'today') filtered = filtered.filter(t => t.entry_time && t.entry_time.startsWith(now.toISOString().slice(0,10)));
+    else if (ctPeriod === 'week') { const week = new Date(now - 7*86400000); filtered = filtered.filter(t => t.entry_time && new Date(t.entry_time) >= week); }
+    else if (ctPeriod === 'month') { const month = new Date(now - 30*86400000); filtered = filtered.filter(t => t.entry_time && new Date(t.entry_time) >= month); }
+
+    // Update today PnL
+    const todayTrades = trades.filter(t => t.status === 'closed' && t.entry_time && t.entry_time.startsWith(now.toISOString().slice(0,10)));
+    const todayPnl = todayTrades.reduce((sum, t) => sum + (t.pnl_sol || 0), 0);
+    document.getElementById('ct-today-pnl').textContent = (todayPnl >= 0 ? '+' : '') + todayPnl.toFixed(4) + ' SOL';
+    document.getElementById('ct-today-pnl').style.color = todayPnl >= 0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('ct-today-pnl-sol').textContent = todayTrades.length + ' trades today';
+
+    if (!filtered.length) {
+      container.innerHTML = '<div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No trades in this period.</div>';
+      return;
+    }
+
+    let html = '';
+    for (const t of filtered.reverse().slice(0, 50)) {
+      const entryTime = t.entry_time ? new Date(t.entry_time).toLocaleString() : '--';
+      const pnlClass = (t.pnl_pct || 0) >= 0 ? 'ct-pnl-pos' : 'ct-pnl-neg';
+      const statusBadge = t.dry_run ? 'ct-badge-dry' : (t.pnl_pct >= 0 ? 'ct-badge-closed' : 'ct-badge-failed');
+      html += `<div class="ct-token-row">
+        <div><span style="font-weight:700;color:var(--text)">${t.symbol||'???'}</span><br><span style="font-size:0.68em;color:var(--dim)">${(t.name||'').substring(0,25)}</span></div>
+        <div style="font-family:monospace;font-size:0.75em;color:var(--muted)">$${parseFloat(t.entry_price||0).toFixed(8)}</div>
+        <div style="font-family:monospace;font-size:0.75em;color:var(--muted)">$${parseFloat(t.exit_price||0).toFixed(8)}</div>
+        <div class="${pnlClass}">${(t.pnl_pct||0) >= 0 ? '+' : ''}${(t.pnl_pct||0).toFixed(1)}%<br><span style="font-size:0.75em">${(t.pnl_sol||0) >= 0 ? '+' : ''}${(t.pnl_sol||0).toFixed(4)} SOL</span></div>
+        <div style="color:${(t.ai_confidence||0)>=70?'var(--green)':'var(--dim)'}"><span style="font-weight:700">${t.ai_confidence||0}%</span></div>
+        <div style="font-size:0.72em;color:var(--dim)">${entryTime}</div>
+        <div><span class="ct-badge ${statusBadge}">${t.dry_run?'DRY':'LIVE'} ${t.exit_reason||''}</span></div>
+      </div>`;
+    }
+    container.innerHTML = html;
+  } catch(e) {}
+}
+
+function ctSetPeriod(period, el) {
+  ctPeriod = period;
+  document.querySelectorAll('.ct-period').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  if (ctUsingDemo) ctRenderDemoTrades(CT_DEMO_TRADES);
+  else ctRefreshTrades();
+}
+
+async function ctToggleBot() {
+  try {
+    const res = await fetch(API + '/api/trader/status');
+    const data = await res.json();
+    if (data.running) {
+      await fetch(API + '/api/trader/stop', { method: 'POST' });
+      toast('Bot stopping...', 'info');
+    } else {
+      await ctSaveConfig();
+      await fetch(API + '/api/trader/start', { method: 'POST' });
+      toast('Bot started! Scanning for opportunities...', 'success');
+    }
+    setTimeout(ctRefreshStatus, 1000);
+  } catch(e) {
+    toast('Could not reach server. Make sure it is running.', 'error');
+  }
+}
+
+async function ctSaveConfig() {
+  const cfg = {
+    wallet_private_key: document.getElementById('ct-wallet-key')?.value || '',
+    rpc_url: document.getElementById('ct-rpc-url')?.value || 'https://api.mainnet-beta.solana.com',
+    max_sol_per_trade: parseFloat(document.getElementById('ct-max-sol')?.value) || 0.1,
+    max_trades_per_day: parseInt(document.getElementById('ct-max-trades')?.value) || 3,
+    take_profit_pct: parseInt(document.getElementById('ct-tp')?.value) || 50,
+    stop_loss_pct: parseInt(document.getElementById('ct-sl')?.value) || 20,
+    trailing_stop_pct: parseInt(document.getElementById('ct-trailing')?.value) || 15,
+    slippage_bps: parseInt(document.getElementById('ct-slippage')?.value) || 800,
+    scan_interval_seconds: parseInt(document.getElementById('ct-scan-interval')?.value) || 15,
+    ai_model: document.getElementById('ct-ai-model')?.value || 'claude-haiku-4-5-20251001',
+    dry_run: document.getElementById('ct-dry-run')?.checked ?? true,
+    // Strategy 1: Pump.fun Retrace
+    s1_enabled: true,
+    s1_min_mc: parseInt(document.getElementById('ct-s1-min-mc')?.value) || 5000,
+    s1_max_mc: parseInt(document.getElementById('ct-s1-max-mc')?.value) || 15000,
+    s1_min_trades_per_min: parseInt(document.getElementById('ct-s1-min-tpm')?.value) || 3,
+    s1_min_drop_from_peak_pct: parseInt(document.getElementById('ct-s1-min-drop')?.value) || 50,
+    s1_min_unique_holders: parseInt(document.getElementById('ct-s1-min-holders')?.value) || 30,
+    s1_max_dev_holding_pct: parseInt(document.getElementById('ct-s1-max-dev')?.value) || 5,
+    s1_reject_bundled: document.getElementById('ct-s1-reject-bundled')?.checked ?? true,
+    s1_require_narrative: document.getElementById('ct-s1-require-narrative')?.checked ?? true,
+    // Strategy 2: Volume Spike
+    s2_enabled: document.getElementById('ct-s2-enabled')?.checked ?? true,
+    s2_volume_spike_multiplier: parseFloat(document.getElementById('ct-s2-spike')?.value) || 3,
+    s2_min_buy_ratio: parseFloat(document.getElementById('ct-s2-buy-ratio')?.value) || 0.55,
+  };
+  try {
+    const res = await fetch(API + '/api/trader/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(cfg)
+    });
+    if (res.ok) toast('Config saved!', 'success');
+    else toast('Error saving config', 'error');
+  } catch(e) {
+    toast('Could not reach server', 'error');
+  }
+}
+
+async function ctLoadConfig() {
+  try {
+    const res = await fetch(API + '/api/trader/config');
+    if (!res.ok) return;
+    const cfg = await res.json();
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+    const chk = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.checked = val; };
+    set('ct-rpc-url', cfg.rpc_url);
+    set('ct-max-sol', cfg.max_sol_per_trade);
+    set('ct-max-trades', cfg.max_trades_per_day);
+    set('ct-tp', cfg.take_profit_pct);
+    set('ct-sl', cfg.stop_loss_pct);
+    set('ct-trailing', cfg.trailing_stop_pct);
+    set('ct-slippage', cfg.slippage_bps);
+    set('ct-scan-interval', cfg.scan_interval_seconds);
+    set('ct-ai-model', cfg.ai_model);
+    chk('ct-dry-run', cfg.dry_run);
+    // S1
+    set('ct-s1-min-mc', cfg.s1_min_mc);
+    set('ct-s1-max-mc', cfg.s1_max_mc);
+    set('ct-s1-min-tpm', cfg.s1_min_trades_per_min);
+    set('ct-s1-min-drop', cfg.s1_min_drop_from_peak_pct);
+    set('ct-s1-min-holders', cfg.s1_min_unique_holders);
+    set('ct-s1-max-dev', cfg.s1_max_dev_holding_pct);
+    chk('ct-s1-reject-bundled', cfg.s1_reject_bundled);
+    chk('ct-s1-require-narrative', cfg.s1_require_narrative);
+    // S2
+    chk('ct-s2-enabled', cfg.s2_enabled);
+    set('ct-s2-spike', cfg.s2_volume_spike_multiplier);
+    set('ct-s2-buy-ratio', cfg.s2_min_buy_ratio);
+  } catch(e) {}
+}
+
+function ctExportTrades() {
+  fetch(API + '/api/trader/trades').then(r => r.json()).then(trades => {
+    const closed = trades.filter(t => t.status === 'closed');
+    if (!closed.length) { toast('No trades to export', 'info'); return; }
+    let csv = 'Symbol,Name,Entry Price,Exit Price,PnL %,PnL SOL,Entry SOL,AI Confidence,Rug Score,Entry Time,Exit Time,Reason,Dry Run\\n';
+    for (const t of closed) {
+      csv += `${t.symbol},${(t.name||'').replace(/,/g,'')},${t.entry_price},${t.exit_price},${t.pnl_pct},${t.pnl_sol},${t.entry_sol},${t.ai_confidence||0},${t.rug_score||0},${t.entry_time},${t.exit_time},${t.exit_reason||''},${t.dry_run}\\n`;
+    }
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `janovum_trades_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    toast('Trades exported!', 'success');
+  });
+}
+
 function loadAnalyticsTab(){ analyticsRenderOverview(); analyticsRenderCharts(); analyticsRenderFeed(); }
 function analyticsRefresh(){ loadAnalyticsTab(); toast('Analytics refreshed','success'); }
 

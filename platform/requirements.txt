@@ -26,3 +26,8 @@ aiohttp>=3.9,<4.0
 
 # Image processing
 pillow>=10.2,<12.0
+
+# Solana trading (optional — for live memecoin trading)
+# pip install solders base58
+# solders>=0.21,<1.0
+# base58>=2.1,<3.0

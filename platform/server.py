@@ -3500,6 +3500,14 @@ _server_start_time = time.time()
 # START SERVER
 # ══════════════════════════════════════════
 
+# Register memecoin trader routes
+try:
+    from modules.memecoin_trader import register_routes as register_trader_routes
+    register_trader_routes(app)
+    print("[+] Memecoin Trader routes registered")
+except Exception as e:
+    print(f"[!] Memecoin Trader routes failed: {e}")
+
 if __name__ == "__main__":
     cfg = load_config()
     port = cfg.get("server_port", 5050)
@@ -3519,6 +3527,7 @@ if __name__ == "__main__":
     print(f"  Dashboard:       http://localhost:{port}")
     print(f"  Agent Viewer:    http://localhost:{port}/agent-viewer")
     print(f"  Platform Status: http://localhost:{port}/api/status")
+    print(f"  Crypto Trading:  http://localhost:{port} -> Crypto Trading tab")
     print(f"  API Key:         {'SET' if get_api_key() else 'NOT SET'}")
     print(f"  Model:           {get_model()}")
     print()

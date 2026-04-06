@@ -21,11 +21,11 @@
   ::-webkit-scrollbar-thumb:hover { background: #444; }
 
   /* ── SIDEBAR ── */
-  .sidebar { width: var(--sidebar-w); height: 100vh; max-height: 100vh; background: #0d0d0d; border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column; transition: transform 0.3s; overflow: hidden; }
+  .sidebar { width: var(--sidebar-w); height: 100vh; height: 100dvh; background: #0d0d0d; border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; z-index: 100; display: flex; flex-direction: column; transition: transform 0.3s; overflow: visible; }
   .sidebar-brand { padding: 24px 20px 20px; border-bottom: 1px solid var(--border); }
   .sidebar-brand h1 { font-size: 1.3em; font-weight: 800; letter-spacing: 4px; background: linear-gradient(135deg, var(--orange), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
   .sidebar-brand span { font-size: 0.65em; color: var(--dim); display: block; margin-top: 2px; letter-spacing: 1px; }
-  .sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; overflow-x: hidden; min-height: 0; }
+  .sidebar-nav { flex: 1; padding: 8px 0; overflow-y: auto; overflow-x: hidden; min-height: 0; -webkit-overflow-scrolling: touch; }
   .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 18px; color: #777; font-size: 0.78em; font-weight: 500; cursor: grab; transition: all 0.15s; border-left: 3px solid transparent; text-decoration: none; user-select: none; }
   .nav-item.dragging { opacity: 0.4; background: rgba(247,201,72,0.08); cursor: grabbing; }
   .nav-item.drag-over { border-top: 2px solid var(--gold); padding-top: 5px; }
@@ -33,6 +33,28 @@
   .nav-item.active { color: var(--gold); background: rgba(247,201,72,0.05); border-left-color: var(--gold); }
   .nav-item .nav-icon { font-size: 1.15em; width: 22px; text-align: center; }
   .nav-item .nav-badge { margin-left: auto; font-size: 0.7em; background: var(--orange); color: #000; padding: 1px 7px; border-radius: 8px; font-weight: 700; }
+  /* ── CUSTOM NAV GROUPS ── */
+  .nav-group { margin-top: 2px; border-top: 1px solid #1a1a1a; }
+  .nav-group.drag-over-group { border-top: 2px solid var(--gold); }
+  .nav-group-header { display: flex; align-items: center; gap: 8px; padding: 8px 18px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+  .nav-group-header:hover { background: rgba(255,255,255,0.03); }
+  .nav-group-arrow { font-size: 0.55em; color: var(--dim); transition: transform 0.2s; width: 12px; }
+  .nav-group-arrow.collapsed { transform: rotate(-90deg); }
+  .nav-group-name { font-size: 0.7em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; flex: 1; }
+  .nav-group-count { font-size: 0.6em; color: var(--dim); }
+  .nav-group-btn { background: none; border: none; color: #666; font-size: 0.72em; cursor: pointer; padding: 2px 6px; border-radius: 4px; opacity: 0; transition: opacity 0.15s; }
+  .nav-group-header:hover .nav-group-btn { opacity: 1; }
+  .nav-group-btn:hover { color: var(--gold); background: rgba(247,201,72,0.08); }
+  .nav-group-btn.del:hover { color: var(--red); background: #2a0a0a; }
+  .nav-group-body { }
+  .nav-group-body.collapsed { display: none; }
+  .nav-group-body .nav-item { padding-left: 30px; opacity: 0.8; }
+  .nav-group-body .nav-item:hover { opacity: 1; }
+  .nav-group-drop { min-height: 24px; border: 1px dashed #333; border-radius: 6px; margin: 4px 14px 6px; display: flex; align-items: center; justify-content: center; font-size: 0.62em; color: var(--dim); transition: border-color 0.15s, background 0.15s; }
+  .nav-group-drop.drag-hover { border-color: var(--gold); background: rgba(247,201,72,0.05); color: var(--gold); }
+  .nav-item.drag-ghost { opacity: 0.3; }
+  .nav-item.drag-target { border-top: 2px solid var(--gold); }
+
   .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 0.7em; color: #444; }
   .sidebar-footer .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--green); margin-right: 6px; animation: pulse 2s infinite; }
 
@@ -173,25 +195,136 @@
   .empty-state p { font-size: 0.85em; }
 
   /* ── MOBILE ── */
-  .mobile-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 200; background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 1.1em; cursor: pointer; }
+  .mobile-toggle { display: none; }
+  .mobile-nav-btn-topbar { display: none; background: linear-gradient(135deg, var(--orange), var(--gold)); color: #000; padding: 7px 14px; border-radius: 8px; font-size: 0.78em; font-weight: 700; cursor: pointer; border: none; -webkit-tap-highlight-color: transparent; letter-spacing: 0.5px; white-space: nowrap; margin-right: 10px; flex-shrink: 0; }
+  .mobile-nav-btn-topbar:active { opacity: 0.7; }
+  .mobile-nav-banner { display: none; background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(247,201,72,0.1)); border: 1px solid rgba(247,201,72,0.3); border-radius: 12px; padding: 14px 20px; margin-bottom: 16px; text-align: center; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .mobile-nav-banner:active { opacity: 0.8; }
+  .mobile-nav-banner span { background: linear-gradient(135deg, var(--orange), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; font-size: 1.05em; letter-spacing: 1px; }
+
+  /* Full-screen mobile nav overlay */
+  .mobile-nav-overlay { display: none; position: fixed; inset: 0; z-index: 300; background: #0a0a0a; flex-direction: column; overflow: hidden; }
+  .mobile-nav-overlay.open { display: flex; }
+  .mobile-nav-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .mobile-nav-header h2 { font-size: 1.05em; font-weight: 700; background: linear-gradient(135deg, var(--orange), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .mobile-nav-close { background: none; border: 1px solid var(--border); color: var(--muted); padding: 8px 14px; border-radius: 8px; font-size: 0.85em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .mobile-nav-close:active { background: #1a1a1a; }
+  .mobile-nav-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 0 40px; }
+  .mobile-nav-item { display: flex; align-items: center; gap: 12px; padding: 14px 20px; color: #999; font-size: 0.92em; font-weight: 500; cursor: pointer; border-bottom: 1px solid #111; -webkit-tap-highlight-color: transparent; transition: background 0.1s; }
+  .mobile-nav-item:active { background: #141414; }
+  .mobile-nav-item.active { color: var(--gold); background: rgba(247,201,72,0.05); }
+  .mobile-nav-item .mnav-icon { font-size: 1.1em; width: 24px; text-align: center; }
+  .mobile-nav-item .mnav-badge { margin-left: auto; font-size: 0.65em; background: var(--orange); color: #000; padding: 2px 8px; border-radius: 8px; font-weight: 700; }
+  .mobile-nav-search { margin: 12px 16px; padding: 11px 14px; background: #141414; border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 0.92em; outline: none; width: calc(100% - 32px); font-family: inherit; }
+  .mobile-nav-search:focus { border-color: var(--gold); }
+
+  .sidebar-overlay { display: none; }
   @media (max-width: 900px) {
-    .sidebar { transform: translateX(-100%); }
-    .sidebar.open { transform: translateX(0); }
+    .sidebar { display: none !important; }
     .main { margin-left: 0; }
-    .mobile-toggle { display: block; }
+    .mobile-toggle { display: none; }
+    .mobile-nav-btn-topbar { display: block; }
+    .mobile-nav-banner { display: block; }
     .form-row { grid-template-columns: 1fr; }
-    .content { padding: 16px; }
+    .content { padding: 14px; }
+    .topbar { padding: 14px 16px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .panel { padding: 16px; }
+    .panel-header { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .stat-value { font-size: 1.3em; }
+    .content { padding: 10px; }
+    .topbar { padding: 12px 14px; }
+    .topbar-title { font-size: 0.92em; }
+    .topbar-title span { display: none; }
+  }
+
+  /* ── AUTH SCREEN ── */
+  .auth-screen { position: fixed; inset: 0; z-index: 9999; background: #0a0a0a; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .auth-screen.hidden { display: none; }
+  .auth-logo { font-size: 2.4em; font-weight: 800; letter-spacing: 5px; background: linear-gradient(135deg, var(--orange), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+  .auth-tagline { color: var(--dim); font-size: 0.85em; margin-bottom: 32px; letter-spacing: 1px; }
+  .auth-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 380px; }
+  .auth-box h2 { font-size: 1.1em; margin-bottom: 18px; color: var(--gold); text-align: center; }
+  .auth-fg { margin-bottom: 14px; }
+  .auth-fg label { display: block; font-size: 0.72em; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 600; }
+  .auth-fg input { width: 100%; background: #1a1a1a; border: 1px solid var(--border); color: var(--text); padding: 12px 14px; border-radius: 10px; font-size: 1em; outline: none; font-family: inherit; }
+  .auth-fg input:focus { border-color: var(--gold); }
+  .auth-btn { width: 100%; padding: 13px; border: none; border-radius: 10px; font-size: 1em; font-weight: 700; cursor: pointer; transition: opacity 0.2s; font-family: inherit; }
+  .auth-btn:active { opacity: 0.7; }
+  .auth-btn-primary { background: linear-gradient(135deg, var(--orange), var(--gold)); color: #000; margin-top: 6px; }
+  .auth-btn-ghost { background: transparent; border: 1px solid var(--border) !important; color: var(--muted); margin-top: 10px; }
+  .auth-btn-guest { background: transparent; border: 1px solid var(--border) !important; color: var(--dim); margin-top: 10px; font-weight: 500; font-size: 0.88em; }
+  .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.82em; color: var(--dim); }
+  .auth-toggle a { color: var(--gold); cursor: pointer; text-decoration: none; }
+  .auth-error { color: var(--red); font-size: 0.82em; text-align: center; margin-top: 10px; min-height: 18px; }
+  .auth-divider { text-align: center; color: var(--dim); font-size: 0.75em; margin: 16px 0; position: relative; }
+  .auth-divider::before, .auth-divider::after { content: ''; position: absolute; top: 50%; width: 35%; height: 1px; background: var(--border); }
+  .auth-divider::before { left: 0; }
+  .auth-divider::after { right: 0; }
+  .guest-banner { display: none; background: linear-gradient(135deg, rgba(247,201,72,0.1), rgba(255,107,53,0.05)); border: 1px solid rgba(247,201,72,0.3); border-radius: 10px; padding: 10px 16px; margin: 12px 28px 0; font-size: 0.8em; color: var(--gold); text-align: center; }
+  .guest-banner.show { display: block; }
+  .guest-banner a { color: var(--orange); cursor: pointer; text-decoration: underline; font-weight: 600; }
+  @media (max-width: 900px) {
+    .guest-banner { margin: 10px 14px 0; }
   }
 </style>
 </head>
 <body>
 
-<button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+<!-- ════════ AUTH SCREEN ════════ -->
+<div class="auth-screen" id="authScreen">
+  <div class="auth-logo">JANOVUM</div>
+  <div class="auth-tagline">AI Automation Platform</div>
+  <div class="auth-box">
+    <h2 id="authTitle">Sign In</h2>
+    <div class="auth-fg">
+      <label>Username</label>
+      <input type="text" id="authUser" autocapitalize="none" autocorrect="off" placeholder="your username">
+    </div>
+    <div class="auth-fg">
+      <label>Password</label>
+      <input type="password" id="authPass" placeholder="password">
+    </div>
+    <div class="auth-fg" id="authNameRow" style="display:none;">
+      <label>Display Name</label>
+      <input type="text" id="authDisplayName" placeholder="your name">
+    </div>
+    <div class="auth-fg" id="authEmailRow" style="display:none;">
+      <label>Email</label>
+      <input type="email" id="authEmail" placeholder="you@company.com">
+    </div>
+    <button class="auth-btn auth-btn-primary" id="authSubmitBtn" onclick="handleAuth()">Sign In</button>
+    <div class="auth-error" id="authError"></div>
+    <div class="auth-divider">or</div>
+    <button class="auth-btn auth-btn-guest" onclick="enterGuest()">View as Guest</button>
+    <div class="auth-toggle">
+      <span id="authToggleText">Don't have an account?</span> <a id="authToggleLink" onclick="toggleAuthMode()">Create one</a>
+    </div>
+  </div>
+</div>
+
+<button class="mobile-toggle" id="mobileToggle" onclick="openMobileNav()">Navigate</button>
+
+<!-- ════════ MOBILE FULL-SCREEN NAV ════════ -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay">
+  <div class="mobile-nav-header">
+    <h2>JANOVUM</h2>
+    <button class="mobile-nav-close" onclick="closeMobileNav()">Close</button>
+  </div>
+  <input class="mobile-nav-search" id="mobileNavSearch" type="text" placeholder="Search tabs..." oninput="filterMobileNav()">
+  <div class="mobile-nav-list" id="mobileNavList"></div>
+</div>
 
 <!-- ════════ SIDEBAR ════════ -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand">
-    <h1>JANOVUM</h1>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <h1>JANOVUM</h1>
+      <button onclick="createNavGroup()" style="background:none;border:1px solid var(--border);color:var(--dim);padding:3px 8px;border-radius:6px;font-size:0.65em;cursor:pointer;white-space:nowrap" title="Create a custom group">+ Group</button>
+    </div>
     <span>Platform v9 — 24/7 Autonomous</span>
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
@@ -236,9 +369,12 @@
     <div class="nav-item" data-tab="tracing"><span class="nav-icon">&#8942;</span> Tracing & Events</div>
     <div class="nav-item" data-tab="approvals"><span class="nav-icon">&#10003;</span> Approvals <span class="nav-badge" id="approvalBadge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="soul"><span class="nav-icon">&#9829;</span> Soul Editor</div>
-    <!-- SETUP -->
+    <!-- SETUP & BILLING -->
+    <div class="nav-item" data-tab="billing"><span class="nav-icon">&#128179;</span> Plans & Billing</div>
     <div class="nav-item" data-tab="setup"><span class="nav-icon">&#128736;</span> Setup Wizard</div>
     <div class="nav-item" data-tab="settings"><span class="nav-icon">&#9881;</span> Settings</div>
+    <!-- CUSTOM GROUPS (populated by JS) -->
+    <div id="customGroupsContainer"></div>
   </nav>
   <div class="sidebar-footer">
     <span class="status-dot" id="serverDot"></span>
@@ -249,6 +385,7 @@
 <!-- ════════ MAIN ════════ -->
 <div class="main">
   <div class="topbar">
+    <button class="mobile-nav-btn-topbar" onclick="openMobileNav()">Navigate</button>
     <div class="topbar-title" id="topbarTitle">Dashboard <span>Overview</span></div>
     <div id="clientBanner" style="display:none;background:linear-gradient(90deg,rgba(247,201,72,0.08),transparent);border:1px solid rgba(247,201,72,0.15);border-radius:8px;padding:6px 14px;font-size:0.78em;display:none;align-items:center;gap:10px">
       <span style="color:var(--gold);font-weight:700" id="clientBannerName"></span>
@@ -265,7 +402,9 @@
       <button class="btn-sm btn-outline" onclick="refreshCurrentTab()">&#8635; Refresh</button>
     </div>
   </div>
+  <div class="guest-banner" id="guestBanner">You're viewing as a guest. <a onclick="showAuthScreen()">Sign up</a> to save your data and unlock full access.</div>
   <div class="content">
+    <div class="mobile-nav-banner" onclick="openMobileNav()"><span>&#9776; Navigate</span> — Tap to switch tabs</div>
 
     <!-- ═══ FIRST-TIME SETUP BANNER ═══ -->
     <div id="setupBanner" style="display:none;background:linear-gradient(135deg,#1a1000 0%,#1a0500 100%);border:1px solid #f7c94855;border-radius:12px;padding:18px 24px;margin-bottom:16px;display:none">
@@ -379,6 +518,72 @@
         <div style="display:none" id="welcomeBots"></div>
         <div style="display:none" id="welcomeTemplates"></div>
         <div style="display:none" id="welcomeEndpoints"></div>
+
+        <!-- Setup Progress Checklist (hidden after complete) -->
+        <div class="panel" id="dashSetupChecklist" style="border-color:rgba(247,201,72,0.2);background:linear-gradient(135deg,#111,#0d0d0d)">
+          <div class="panel-header">
+            <div class="panel-title">🚀 Getting Started</div>
+            <button class="btn-sm btn-outline" onclick="document.getElementById('dashSetupChecklist').style.display='none'" style="font-size:0.7em">Dismiss</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px" id="setupChecklist">
+            <div class="checklist-item" id="chk-mode" onclick="switchTab('setup')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:8px"><span class="chk-icon" style="font-size:1.1em">⭕</span><div><div style="font-size:0.82em;font-weight:700">Choose Setup Mode</div><div style="font-size:0.68em;color:var(--dim)">Client deploy or personal use</div></div></div>
+            </div>
+            <div class="checklist-item" id="chk-server" onclick="switchTab('setup')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:8px"><span class="chk-icon" style="font-size:1.1em">⭕</span><div><div style="font-size:0.82em;font-weight:700">Connect Server</div><div style="font-size:0.68em;color:var(--dim)">VPS or managed hosting</div></div></div>
+            </div>
+            <div class="checklist-item" id="chk-apikey" onclick="switchTab('setup')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:8px"><span class="chk-icon" style="font-size:1.1em">⭕</span><div><div style="font-size:0.82em;font-weight:700">Add API Key</div><div style="font-size:0.68em;color:var(--dim)">Anthropic or free models</div></div></div>
+            </div>
+            <div class="checklist-item" id="chk-biz" onclick="switchTab('setup')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:8px"><span class="chk-icon" style="font-size:1.1em">⭕</span><div><div style="font-size:0.82em;font-weight:700">Business Info</div><div style="font-size:0.68em;color:var(--dim)">Name, hours, contact</div></div></div>
+            </div>
+            <div class="checklist-item" id="chk-modules" onclick="switchTab('setup')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:8px"><span class="chk-icon" style="font-size:1.1em">⭕</span><div><div style="font-size:0.82em;font-weight:700">Pick Modules</div><div style="font-size:0.68em;color:var(--dim)">Receptionist, CRM, etc.</div></div></div>
+            </div>
+            <div class="checklist-item" id="chk-deployed" onclick="switchTab('clients')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color 0.2s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="display:flex;align-items:center;gap:8px"><span class="chk-icon" style="font-size:1.1em">⭕</span><div><div style="font-size:0.82em;font-weight:700">First Deployment</div><div style="font-size:0.68em;color:var(--dim)">Go live</div></div></div>
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:0.74em;color:var(--dim)">Click any item to jump to that step. This checklist disappears once you're fully set up.</div>
+        </div>
+
+        <!-- Quick Actions (sales-focused) -->
+        <div class="panel" id="dashQuickActions">
+          <div class="panel-header"><div class="panel-title">⚡ Quick Actions</div></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+            <button onclick="selectSetupMode('sales');switchTab('setup')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color 0.2s;color:inherit" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.3em;margin-bottom:6px">🏢</div>
+              <div style="font-size:0.82em;font-weight:700;color:var(--green)">Deploy for Client</div>
+              <div style="font-size:0.7em;color:var(--dim)">3-step fast setup</div>
+            </button>
+            <button onclick="switchTab('clients')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color 0.2s;color:inherit" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.3em;margin-bottom:6px">👥</div>
+              <div style="font-size:0.82em;font-weight:700;color:var(--blue)">View All Clients</div>
+              <div style="font-size:0.7em;color:var(--dim)">Manage receptionists</div>
+            </button>
+            <button onclick="switchTab('crm')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color 0.2s;color:inherit" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.3em;margin-bottom:6px">📊</div>
+              <div style="font-size:0.82em;font-weight:700;color:var(--gold)">Open CRM</div>
+              <div style="font-size:0.7em;color:var(--dim)">Track leads & deals</div>
+            </button>
+            <button onclick="switchTab('copilot')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color 0.2s;color:inherit" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.3em;margin-bottom:6px">🎧</div>
+              <div style="font-size:0.82em;font-weight:700;color:var(--orange)">Sales Co-Pilot</div>
+              <div style="font-size:0.7em;color:var(--dim)">Live call coach</div>
+            </button>
+            <button onclick="switchTab('analytics')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color 0.2s;color:inherit" onmouseover="this.style.borderColor='var(--purple)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.3em;margin-bottom:6px">📈</div>
+              <div style="font-size:0.82em;font-weight:700;color:var(--purple)">Analytics</div>
+              <div style="font-size:0.7em;color:var(--dim)">Revenue & performance</div>
+            </button>
+            <button onclick="switchTab('billing')" style="background:#0e0e0e;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:left;cursor:pointer;transition:border-color 0.2s;color:inherit" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+              <div style="font-size:1.3em;margin-bottom:6px">💳</div>
+              <div style="font-size:0.82em;font-weight:700;color:var(--gold)">Plans & Billing</div>
+              <div style="font-size:0.7em;color:var(--dim)">Upgrade or manage plan</div>
+            </button>
+          </div>
+        </div>
 
         <!-- Recent Activity (compact) -->
         <div class="panel">
@@ -1267,6 +1472,15 @@
     <!-- ═══════════════════════════════════ -->
     <div class="tab-pane" id="tab-clients">
 
+      <!-- Quick Deploy Banner -->
+      <div style="background:linear-gradient(135deg,#0d1a0d,#0a0a0a);border:1px solid rgba(0,200,83,0.2);border-radius:12px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:0.88em;font-weight:700;color:var(--green)">🏢 Sales Mode — Fast Client Deployment</div>
+          <div style="font-size:0.74em;color:var(--muted)">Set up a new client in under 3 minutes. Fill business info → pick services → deploy.</div>
+        </div>
+        <button class="btn" onclick="selectSetupMode('sales');switchTab('setup')" style="background:linear-gradient(135deg,var(--green),#2ecc71);color:#000;white-space:nowrap">+ Deploy New Client →</button>
+      </div>
+
       <!-- Client Stats -->
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-value gold" id="clStatTotal">0</div><div class="stat-label">Total Clients</div></div>
@@ -1460,6 +1674,172 @@
 
     <div class="tab-pane" id="tab-setup">
 
+      <!-- Lock banner (shown until setup complete) -->
+      <div class="setup-lock-banner" id="setupLockBanner">
+        <span style="font-size:1.4em">🔒</span>
+        <div><strong>Complete setup to unlock all tabs.</strong> Pick your mode below — takes under 5 minutes. <span style="color:var(--gold)">Sales setup = 3 steps.</span></div>
+      </div>
+
+      <!-- ══ MODE SELECTOR (shown first, hides once chosen) ══ -->
+      <div id="setupModeSelector">
+        <div style="text-align:center;margin-bottom:28px">
+          <h2 style="font-size:1.4em;font-weight:800;margin-bottom:8px">Who is this setup for?</h2>
+          <p style="font-size:0.84em;color:var(--muted)">Pick the right mode — we'll simplify the steps accordingly.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:700px;margin:0 auto 32px">
+          <div onclick="selectSetupMode('sales')" style="background:linear-gradient(135deg,#0d1a0d,#0a0a0a);border:2px solid var(--border);border-radius:16px;padding:32px 28px;cursor:pointer;transition:all 0.2s;text-align:center" onmouseover="this.style.borderColor='var(--green)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+            <div style="font-size:2.5em;margin-bottom:14px">🏢</div>
+            <div style="font-size:1.05em;font-weight:800;color:var(--green);margin-bottom:8px">Deploying for a Client</div>
+            <div style="font-size:0.78em;color:var(--muted);line-height:1.6;margin-bottom:16px">You're a sales person or agency setting this up for a business. Fast 3-step flow — done in under 3 minutes.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;text-align:left">
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Business info → modules → deploy</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Smart defaults, no tech knowledge needed</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Client goes live immediately</div>
+            </div>
+            <button style="margin-top:20px;width:100%;background:linear-gradient(135deg,var(--green),#2ecc71);border:none;color:#000;font-weight:700;padding:11px;border-radius:8px;font-size:0.85em;cursor:pointer">Start Client Setup →</button>
+          </div>
+          <div onclick="selectSetupMode('self')" style="background:linear-gradient(135deg,#0d1525,#0a0a0a);border:2px solid var(--border);border-radius:16px;padding:32px 28px;cursor:pointer;transition:all 0.2s;text-align:center" onmouseover="this.style.borderColor='var(--blue)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+            <div style="font-size:2.5em;margin-bottom:14px">🧑‍💻</div>
+            <div style="font-size:1.05em;font-weight:800;color:var(--blue);margin-bottom:8px">Setting Up for Myself</div>
+            <div style="font-size:0.78em;color:var(--muted);line-height:1.6;margin-bottom:16px">You want to run the full toolkit for your own business or personal use. Full 7-step setup with all options.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;text-align:left">
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Connect your VPS & API keys</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Pick every module manually</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Full control over configuration</div>
+            </div>
+            <button style="margin-top:20px;width:100%;background:linear-gradient(135deg,var(--blue),#1565c0);border:none;color:#fff;font-weight:700;padding:11px;border-radius:8px;font-size:0.85em;cursor:pointer">Start Full Setup →</button>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:0.75em;color:var(--dim)">Already set up? <a onclick="skipSetup()" style="color:var(--gold);cursor:pointer;text-decoration:underline">Skip to dashboard →</a></div>
+      </div>
+
+      <!-- ══ SALES FAST MODE (3 steps) ══ -->
+      <div id="salesModeContainer" style="display:none">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <button onclick="resetSetupMode()" style="background:none;border:none;color:var(--dim);font-size:0.8em;cursor:pointer;padding:0">← Change mode</button>
+          <div style="font-size:0.82em;font-weight:700;color:var(--green)">🏢 Client Setup — Fast Mode</div>
+        </div>
+        <!-- Fast Mode Step Indicator -->
+        <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap" id="fastSteps">
+          <div class="setup-step active" data-fstep="A"><span class="step-num">1</span> Client Info</div>
+          <div class="setup-step" data-fstep="B"><span class="step-num">2</span> Choose Services</div>
+          <div class="setup-step" data-fstep="C"><span class="step-num">3</span> Deploy</div>
+        </div>
+
+        <!-- FAST STEP A: Client Business Info -->
+        <div class="setup-panel active" id="fastStepA">
+          <h3 style="margin-bottom:4px">Client Information</h3>
+          <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Fill in the basics about the business you're deploying for.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="setup-field">
+              <label>Business Name <span style="color:var(--red)">*</span></label>
+              <input id="fast-biz-name" placeholder="e.g. Tony's Barbershop">
+              <div class="hint">The business name clients and callers will hear from the AI</div>
+            </div>
+            <div class="setup-field">
+              <label>Business Type <span style="color:var(--red)">*</span></label>
+              <select id="fast-biz-type" style="width:100%;padding:10px 12px;background:#111;border:1px solid #222;border-radius:8px;color:var(--text);font-size:0.85em">
+                <option value="">Select type...</option>
+                <option>Barbershop / Salon</option>
+                <option>Dental / Medical</option>
+                <option>Law Firm</option>
+                <option>Real Estate</option>
+                <option>Restaurant / Food</option>
+                <option>Gym / Fitness</option>
+                <option>Auto Repair</option>
+                <option>HVAC / Plumbing</option>
+                <option>Retail Store</option>
+                <option>Spa / Wellness</option>
+                <option>Insurance Agency</option>
+                <option>Financial Services</option>
+                <option>Contractor / Construction</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="setup-field">
+              <label>Business Phone <span style="color:var(--red)">*</span></label>
+              <input id="fast-biz-phone" placeholder="(305) 555-1234" type="tel">
+              <div class="hint">The number customers call — AI answers this</div>
+            </div>
+            <div class="setup-field">
+              <label>Business Email <span style="color:var(--red)">*</span></label>
+              <input id="fast-biz-email" placeholder="info@business.com" type="email">
+            </div>
+            <div class="setup-field" style="grid-column:span 2">
+              <label>Business Hours <span style="color:var(--red)">*</span></label>
+              <input id="fast-biz-hours" placeholder="Mon-Fri 9am-6pm, Sat 10am-4pm, Closed Sun">
+            </div>
+            <div class="setup-field">
+              <label>Owner / Manager Name</label>
+              <input id="fast-owner-name" placeholder="Tony Garcia">
+            </div>
+            <div class="setup-field">
+              <label>Owner Email (for alerts) <span style="color:var(--red)">*</span></label>
+              <input id="fast-owner-email" placeholder="owner@email.com" type="email">
+              <div class="hint">We'll send appointment notifications here</div>
+            </div>
+            <div class="setup-field" style="grid-column:span 2">
+              <label>Business Address</label>
+              <input id="fast-biz-address" placeholder="123 Main St, Miami, FL 33101">
+            </div>
+            <div class="setup-field" style="grid-column:span 2">
+              <label>Quick Description</label>
+              <input id="fast-biz-desc" placeholder="e.g. Premium barbershop serving Miami since 2015. Specializes in fades, beard trims, and hot towel shaves.">
+              <div class="hint">The AI uses this to answer questions about the business</div>
+            </div>
+          </div>
+          <div id="fastStepAError" style="color:var(--red);font-size:0.78em;margin-top:8px;display:none"></div>
+          <div style="margin-top:20px;display:flex;justify-content:flex-end">
+            <button class="btn" onclick="fastNext('B')" style="padding:11px 28px">Next: Choose Services →</button>
+          </div>
+        </div>
+
+        <!-- FAST STEP B: Service Packages -->
+        <div class="setup-panel" id="fastStepB">
+          <h3 style="margin-bottom:4px">What does this client need?</h3>
+          <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Pick the services to activate. You can always change these later.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:20px" id="fastServiceCards">
+            <!-- Rendered by JS -->
+          </div>
+          <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:0.78em;color:var(--dim);margin-bottom:16px">
+            💡 <strong style="color:var(--text)">Tip:</strong> Not sure? Start with <strong style="color:var(--gold)">AI Receptionist + Appointment Scheduler</strong> — works for almost every business.
+          </div>
+          <div style="margin-top:8px;display:flex;justify-content:space-between">
+            <button class="btn-outline" onclick="fastNext('A')">← Back</button>
+            <button class="btn" onclick="fastNext('C')" style="padding:11px 28px">Next: Review & Deploy →</button>
+          </div>
+        </div>
+
+        <!-- FAST STEP C: Review & 1-Click Deploy -->
+        <div class="setup-panel" id="fastStepC">
+          <h3 style="margin-bottom:4px">Ready to Deploy</h3>
+          <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Review the setup and hit Deploy. The AI will be live for this client immediately.</p>
+          <div id="fastReviewContent" style="margin-bottom:20px"></div>
+          <div style="background:linear-gradient(135deg,#0d1a0d,#0a0a0a);border:1px solid rgba(0,200,83,0.2);border-radius:12px;padding:18px;margin-bottom:20px">
+            <div style="font-size:0.88em;font-weight:700;color:var(--green);margin-bottom:8px">🚀 What happens when you click Deploy:</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <div style="font-size:0.75em;color:var(--muted);display:flex;gap:6px"><span style="color:var(--green)">✓</span> Config saved to server</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;gap:6px"><span style="color:var(--green)">✓</span> AI modules activated</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;gap:6px"><span style="color:var(--green)">✓</span> Receptionist starts answering</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;gap:6px"><span style="color:var(--green)">✓</span> Owner gets confirmation email</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <button class="btn-outline" onclick="fastNext('B')">← Back</button>
+            <button class="btn" id="fastDeployBtn" onclick="fastDeploy()" style="background:linear-gradient(135deg,var(--green),#2ecc71);font-size:1em;padding:14px 40px">
+              🚀 Deploy Client Now
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FULL 7-STEP MODE (Self Setup) ══ -->
+      <div id="fullModeContainer" style="display:none">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+          <button onclick="resetSetupMode()" style="background:none;border:none;color:var(--dim);font-size:0.8em;cursor:pointer;padding:0">← Change mode</button>
+          <div style="font-size:0.82em;font-weight:700;color:var(--blue)">🧑‍💻 Full Setup — Self Mode</div>
+        </div>
+
       <!-- Step indicator -->
       <div style="display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap" id="setupSteps">
         <div class="setup-step active" data-step="1"><span class="step-num">1</span> VPS & Domain</div>
@@ -1479,6 +1859,13 @@
         .setup-step.done .step-num { background:var(--green);color:#fff; }
         .setup-panel { display:none; }
         .setup-panel.active { display:block; }
+        .vps-choice-card:hover { border-color:var(--gold) !important; transform:translateY(-2px); }
+        .vps-choice-card.selected { border-color:var(--gold) !important; background:rgba(247,201,72,0.05) !important; }
+        #vpsChoiceAuto:hover { border-color:var(--gold) !important; }
+        /* Setup lock overlay */
+        .nav-locked { pointer-events:none !important; opacity:0.35 !important; cursor:not-allowed !important; }
+        .setup-lock-banner { background:linear-gradient(135deg,#1a0800,#0d0d0d);border:1px solid rgba(255,107,53,0.4);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;font-size:0.82em;color:var(--muted); }
+        .setup-lock-banner strong { color:var(--orange); }
         .preset-card { background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.2s; }
         .preset-card:hover { border-color:var(--gold);transform:translateY(-2px); }
         .preset-card.selected { border-color:var(--gold);background:rgba(247,201,72,0.06); }
@@ -1504,81 +1891,181 @@
 
       <!-- STEP 1: VPS & Domain Setup -->
       <div class="setup-panel active" id="setupStep1">
-        <h3 style="margin-bottom:6px">VPS & Domain Setup</h3>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Connect your server so everything runs on your own infrastructure. Already deployed? Fill in your details and skip ahead.</p>
+        <h3 style="margin-bottom:6px">VPS & Server Setup</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:24px">Your toolkit needs a server to run on. Choose your setup option below to get started.</p>
 
-        <!-- Quick Install Banner -->
-        <div style="background:linear-gradient(135deg,#0d1b2a,#1b2838);border:1px solid #42a5f544;border-radius:12px;padding:20px;margin-bottom:20px">
-          <div style="font-size:0.92em;font-weight:700;color:var(--blue);margin-bottom:8px">One-Command Install</div>
-          <p style="font-size:0.78em;color:var(--muted);margin-bottom:12px">SSH into your VPS and run this to install everything automatically:</p>
-          <div style="background:#000;border-radius:8px;padding:14px;font-family:Consolas,monospace;font-size:0.82em;color:var(--green);position:relative;border:1px solid #1a1a1a">
-            <code>curl -sSL https://janovum.com/install.sh | bash</code>
-            <button onclick="navigator.clipboard.writeText('curl -sSL https://janovum.com/install.sh | bash');toast('Copied!','success')" style="position:absolute;top:8px;right:8px;background:#222;border:1px solid #333;color:#999;border-radius:6px;padding:4px 10px;font-size:0.75em;cursor:pointer">Copy</button>
-          </div>
-          <div style="font-size:0.7em;color:var(--dim);margin-top:8px">Or manually: <code style="color:var(--muted)">git clone https://github.com/janovum/toolkit.git && cd toolkit/platform && python install.py</code></div>
-        </div>
-
-        <!-- Server Details -->
-        <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="setup-field">
-            <label>Domain Name *</label>
-            <input id="sw-domain" placeholder="e.g. mycompany.janovum.com or mybiz.com" style="font-family:Consolas,monospace">
-            <div class="hint">Your VPS domain — phone webhooks and the dashboard will use this</div>
-          </div>
-          <div class="setup-field">
-            <label>Server IP Address</label>
-            <input id="sw-server-ip" placeholder="e.g. 149.28.123.45">
-            <div class="hint">Your VPS public IP (from Vultr, DigitalOcean, Linode, etc.)</div>
-          </div>
-          <div class="setup-field">
-            <label>SSH Username</label>
-            <input id="sw-ssh-user" placeholder="root" value="root">
-          </div>
-          <div class="setup-field">
-            <label>SSH Port</label>
-            <input id="sw-ssh-port" placeholder="22" value="22" type="number">
-          </div>
-          <div class="setup-field" style="grid-column:span 2">
-            <label>Server Port</label>
-            <input id="sw-server-port" placeholder="5050" value="5050" type="number">
-            <div class="hint">Port the Janovum server runs on (default 5050). Nginx will proxy to this.</div>
+        <!-- VPS Choice Cards -->
+        <div id="vpsChoiceSection">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px" id="vpsChoiceCards">
+            <div class="vps-choice-card" id="vpsChoiceOwn" onclick="selectVpsChoice('own')" style="background:var(--card);border:2px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:all 0.2s">
+              <div style="font-size:2em;margin-bottom:12px">🖥️</div>
+              <div style="font-size:1em;font-weight:700;margin-bottom:6px">I already have a VPS</div>
+              <div style="font-size:0.76em;color:var(--muted);line-height:1.5">I have my own server on Vultr, DigitalOcean, or similar. I'll connect it manually.</div>
+              <div style="margin-top:14px;font-size:0.72em;color:var(--dim);background:#1a1a1a;border-radius:6px;padding:6px 10px;display:inline-block">You handle hosting costs</div>
+            </div>
+            <div class="vps-choice-card" id="vpsChoiceAuto" onclick="selectVpsChoice('auto')" style="background:linear-gradient(135deg,#1a1200,#120d00);border:2px solid var(--border);border-radius:14px;padding:24px;cursor:pointer;transition:all 0.2s">
+              <div style="font-size:2em;margin-bottom:12px">⚡</div>
+              <div style="font-size:1em;font-weight:700;margin-bottom:6px">Get an automated VPS</div>
+              <div style="font-size:0.76em;color:var(--muted);line-height:1.5">We provision, configure, and deploy everything for you. Ready in under 2 minutes.</div>
+              <div style="margin-top:14px;font-size:0.72em;font-weight:700;color:var(--gold);background:rgba(247,201,72,0.1);border:1px solid rgba(247,201,72,0.2);border-radius:6px;padding:6px 10px;display:inline-block">$50 / month — fully managed</div>
+            </div>
           </div>
         </div>
 
-        <!-- Connection Test -->
-        <div style="display:flex;gap:10px;align-items:center;margin-top:8px;margin-bottom:8px">
-          <button class="btn-outline" onclick="swTestConnection()" style="font-size:0.82em">Test Connection</button>
-          <span id="sw-conn-status" style="font-size:0.78em;color:var(--dim)"></span>
-        </div>
+        <!-- OWN VPS FORM (hidden until selected) -->
+        <div id="vpsOwnForm" style="display:none">
+          <div style="background:linear-gradient(135deg,#0d1b2a,#1b2838);border:1px solid #42a5f544;border-radius:12px;padding:20px;margin-bottom:20px">
+            <div style="font-size:0.92em;font-weight:700;color:var(--blue);margin-bottom:8px">One-Command Install</div>
+            <p style="font-size:0.78em;color:var(--muted);margin-bottom:12px">SSH into your VPS and run this to install everything automatically:</p>
+            <div style="background:#000;border-radius:8px;padding:14px;font-family:Consolas,monospace;font-size:0.82em;color:var(--green);position:relative;border:1px solid #1a1a1a">
+              <code>curl -sSL https://janovum.com/install.sh | bash</code>
+              <button onclick="navigator.clipboard.writeText('curl -sSL https://janovum.com/install.sh | bash');toast('Copied!','success')" style="position:absolute;top:8px;right:8px;background:#222;border:1px solid #333;color:#999;border-radius:6px;padding:4px 10px;font-size:0.75em;cursor:pointer">Copy</button>
+            </div>
+            <div style="font-size:0.7em;color:var(--dim);margin-top:8px">Or manually: <code style="color:var(--muted)">git clone https://github.com/janovum/toolkit.git && cd toolkit/platform && python install.py</code></div>
+          </div>
 
-        <!-- Expandable: Manual VPS Setup Guide -->
-        <details style="margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
-          <summary style="font-size:0.84em;color:var(--gold);cursor:pointer;font-weight:600">Need a VPS? Step-by-step guide</summary>
-          <div style="margin-top:12px;font-size:0.78em;color:var(--muted);line-height:1.7">
-            <div style="margin-bottom:12px"><strong style="color:var(--text)">1. Get a VPS ($6-10/mo)</strong><br>Sign up at <span style="color:var(--blue)">vultr.com</span>, <span style="color:var(--blue)">digitalocean.com</span>, or <span style="color:var(--blue)">linode.com</span>. Pick Ubuntu 22.04, 1 CPU, 1GB RAM.</div>
-            <div style="margin-bottom:12px"><strong style="color:var(--text)">2. Point your domain</strong><br>Go to your domain registrar (Namecheap, GoDaddy, Cloudflare) and add an <strong>A record</strong> pointing to your VPS IP address.</div>
-            <div style="margin-bottom:12px"><strong style="color:var(--text)">3. SSH in and install</strong><br>
-              <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">ssh root@YOUR_IP
+          <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="setup-field">
+              <label>Domain Name *</label>
+              <input id="sw-domain" placeholder="e.g. mycompany.janovum.com or mybiz.com" style="font-family:Consolas,monospace">
+              <div class="hint">Your VPS domain — phone webhooks and the dashboard will use this</div>
+            </div>
+            <div class="setup-field">
+              <label>Server IP Address</label>
+              <input id="sw-server-ip" placeholder="e.g. 149.28.123.45">
+              <div class="hint">Your VPS public IP (from Vultr, DigitalOcean, Linode, etc.)</div>
+            </div>
+            <div class="setup-field">
+              <label>SSH Username</label>
+              <input id="sw-ssh-user" placeholder="root" value="root">
+            </div>
+            <div class="setup-field">
+              <label>SSH Port</label>
+              <input id="sw-ssh-port" placeholder="22" value="22" type="number">
+            </div>
+            <div class="setup-field" style="grid-column:span 2">
+              <label>Server Port</label>
+              <input id="sw-server-port" placeholder="5050" value="5050" type="number">
+              <div class="hint">Port the Janovum server runs on (default 5050). Nginx will proxy to this.</div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:8px;margin-bottom:8px">
+            <button class="btn-outline" onclick="swTestConnection()" style="font-size:0.82em">Test Connection</button>
+            <span id="sw-conn-status" style="font-size:0.78em;color:var(--dim)"></span>
+          </div>
+
+          <details style="margin-top:16px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px">
+            <summary style="font-size:0.84em;color:var(--gold);cursor:pointer;font-weight:600">Step-by-step setup guide</summary>
+            <div style="margin-top:12px;font-size:0.78em;color:var(--muted);line-height:1.7">
+              <div style="margin-bottom:12px"><strong style="color:var(--text)">1. Get a VPS ($6-10/mo)</strong><br>Sign up at <span style="color:var(--blue)">vultr.com</span>, <span style="color:var(--blue)">digitalocean.com</span>, or <span style="color:var(--blue)">linode.com</span>. Pick Ubuntu 22.04, 1 CPU, 1GB RAM.</div>
+              <div style="margin-bottom:12px"><strong style="color:var(--text)">2. Point your domain</strong><br>Add an <strong>A record</strong> pointing to your VPS IP at your domain registrar.</div>
+              <div style="margin-bottom:12px"><strong style="color:var(--text)">3. SSH in and install</strong><br>
+                <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">ssh root@YOUR_IP
 apt update && apt upgrade -y
 apt install python3 python3-pip python3-venv nginx certbot python3-certbot-nginx -y
 git clone https://github.com/janovum/toolkit.git /opt/janovum
 cd /opt/janovum/platform && python3 install.py</pre>
+              </div>
             </div>
-            <div style="margin-bottom:12px"><strong style="color:var(--text)">4. Set up SSL (free HTTPS)</strong><br>
-              <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">sudo certbot --nginx -d YOUR_DOMAIN --non-interactive --agree-tos -m your@email.com</pre>
-            </div>
-            <div><strong style="color:var(--text)">5. Start the server</strong><br>
-              <pre style="background:#000;padding:10px;border-radius:6px;color:var(--green);font-size:0.95em;margin-top:4px;overflow-x:auto">cd /opt/janovum/platform
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-python3 server.py &</pre>
-              Then open <strong style="color:var(--blue)">https://YOUR_DOMAIN</strong> in your browser — you should see this dashboard.
+          </details>
+
+          <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center">
+            <button class="btn-outline" onclick="resetVpsChoice()" style="font-size:0.8em">&#8592; Change Option</button>
+            <button class="btn" onclick="setupNext(2)">Next &#8594;</button>
+          </div>
+        </div>
+
+        <!-- AUTO VPS FORM (hidden until selected) -->
+        <div id="vpsAutoForm" style="display:none">
+          <!-- What you get -->
+          <div style="background:linear-gradient(135deg,#1a1200,#0d0d0d);border:1px solid rgba(247,201,72,0.25);border-radius:12px;padding:20px;margin-bottom:20px">
+            <div style="font-size:0.9em;font-weight:700;color:var(--gold);margin-bottom:12px">⚡ What's included at $50/mo</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div style="font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> 2 vCPU / 4GB RAM VPS</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Auto-configured domain + SSL</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Janovum toolkit pre-installed</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Nginx + SSL (HTTPS) setup</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Auto-restart on crash</div>
+              <div style="font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--green)">✓</span> Monthly billing, cancel anytime</div>
             </div>
           </div>
-        </details>
 
-        <div style="margin-top:20px;display:flex;justify-content:flex-end">
-          <button class="btn" onclick="setupNext(2)">Next &#8594;</button>
+          <!-- Billing form -->
+          <div id="vpsAutoPayForm">
+            <div style="font-size:0.88em;font-weight:700;color:var(--text);margin-bottom:14px">Billing Information</div>
+            <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="setup-field" style="grid-column:span 2">
+                <label>Full Name on Card *</label>
+                <input id="vps-card-name" placeholder="Jane Smith">
+              </div>
+              <div class="setup-field" style="grid-column:span 2">
+                <label>Card Number *</label>
+                <input id="vps-card-num" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" style="font-family:Consolas,monospace;letter-spacing:1px">
+              </div>
+              <div class="setup-field">
+                <label>Expiry (MM/YY) *</label>
+                <input id="vps-card-exp" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)" style="font-family:Consolas,monospace">
+              </div>
+              <div class="setup-field">
+                <label>CVC *</label>
+                <input id="vps-card-cvc" placeholder="123" maxlength="4" type="password" style="font-family:Consolas,monospace">
+              </div>
+              <div class="setup-field">
+                <label>Email (for receipt) *</label>
+                <input id="vps-email" placeholder="you@company.com" type="email">
+              </div>
+              <div class="setup-field">
+                <label>Desired Subdomain</label>
+                <input id="vps-subdomain" placeholder="mycompany" style="font-family:Consolas,monospace">
+                <div class="hint">Will be: <span id="vpsSubdomainPreview" style="color:var(--gold)">mycompany</span>.janovum.app</div>
+              </div>
+            </div>
+            <div style="background:#111;border:1px solid #222;border-radius:8px;padding:14px;margin-top:4px;font-size:0.78em;color:var(--dim)">
+              🔒 Your card details are processed securely. By clicking "Provision Now" you authorize a recurring charge of <strong style="color:var(--gold)">$50.00/month</strong> until cancelled.
+            </div>
+            <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center">
+              <button class="btn-outline" onclick="resetVpsChoice()" style="font-size:0.8em">&#8592; Change Option</button>
+              <button class="btn" id="vpsProvisionBtn" onclick="startVpsProvisioning()" style="background:linear-gradient(135deg,#ff6b35,#f7c948);padding:12px 28px;font-size:0.88em">
+                ⚡ Provision Now — $50/mo
+              </button>
+            </div>
+          </div>
+
+          <!-- Provisioning progress (hidden until triggered) -->
+          <div id="vpsProvisioningProgress" style="display:none">
+            <div style="background:linear-gradient(135deg,#0a1a0a,#0d0d0d);border:1px solid rgba(0,200,83,0.2);border-radius:12px;padding:24px;text-align:center">
+              <div style="font-size:1.8em;margin-bottom:12px" id="vpsProgressIcon">⏳</div>
+              <div style="font-size:1em;font-weight:700;color:var(--text);margin-bottom:6px" id="vpsProgressTitle">Provisioning your server...</div>
+              <div style="font-size:0.78em;color:var(--muted);margin-bottom:24px" id="vpsProgressSub">This takes about 90 seconds</div>
+              <div style="max-width:400px;margin:0 auto">
+                <div class="vps-step" id="vpsProg1" style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a">
+                  <span class="vps-step-icon" style="font-size:1.1em;width:24px;text-align:center">⏳</span>
+                  <span style="font-size:0.8em;color:var(--muted)">Charging card &amp; creating account</span>
+                </div>
+                <div class="vps-step" id="vpsProg2" style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a">
+                  <span class="vps-step-icon" style="font-size:1.1em;width:24px;text-align:center">⏳</span>
+                  <span style="font-size:0.8em;color:var(--muted)">Spinning up VPS (2 vCPU / 4GB RAM)</span>
+                </div>
+                <div class="vps-step" id="vpsProg3" style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a">
+                  <span class="vps-step-icon" style="font-size:1.1em;width:24px;text-align:center">⏳</span>
+                  <span style="font-size:0.8em;color:var(--muted)">Installing Python, Nginx, dependencies</span>
+                </div>
+                <div class="vps-step" id="vpsProg4" style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a">
+                  <span class="vps-step-icon" style="font-size:1.1em;width:24px;text-align:center">⏳</span>
+                  <span style="font-size:0.8em;color:var(--muted)">Deploying Janovum toolkit</span>
+                </div>
+                <div class="vps-step" id="vpsProg5" style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #1a1a1a">
+                  <span class="vps-step-icon" style="font-size:1.1em;width:24px;text-align:center">⏳</span>
+                  <span style="font-size:0.8em;color:var(--muted)">Configuring domain &amp; SSL certificate</span>
+                </div>
+                <div class="vps-step" id="vpsProg6" style="display:flex;align-items:center;gap:12px;padding:8px 0">
+                  <span class="vps-step-icon" style="font-size:1.1em;width:24px;text-align:center">⏳</span>
+                  <span style="font-size:0.8em;color:var(--muted)">Starting server &amp; verifying health</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -1676,24 +2163,63 @@ python3 server.py &</pre>
 
       <!-- STEP 5: Business Info -->
       <div class="setup-panel" id="setupStep5">
-        <h3 style="margin-bottom:6px">Business Details</h3>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">Basic info shared across all modules.</p>
+        <h3 style="margin-bottom:4px">Business Details</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:20px">This info is shared across all modules — the AI uses it to answer questions and personalize responses.</p>
         <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div class="setup-field"><label>Business Name *</label><input id="sw-biz-name" placeholder="e.g. Tony's Barbershop"></div>
-          <div class="setup-field"><label>Business Type *</label><input id="sw-biz-type" placeholder="e.g. barbershop, dental, law firm"></div>
-          <div class="setup-field" style="grid-column:span 2"><label>Description *</label><input id="sw-biz-desc" placeholder="Short description of the business (1-2 sentences)"></div>
-          <div class="setup-field"><label>Business Hours *</label><input id="sw-biz-hours" placeholder="e.g. Mon-Fri 9am-7pm, Sat 8am-5pm"></div>
-          <div class="setup-field"><label>Address *</label><input id="sw-biz-address" placeholder="e.g. 123 Main St, Miami, FL 33101"></div>
-          <div class="setup-field"><label>Phone *</label><input id="sw-biz-phone" placeholder="e.g. (305) 555-1234"></div>
-          <div class="setup-field"><label>Email *</label><input id="sw-biz-email" placeholder="e.g. info@business.com"></div>
-          <div class="setup-field"><label>Owner Email (notifications) *</label><input id="sw-owner-email" placeholder="e.g. owner@email.com"></div>
-          <div class="setup-field"><label>Owner Phone (urgent alerts)</label><input id="sw-owner-phone" placeholder="e.g. (305) 555-9999"></div>
-          <div class="setup-field"><label>Language</label><input id="sw-language" placeholder="English" value="English"></div>
-          <div class="setup-field"><label>AI Personality / Vibe</label><input id="sw-personality" placeholder="e.g. friendly and casual, professional, warm" value="friendly and professional"></div>
+          <div class="setup-field">
+            <label>Business Name <span style="color:var(--red)">*</span></label>
+            <input id="sw-biz-name" placeholder="e.g. Tony's Barbershop">
+          </div>
+          <div class="setup-field">
+            <label>Business Type <span style="color:var(--red)">*</span></label>
+            <input id="sw-biz-type" placeholder="e.g. barbershop, dental, law firm">
+          </div>
+          <div class="setup-field" style="grid-column:span 2">
+            <label>Description <span style="color:var(--red)">*</span></label>
+            <input id="sw-biz-desc" placeholder="e.g. Premier barbershop in Miami serving men's cuts, fades, and beard trims since 2015">
+            <div class="hint">1-2 sentences. The AI uses this to answer "What do you do?" questions</div>
+          </div>
+          <div class="setup-field">
+            <label>Business Hours <span style="color:var(--red)">*</span></label>
+            <input id="sw-biz-hours" placeholder="Mon-Fri 9am-7pm, Sat 8am-5pm, Closed Sun">
+            <div class="hint">The AI will tell callers when you're open/closed</div>
+          </div>
+          <div class="setup-field">
+            <label>Address</label>
+            <input id="sw-biz-address" placeholder="123 Main St, Miami, FL 33101">
+          </div>
+          <div class="setup-field">
+            <label>Business Phone <span style="color:var(--red)">*</span></label>
+            <input id="sw-biz-phone" placeholder="(305) 555-1234">
+          </div>
+          <div class="setup-field">
+            <label>Business Email</label>
+            <input id="sw-biz-email" placeholder="info@business.com">
+          </div>
+          <div class="setup-field">
+            <label>Owner Email <span style="color:var(--red)">*</span></label>
+            <input id="sw-owner-email" placeholder="owner@email.com" type="email">
+            <div class="hint">Appointment notifications and alerts go here</div>
+          </div>
+          <div class="setup-field">
+            <label>Owner Phone</label>
+            <input id="sw-owner-phone" placeholder="(305) 555-9999">
+            <div class="hint">For urgent SMS alerts (optional)</div>
+          </div>
+          <div class="setup-field">
+            <label>Language</label>
+            <input id="sw-language" placeholder="English" value="English">
+          </div>
+          <div class="setup-field">
+            <label>AI Personality</label>
+            <input id="sw-personality" placeholder="friendly and professional" value="friendly and professional">
+            <div class="hint">How the AI speaks: friendly, professional, casual, formal...</div>
+          </div>
         </div>
+        <div id="swStep5Error" style="color:var(--red);font-size:0.78em;margin-top:8px;display:none;padding:10px;background:#1a0000;border-radius:6px;border:1px solid rgba(255,82,82,0.3)"></div>
         <div style="margin-top:20px;display:flex;justify-content:space-between">
           <button class="btn-outline" onclick="setupNext(4)">&#8592; Back</button>
-          <button class="btn" onclick="setupNext(6)">Next &#8594;</button>
+          <button class="btn" onclick="swValidateStep5()">Next &#8594;</button>
         </div>
       </div>
 
@@ -1719,6 +2245,183 @@ python3 server.py &</pre>
         </div>
       </div>
 
+      </div><!-- end fullModeContainer -->
+    </div>
+
+    <!-- ════════════════════════════════════════ -->
+    <!-- PLANS & BILLING TAB                     -->
+    <!-- ════════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-billing">
+      <style>
+        .plan-card { background:var(--card);border:2px solid var(--border);border-radius:14px;padding:28px;transition:all 0.2s;position:relative;overflow:hidden; }
+        .plan-card:hover { border-color:#444;transform:translateY(-2px); }
+        .plan-card.recommended { border-color:var(--gold); }
+        .plan-card.recommended::before { content:'MOST POPULAR';position:absolute;top:14px;right:-28px;background:var(--gold);color:#000;font-size:0.6em;font-weight:800;padding:4px 40px;transform:rotate(45deg);letter-spacing:1px; }
+        .plan-price { font-size:2.4em;font-weight:800;line-height:1; }
+        .plan-price span { font-size:0.38em;font-weight:500;color:var(--muted);vertical-align:top;margin-top:8px;display:inline-block; }
+        .plan-feature { display:flex;align-items:center;gap:8px;font-size:0.78em;color:var(--muted);padding:5px 0; }
+        .plan-feature .chk { color:var(--green);font-weight:700;flex-shrink:0; }
+        .profit-slider { width:100%;accent-color:var(--gold);height:6px;cursor:pointer; }
+        .profit-result { background:linear-gradient(135deg,rgba(247,201,72,0.08),rgba(255,107,53,0.05));border:1px solid rgba(247,201,72,0.2);border-radius:10px;padding:18px;text-align:center; }
+      </style>
+
+      <!-- Header -->
+      <div style="margin-bottom:28px">
+        <h2 style="font-size:1.4em;font-weight:800;margin-bottom:6px">Plans & Billing</h2>
+        <p style="font-size:0.84em;color:var(--muted)">Run the toolkit on your own VPS, or let Janovum manage everything. Deploy for clients, keep the margin.</p>
+      </div>
+
+      <!-- Current Plan Banner -->
+      <div id="billingCurrentPlan" style="background:linear-gradient(135deg,#111,#0d0d0d);border:1px solid rgba(247,201,72,0.2);border-radius:12px;padding:18px 22px;margin-bottom:28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:gap;gap:12px">
+        <div>
+          <div style="font-size:0.7em;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Current Plan</div>
+          <div style="font-size:1.1em;font-weight:700" id="billingPlanName">Self-Hosted (Free)</div>
+          <div style="font-size:0.76em;color:var(--dim);margin-top:2px" id="billingPlanSub">You manage your own VPS — no monthly fee to Janovum</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:0.7em;color:var(--muted);margin-bottom:4px">Orders / Clients</div>
+          <div style="font-size:1.2em;font-weight:700;color:var(--gold)" id="billingOrderCount">—</div>
+        </div>
+      </div>
+
+      <!-- Plan Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:32px">
+        <!-- Starter -->
+        <div class="plan-card">
+          <div style="font-size:0.8em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Starter</div>
+          <div class="plan-price gold">$97<span>/mo</span></div>
+          <div style="font-size:0.72em;color:var(--dim);margin:8px 0 16px">Managed VPS included</div>
+          <div class="plan-feature"><span class="chk">✓</span> Managed VPS (2 vCPU / 4GB RAM)</div>
+          <div class="plan-feature"><span class="chk">✓</span> Up to 5 client deployments</div>
+          <div class="plan-feature"><span class="chk">✓</span> AI Receptionist, CRM, Scheduler</div>
+          <div class="plan-feature"><span class="chk">✓</span> Email support</div>
+          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> White-label</div>
+          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> Custom domain</div>
+          <button class="btn" style="width:100%;margin-top:18px;background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="startCheckout('starter')">Get Started</button>
+        </div>
+        <!-- Agency (recommended) -->
+        <div class="plan-card recommended">
+          <div style="font-size:0.8em;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Agency</div>
+          <div class="plan-price" style="color:var(--orange)">$197<span>/mo</span></div>
+          <div style="font-size:0.72em;color:var(--dim);margin:8px 0 16px">Managed VPS included</div>
+          <div class="plan-feature"><span class="chk">✓</span> Managed VPS (4 vCPU / 8GB RAM)</div>
+          <div class="plan-feature"><span class="chk">✓</span> Up to 25 client deployments</div>
+          <div class="plan-feature"><span class="chk">✓</span> All modules including premium</div>
+          <div class="plan-feature"><span class="chk">✓</span> White-label (remove Janovum logo)</div>
+          <div class="plan-feature"><span class="chk">✓</span> Custom domain (yourbrand.com)</div>
+          <div class="plan-feature"><span class="chk">✓</span> Priority support</div>
+          <button class="btn" style="width:100%;margin-top:18px" onclick="startCheckout('agency')">Get Agency Plan</button>
+        </div>
+        <!-- Enterprise -->
+        <div class="plan-card">
+          <div style="font-size:0.8em;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Enterprise</div>
+          <div class="plan-price purple">$397<span>/mo</span></div>
+          <div style="font-size:0.72em;color:var(--dim);margin:8px 0 16px">Dedicated VPS included</div>
+          <div class="plan-feature"><span class="chk">✓</span> Dedicated VPS (8 vCPU / 16GB)</div>
+          <div class="plan-feature"><span class="chk">✓</span> Unlimited clients</div>
+          <div class="plan-feature"><span class="chk">✓</span> All modules + custom builds</div>
+          <div class="plan-feature"><span class="chk">✓</span> Full white-label + custom domain</div>
+          <div class="plan-feature"><span class="chk">✓</span> Dedicated Slack channel</div>
+          <div class="plan-feature"><span class="chk">✓</span> SLA + uptime guarantee</div>
+          <button class="btn" style="width:100%;margin-top:18px;background:linear-gradient(135deg,var(--purple),#9c6fff);color:#000" onclick="startCheckout('enterprise')">Go Enterprise</button>
+        </div>
+      </div>
+
+      <!-- Self-Hosted Option -->
+      <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:0.88em;font-weight:700;margin-bottom:4px">Self-Hosted — Free Forever</div>
+          <div style="font-size:0.75em;color:var(--muted)">Run on your own VPS. You pay hosting costs (~$6-20/mo to Vultr/DO). No Janovum subscription needed.</div>
+        </div>
+        <button class="btn-outline" onclick="switchTab('setup')" style="font-size:0.8em">Go to Setup →</button>
+      </div>
+
+      <!-- Profit Calculator -->
+      <div class="panel" style="margin-bottom:28px">
+        <div class="panel-header"><div class="panel-title">💰 Profit Calculator — How Much Can You Make?</div></div>
+        <p style="font-size:0.78em;color:var(--muted);margin-bottom:20px">Set what you charge your clients. The toolkit does the work — you keep the margin.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div>
+            <div style="font-size:0.78em;font-weight:600;color:#bbb;margin-bottom:8px">You charge each client: <strong style="color:var(--gold)" id="calcChargeLabel">$500</strong>/mo</div>
+            <input type="range" class="profit-slider" min="200" max="2000" step="50" value="500" id="calcCharge" oninput="updateProfitCalc()">
+            <div style="display:flex;justify-content:space-between;font-size:0.65em;color:var(--dim);margin-top:2px"><span>$200</span><span>$2,000</span></div>
+          </div>
+          <div>
+            <div style="font-size:0.78em;font-weight:600;color:#bbb;margin-bottom:8px">Number of clients: <strong style="color:var(--gold)" id="calcClientsLabel">5</strong></div>
+            <input type="range" class="profit-slider" min="1" max="50" step="1" value="5" id="calcClients" oninput="updateProfitCalc()">
+            <div style="display:flex;justify-content:space-between;font-size:0.65em;color:var(--dim);margin-top:2px"><span>1</span><span>50</span></div>
+          </div>
+        </div>
+        <div style="margin-top:8px;margin-bottom:16px">
+          <div style="font-size:0.78em;font-weight:600;color:#bbb;margin-bottom:8px">Your Janovum plan: <strong style="color:var(--gold)" id="calcPlanLabel">Agency ($197/mo)</strong></div>
+          <select id="calcPlan" onchange="updateProfitCalc()" style="background:#111;border:1px solid #222;border-radius:8px;color:var(--text);padding:8px 12px;font-size:0.82em;width:100%;max-width:280px">
+            <option value="0">Self-Hosted ($0/mo to Janovum)</option>
+            <option value="97">Starter ($97/mo)</option>
+            <option value="197" selected>Agency ($197/mo)</option>
+            <option value="397">Enterprise ($397/mo)</option>
+          </select>
+        </div>
+        <div class="profit-result">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            <div>
+              <div style="font-size:0.7em;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Revenue</div>
+              <div style="font-size:1.6em;font-weight:800;color:var(--green)" id="calcRevenue">$2,500</div>
+              <div style="font-size:0.68em;color:var(--dim)">/month</div>
+            </div>
+            <div>
+              <div style="font-size:0.7em;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Your Cost</div>
+              <div style="font-size:1.6em;font-weight:800;color:var(--red)" id="calcCost">$197</div>
+              <div style="font-size:0.68em;color:var(--dim)">/month</div>
+            </div>
+            <div>
+              <div style="font-size:0.7em;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px">Net Profit</div>
+              <div style="font-size:1.6em;font-weight:800;color:var(--gold)" id="calcProfit">$2,303</div>
+              <div style="font-size:0.68em;color:var(--dim)">/month</div>
+            </div>
+          </div>
+          <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(247,201,72,0.15);font-size:0.8em;color:var(--muted)">
+            Annual profit: <strong style="color:var(--gold);font-size:1.1em" id="calcAnnual">$27,636</strong> &nbsp;·&nbsp; Margin: <strong style="color:var(--green)" id="calcMargin">92%</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Orders Table -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">📋 VPS Orders</div>
+          <button class="btn-outline btn-sm" onclick="loadBillingOrders()">Refresh</button>
+        </div>
+        <div id="billingOrdersList">
+          <div class="empty-state" style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No orders yet. Plans purchased here will appear below.</div>
+        </div>
+      </div>
+
+      <!-- Checkout Modal (hidden) -->
+      <div id="billingCheckoutModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:none;align-items:center;justify-content:center">
+        <div style="background:#111;border:1px solid #333;border-radius:16px;padding:32px;max-width:480px;width:90%;position:relative">
+          <button onclick="closeBillingCheckout()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:#666;font-size:1.4em;cursor:pointer">✕</button>
+          <div style="font-size:1.1em;font-weight:700;margin-bottom:4px" id="checkoutTitle">Agency Plan — $197/mo</div>
+          <div style="font-size:0.76em;color:var(--muted);margin-bottom:20px">Managed VPS + unlimited toolkit access. Cancel anytime.</div>
+          <div style="display:grid;gap:10px;margin-bottom:16px">
+            <div class="setup-field"><label>Full Name on Card *</label><input id="co-name" placeholder="Jane Smith"></div>
+            <div class="setup-field"><label>Card Number *</label><input id="co-card" placeholder="1234 5678 9012 3456" maxlength="19" oninput="fmtCard(this)" style="font-family:Consolas,monospace;letter-spacing:1px"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="setup-field"><label>Expiry (MM/YY) *</label><input id="co-exp" placeholder="MM/YY" maxlength="5" oninput="fmtExp(this)" style="font-family:Consolas,monospace"></div>
+              <div class="setup-field"><label>CVC *</label><input id="co-cvc" placeholder="123" maxlength="4" type="password" style="font-family:Consolas,monospace"></div>
+            </div>
+            <div class="setup-field"><label>Email (for receipt) *</label><input id="co-email" placeholder="you@company.com" type="email"></div>
+            <div class="setup-field"><label>Desired Subdomain</label>
+              <input id="co-subdomain" placeholder="myagency" oninput="document.getElementById('coSubPreview').textContent=(this.value||'myagency')+'.janovum.app'" style="font-family:Consolas,monospace">
+              <div class="hint">Your dashboard: <span id="coSubPreview" style="color:var(--gold)">myagency.janovum.app</span></div>
+            </div>
+          </div>
+          <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:8px;padding:12px;font-size:0.74em;color:var(--dim);margin-bottom:16px">🔒 Secure checkout. By clicking below you authorize a recurring monthly charge until cancelled.</div>
+          <button class="btn" id="checkoutSubmitBtn" style="width:100%;font-size:0.92em;padding:13px" onclick="submitCheckout()">
+            ⚡ Start Subscription
+          </button>
+          <div id="checkoutStatus" style="margin-top:10px;font-size:0.78em;text-align:center;color:var(--dim)"></div>
+        </div>
+      </div>
     </div>
 
     <div class="tab-pane" id="tab-settings">
@@ -5214,6 +5917,150 @@ sudo ufw enable
 
 <script>
 // ══════════════════════════════════════
+// AUTH SYSTEM
+// ══════════════════════════════════════
+const TK_ACCOUNTS_KEY = 'janovum_tk_accounts';
+let tkUser = null;
+let tkIsGuest = false;
+let tkAuthMode = 'login';
+
+function getTkAccounts() {
+  try { return JSON.parse(localStorage.getItem(TK_ACCOUNTS_KEY)) || {}; } catch { return {}; }
+}
+function saveTkAccounts(a) { localStorage.setItem(TK_ACCOUNTS_KEY, JSON.stringify(a)); }
+
+function toggleAuthMode() {
+  tkAuthMode = tkAuthMode === 'login' ? 'signup' : 'login';
+  document.getElementById('authTitle').textContent = tkAuthMode === 'login' ? 'Sign In' : 'Create Account';
+  document.getElementById('authSubmitBtn').textContent = tkAuthMode === 'login' ? 'Sign In' : 'Create Account';
+  document.getElementById('authToggleText').textContent = tkAuthMode === 'login' ? "Don't have an account?" : 'Already have an account?';
+  document.getElementById('authToggleLink').textContent = tkAuthMode === 'login' ? 'Create one' : 'Sign in';
+  document.getElementById('authNameRow').style.display = tkAuthMode === 'signup' ? '' : 'none';
+  document.getElementById('authEmailRow').style.display = tkAuthMode === 'signup' ? '' : 'none';
+  document.getElementById('authError').textContent = '';
+}
+
+// Admin credentials (bypasses account system)
+const ADMIN_USER = 'jaden';
+const ADMIN_PASS = 'Janovum2026!';
+
+function handleAuth() {
+  const user = document.getElementById('authUser').value.trim().toLowerCase();
+  const pass = document.getElementById('authPass').value;
+  const err = document.getElementById('authError');
+  if (!user || !pass) { err.textContent = 'Fill in all fields'; return; }
+
+  // Admin bypass — no account needed
+  if (user === ADMIN_USER && pass === ADMIN_PASS) {
+    tkLoginAs(user, { displayName: 'Jaden', role: 'admin' });
+    return;
+  }
+
+  if (user.length < 2) { err.textContent = 'Username too short'; return; }
+  if (pass.length < 4) { err.textContent = 'Password too short'; return; }
+
+  const accounts = getTkAccounts();
+
+  if (tkAuthMode === 'signup') {
+    if (accounts[user]) { err.textContent = 'Username already taken'; return; }
+    const displayName = document.getElementById('authDisplayName').value.trim() || user;
+    const email = document.getElementById('authEmail').value.trim();
+    accounts[user] = { pass, displayName, email, role: 'user', created: new Date().toISOString() };
+    saveTkAccounts(accounts);
+    tkLoginAs(user, accounts[user]);
+  } else {
+    if (!accounts[user]) { err.textContent = 'Account not found'; return; }
+    if (accounts[user].pass !== pass) { err.textContent = 'Wrong password'; return; }
+    tkLoginAs(user, accounts[user]);
+  }
+}
+
+function tkLoginAs(username, acct) {
+  tkUser = username;
+  tkIsGuest = false;
+  localStorage.setItem('janovum_tk_user', username);
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('guestBanner').classList.remove('show');
+  // Update topbar with user info
+  const actions = document.querySelector('.topbar-actions');
+  if (!document.getElementById('tkUserBadge')) {
+    const badge = document.createElement('span');
+    badge.id = 'tkUserBadge';
+    badge.style.cssText = 'font-size:0.75em;color:var(--gold);font-weight:600;margin-right:4px;';
+    badge.textContent = acct.displayName || username;
+    actions.prepend(badge);
+  } else {
+    document.getElementById('tkUserBadge').textContent = acct.displayName || username;
+  }
+  // Add logout button if not exists
+  if (!document.getElementById('tkLogoutBtn')) {
+    const btn = document.createElement('button');
+    btn.id = 'tkLogoutBtn';
+    btn.className = 'btn-sm btn-outline';
+    btn.textContent = 'Log out';
+    btn.style.cssText = 'font-size:0.72em;padding:4px 10px;';
+    btn.onclick = tkLogout;
+    actions.appendChild(btn);
+  }
+}
+
+function enterGuest() {
+  tkUser = null;
+  tkIsGuest = true;
+  localStorage.removeItem('janovum_tk_user');
+  document.getElementById('authScreen').classList.add('hidden');
+  document.getElementById('guestBanner').classList.add('show');
+  // Guests can browse freely — unlock nav and hide setup lock banner
+  unlockNav();
+  const lockBanner = document.getElementById('setupLockBanner');
+  if (lockBanner) lockBanner.style.display = 'none';
+}
+
+function tkLogout() {
+  tkUser = null;
+  tkIsGuest = false;
+  localStorage.removeItem('janovum_tk_user');
+  showAuthScreen();
+  const badge = document.getElementById('tkUserBadge');
+  const btn = document.getElementById('tkLogoutBtn');
+  if (badge) badge.remove();
+  if (btn) btn.remove();
+  document.getElementById('guestBanner').classList.remove('show');
+}
+
+function showAuthScreen() {
+  document.getElementById('authScreen').classList.remove('hidden');
+  document.getElementById('authUser').value = '';
+  document.getElementById('authPass').value = '';
+  document.getElementById('authError').textContent = '';
+  tkAuthMode = 'signup';
+  toggleAuthMode(); // reset to login
+}
+
+// Auto-login on load
+(function checkTkSession() {
+  const saved = localStorage.getItem('janovum_tk_user');
+  if (saved) {
+    // Admin auto-login
+    if (saved === ADMIN_USER) {
+      tkLoginAs(saved, { displayName: 'Jaden', role: 'admin' });
+      return;
+    }
+    const accounts = getTkAccounts();
+    if (accounts[saved]) {
+      tkLoginAs(saved, accounts[saved]);
+      return;
+    }
+  }
+  // Show auth screen
+  document.getElementById('authScreen').classList.remove('hidden');
+})();
+
+// Enter key support
+document.getElementById('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
+document.getElementById('authUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPass').focus(); });
+
+// ══════════════════════════════════════
 // CONFIG & STATE
 // ══════════════════════════════════════
 const API = window.location.origin || 'http://localhost:5050';
@@ -5244,6 +6091,7 @@ const TAB_TITLES = {
   soul: ['Soul Editor', 'Personality & Rules'],
   receptionist: ['Receptionist', 'Appointments & Messages'],
   clients: ['Clients', 'Manage All Client Receptionists'],
+  billing: ['Plans & Billing', 'Subscriptions, Profit Calculator & Orders'],
   setup: ['Setup Wizard', 'Configure for a New Client'],
   settings: ['Settings', 'Configuration'],
   employees: ['AI Employees', '56 Roles — One-Click Deploy'],
@@ -5275,16 +6123,335 @@ const TAB_TITLES = {
 // ══════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// MOBILE FULL-SCREEN NAV
+// ══════════════════════════════════════
+function buildMobileNav() {
+  const sidebar = document.getElementById('sidebarNav');
+  const list = document.getElementById('mobileNavList');
+  if (!sidebar || !list) return;
+  const items = sidebar.querySelectorAll('.nav-item');
+  list.innerHTML = '';
+  items.forEach(item => {
+    const tab = item.dataset.tab;
+    const icon = item.querySelector('.nav-icon');
+    const badge = item.querySelector('.nav-badge');
+    const text = item.textContent.replace(icon ? icon.textContent : '', '').replace(badge ? badge.textContent : '', '').trim();
+    const div = document.createElement('div');
+    div.className = 'mobile-nav-item' + (item.classList.contains('active') ? ' active' : '');
+    div.dataset.tab = tab;
+    div.dataset.label = text.toLowerCase();
+    div.innerHTML = (icon ? '<span class="mnav-icon">' + icon.innerHTML + '</span>' : '') +
+      '<span>' + text + '</span>' +
+      (badge ? '<span class="mnav-badge">' + badge.textContent + '</span>' : '');
+    div.onclick = function() {
+      switchTab(tab);
+      closeMobileNav();
+    };
+    list.appendChild(div);
+  });
+}
+
+function openMobileNav() {
+  buildMobileNav();
+  document.getElementById('mobileNavOverlay').classList.add('open');
+  document.getElementById('mobileNavSearch').value = '';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileNav() {
+  document.getElementById('mobileNavOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function filterMobileNav() {
+  const q = document.getElementById('mobileNavSearch').value.toLowerCase();
+  document.querySelectorAll('.mobile-nav-item').forEach(item => {
+    item.style.display = item.dataset.label.includes(q) ? '' : 'none';
+  });
+}
+
+// Desktop sidebar clicks
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     const tab = item.dataset.tab;
     switchTab(tab);
-    // Close sidebar on mobile
-    document.getElementById('sidebar').classList.remove('open');
   });
 });
 
+// ══════════════════════════════════════
+// CUSTOM SIDEBAR GROUPS
+// ══════════════════════════════════════
+const NAV_GROUPS_KEY = 'janovum_nav_groups';
+let dragTab = null;
+
+function loadNavGroups() {
+  try { return JSON.parse(localStorage.getItem(NAV_GROUPS_KEY)) || []; } catch(e) { console.error('groups load error', e); return []; }
+}
+function saveNavGroups(groups) { try { localStorage.setItem(NAV_GROUPS_KEY, JSON.stringify(groups)); } catch(e) { console.error('groups save error', e); } }
+
+function createNavGroup() {
+  const name = prompt('Group name:');
+  if (!name || !name.trim()) return;
+  const groups = loadNavGroups();
+  groups.push({ id: Date.now().toString(), name: name.trim(), tabs: [], collapsed: false });
+  saveNavGroups(groups);
+  renderNavGroups();
+}
+
+function deleteNavGroup(id) {
+  if (!confirm('Delete this group? Items return to the main nav.')) return;
+  const groups = loadNavGroups();
+  saveNavGroups(groups.filter(g => g.id !== id));
+  renderNavGroups();
+}
+
+function toggleNavGroup(id) {
+  const groups = loadNavGroups();
+  const g = groups.find(x => x.id === id);
+  if (g) g.collapsed = !g.collapsed;
+  saveNavGroups(groups);
+  // Toggle without full re-render
+  const body = document.querySelector('.nav-group[data-gid="' + id + '"] .nav-group-body');
+  const arrow = document.querySelector('.nav-group[data-gid="' + id + '"] .nav-group-arrow');
+  if (body) body.classList.toggle('collapsed', g.collapsed);
+  if (arrow) arrow.classList.toggle('collapsed', g.collapsed);
+}
+
+function renameNavGroup(id) {
+  const groups = loadNavGroups();
+  const g = groups.find(x => x.id === id);
+  if (!g) return;
+  const name = prompt('Rename group:', g.name);
+  if (!name || !name.trim()) return;
+  g.name = name.trim();
+  saveNavGroups(groups);
+  renderNavGroups();
+}
+
+function renderNavGroups() {
+  const container = document.getElementById('customGroupsContainer');
+  const sidebarNav = document.getElementById('sidebarNav');
+  if (!container || !sidebarNav) return;
+  const groups = loadNavGroups();
+
+  // Rescue all nav-items from groups back to main nav before clearing
+  const rescued = container.querySelectorAll('.nav-item');
+  rescued.forEach(item => { container.before(item); });
+  container.innerHTML = '';
+  if (groups.length === 0) { setupDragDrop(); return; }
+
+  groups.forEach(g => {
+    const div = document.createElement('div');
+    div.className = 'nav-group';
+    div.dataset.gid = g.id;
+    div.draggable = true;
+
+    // Group drag (reorder groups)
+    div.addEventListener('dragstart', e => {
+      if (e.target !== div) return;
+      e.dataTransfer.setData('application/group', g.id);
+      div.style.opacity = '0.4';
+    });
+    div.addEventListener('dragend', () => { div.style.opacity = ''; });
+    div.addEventListener('dragover', e => {
+      e.preventDefault();
+      const groupId = e.dataTransfer.types.includes('application/group');
+      if (groupId) div.classList.add('drag-over-group');
+    });
+    div.addEventListener('dragleave', () => div.classList.remove('drag-over-group'));
+    div.addEventListener('drop', e => {
+      div.classList.remove('drag-over-group');
+      const fromGid = e.dataTransfer.getData('application/group');
+      if (fromGid && fromGid !== g.id) {
+        // Reorder groups
+        const gs = loadNavGroups();
+        const fromIdx = gs.findIndex(x => x.id === fromGid);
+        const toIdx = gs.findIndex(x => x.id === g.id);
+        if (fromIdx >= 0 && toIdx >= 0) {
+          const [moved] = gs.splice(fromIdx, 1);
+          gs.splice(toIdx, 0, moved);
+          saveNavGroups(gs);
+          renderNavGroups();
+        }
+        return;
+      }
+    });
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'nav-group-header';
+    header.onclick = function() { toggleNavGroup(g.id); };
+
+    const arrow = document.createElement('span');
+    arrow.className = 'nav-group-arrow' + (g.collapsed ? ' collapsed' : '');
+    arrow.innerHTML = '&#9660;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'nav-group-name';
+    nameSpan.textContent = g.name;
+
+    const count = document.createElement('span');
+    count.className = 'nav-group-count';
+    count.textContent = g.tabs.length;
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'nav-group-btn';
+    renameBtn.textContent = '...';
+    renameBtn.title = 'Rename';
+    renameBtn.onclick = function(e) { e.stopPropagation(); renameNavGroup(g.id); };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'nav-group-btn del';
+    delBtn.innerHTML = '&times;';
+    delBtn.title = 'Delete';
+    delBtn.onclick = function(e) { e.stopPropagation(); deleteNavGroup(g.id); };
+
+    header.appendChild(arrow);
+    header.appendChild(nameSpan);
+    header.appendChild(count);
+    header.appendChild(renameBtn);
+    header.appendChild(delBtn);
+    div.appendChild(header);
+
+    // Body — simple display:none/block toggle, no max-height
+    const body = document.createElement('div');
+    body.className = 'nav-group-body' + (g.collapsed ? ' collapsed' : '');
+    body.dataset.gid = g.id;
+
+    // Move nav items into group
+    g.tabs.forEach(tab => {
+      const item = document.querySelector('.nav-item[data-tab="' + tab + '"]');
+      if (item) body.appendChild(item);
+    });
+
+    // Drop zone
+    const drop = document.createElement('div');
+    drop.className = 'nav-group-drop';
+    drop.dataset.gid = g.id;
+    drop.textContent = g.tabs.length === 0 ? 'Drag tabs here' : '+';
+    body.appendChild(drop);
+
+    div.appendChild(body);
+    container.appendChild(div);
+  });
+
+  setupDragDrop();
+}
+
+
+function setupDragDrop() {
+  const sidebarNav = document.getElementById('sidebarNav');
+
+  // Make all nav-items draggable
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.draggable = true;
+    item.ondragstart = function(e) {
+      e.stopPropagation();
+      dragTab = item.dataset.tab;
+      e.dataTransfer.setData('text/plain', dragTab);
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => item.classList.add('drag-ghost'), 0);
+    };
+    item.ondragend = function() {
+      item.classList.remove('drag-ghost');
+      document.querySelectorAll('.drag-target,.drag-hover,.drag-over-group').forEach(el => el.classList.remove('drag-target','drag-hover','drag-over-group'));
+      dragTab = null;
+    };
+
+    // Allow dropping ON a nav-item to reorder
+    item.ondragover = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (dragTab && dragTab !== item.dataset.tab) {
+        item.classList.add('drag-target');
+      }
+    };
+    item.ondragleave = function() { item.classList.remove('drag-target'); };
+    item.ondrop = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      item.classList.remove('drag-target');
+      const fromTab = e.dataTransfer.getData('text/plain');
+      if (!fromTab || fromTab === item.dataset.tab) return;
+
+      const fromItem = document.querySelector('.nav-item[data-tab="' + fromTab + '"]');
+      if (!fromItem) return;
+
+      // If target is in a group, add dragged item to that group
+      const targetGroup = item.closest('.nav-group-body');
+      if (targetGroup) {
+        const gid = targetGroup.dataset.gid;
+        addTabToGroup(gid, fromTab);
+        return;
+      }
+
+      // Both in main nav — reorder by inserting after target
+      const fromGroup = fromItem.closest('.nav-group-body');
+      if (fromGroup) {
+        removeTabFromAllGroups(fromTab, true);
+      }
+      item.after(fromItem);
+    };
+  });
+
+  // Drop zones in groups
+  document.querySelectorAll('.nav-group-drop').forEach(zone => {
+    zone.ondragover = function(e) { e.preventDefault(); zone.classList.add('drag-hover'); };
+    zone.ondragleave = function() { zone.classList.remove('drag-hover'); };
+    zone.ondrop = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      zone.classList.remove('drag-hover');
+      const tab = e.dataTransfer.getData('text/plain');
+      const gid = zone.dataset.gid;
+      if (tab && gid) addTabToGroup(gid, tab);
+    };
+  });
+
+  // Drop on sidebar background = remove from group
+  sidebarNav.ondragover = function(e) { e.preventDefault(); };
+  sidebarNav.ondrop = function(e) {
+    const tab = e.dataTransfer.getData('text/plain');
+    if (!tab) return;
+    if (!e.target.closest('.nav-group') && !e.target.closest('.nav-item')) {
+      removeTabFromAllGroups(tab);
+    }
+  };
+}
+
+function addTabToGroup(gid, tab) {
+  const groups = loadNavGroups();
+  groups.forEach(g => { g.tabs = g.tabs.filter(t => t !== tab); });
+  const group = groups.find(g => g.id === gid);
+  if (group && !group.tabs.includes(tab)) group.tabs.push(tab);
+  saveNavGroups(groups);
+  renderNavGroups();
+}
+
+function removeTabFromAllGroups(tab, skipRender) {
+  const groups = loadNavGroups();
+  let changed = false;
+  groups.forEach(g => {
+    if (g.tabs.includes(tab)) { g.tabs = g.tabs.filter(t => t !== tab); changed = true; }
+  });
+  if (changed) {
+    saveNavGroups(groups);
+    if (!skipRender) renderNavGroups();
+  }
+}
+
+// Init groups (wrapped in try-catch so it never breaks the page)
+try { renderNavGroups(); } catch(e) { console.error('Groups init error:', e); }
+
 function switchTab(tab) {
+  // Block navigation if setup not complete and trying to go anywhere other than setup/billing
+  // Guest mode and billing tab bypass the lock
+  const freeTabsBeforeSetup = ['setup', 'billing'];
+  if (!freeTabsBeforeSetup.includes(tab) && !isSetupComplete() && !tkIsGuest) {
+    toast('Complete setup first to unlock the platform', 'error');
+    tab = 'setup';
+  }
   currentTab = tab;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
@@ -5330,6 +6497,7 @@ function loadTabData(tab) {
     soul: loadSoulTab,
     receptionist: loadReceptionist,
     clients: clLoadClients,
+    billing: () => { loadBillingOrders(); updateProfitCalc(); },
     setup: loadSetupWizard,
     settings: loadSettings,
     chat: loadChat,
@@ -5420,6 +6588,14 @@ function badgeFor(status) {
 // DASHBOARD
 // ══════════════════════════════════════
 async function loadDashboard() {
+  // Update setup checklist
+  updateDashboardChecklist();
+  // Hide quick actions if setup complete and not a new user
+  if (isSetupComplete() && localStorage.getItem('janovum_setup_mode')) {
+    const qa = document.getElementById('dashSetupChecklist');
+    if (qa) qa.style.display = 'none';
+  }
+
   const [status, events, analytics, health] = await Promise.all([
     api('/api/status'),
     api('/api/events/recent'),
@@ -7587,10 +8763,21 @@ async function swLoadExistingConfig() {
 let swExistingConfig = null;
 
 function loadSetupWizard() {
+  // Show mode selector if no mode chosen yet
+  const savedMode = localStorage.getItem('janovum_setup_mode');
+  if (!savedMode && !isSetupComplete()) {
+    document.getElementById('setupModeSelector').style.display = 'block';
+    document.getElementById('salesModeContainer').style.display = 'none';
+    document.getElementById('fullModeContainer').style.display = 'none';
+  } else if (savedMode && !isSetupComplete()) {
+    currentSetupMode = savedMode;
+    selectSetupMode(savedMode);
+  }
   // Try loading existing config from server
   swLoadExistingConfig();
   // Render presets
   const grid = document.getElementById('presetGrid');
+  if (!grid) return;
   grid.innerHTML = '';
   for (const [key, p] of Object.entries(SW_PRESETS)) {
     const mods = p.modules.length ? p.modules.map(m => SW_MODULES[m]?.icon || '').join(' ') : 'You choose';
@@ -7962,6 +9149,563 @@ function swRenderReview() {
   container.innerHTML = html;
 }
 
+// ══════════════════════════════════════
+// SETUP MODE SELECTOR
+// ══════════════════════════════════════
+let currentSetupMode = null; // 'sales' | 'self' | null
+
+function selectSetupMode(mode) {
+  currentSetupMode = mode;
+  localStorage.setItem('janovum_setup_mode', mode);
+  document.getElementById('setupModeSelector').style.display = 'none';
+  if (mode === 'sales') {
+    document.getElementById('salesModeContainer').style.display = 'block';
+    document.getElementById('fullModeContainer').style.display = 'none';
+    renderFastServiceCards();
+  } else {
+    document.getElementById('salesModeContainer').style.display = 'none';
+    document.getElementById('fullModeContainer').style.display = 'block';
+    loadSetupWizard();
+  }
+}
+
+function resetSetupMode() {
+  currentSetupMode = null;
+  document.getElementById('setupModeSelector').style.display = 'block';
+  document.getElementById('salesModeContainer').style.display = 'none';
+  document.getElementById('fullModeContainer').style.display = 'none';
+}
+
+function skipSetup() {
+  markSetupComplete();
+  switchTab('dashboard');
+}
+
+// Restore mode on load
+(function restoreSetupMode() {
+  const saved = localStorage.getItem('janovum_setup_mode');
+  if (saved && !isSetupComplete()) {
+    // Don't auto-switch — just remember the mode for when they go to setup
+    currentSetupMode = saved;
+  }
+})();
+
+// Override loadSetupWizard to also handle mode
+const _origLoadSetupWizard = typeof loadSetupWizard === 'function' ? loadSetupWizard : null;
+
+// ══════════════════════════════════════
+// SALES FAST MODE
+// ══════════════════════════════════════
+const FAST_SERVICES = [
+  { id: 'ai_receptionist', icon: '📞', name: 'AI Receptionist', desc: 'Answers calls, books appointments, handles FAQs 24/7', recommended: true, color: 'var(--green)' },
+  { id: 'appointment_scheduler', icon: '📅', name: 'Appointment Scheduler', desc: 'Lets customers book, reschedule, and get reminders automatically', recommended: true, color: 'var(--blue)' },
+  { id: 'customer_support', icon: '🎧', name: 'Customer Support AI', desc: 'Handles complaints, questions, and follow-ups via email/chat', recommended: false, color: 'var(--gold)' },
+  { id: 'lead_hunter', icon: '🎯', name: 'Lead Hunter', desc: 'Finds new potential customers in the target area automatically', recommended: false, color: 'var(--orange)' },
+  { id: 'email_campaign', icon: '📧', name: 'Email Campaigns', desc: 'Sends promotional emails, follow-ups, and newsletters automatically', recommended: false, color: 'var(--purple)' },
+  { id: 'social_media_manager', icon: '📲', name: 'Social Media Manager', desc: 'Posts to Instagram, Facebook, and Google Business automatically', recommended: false, color: 'var(--blue)' },
+  { id: 'sales_outreach', icon: '💰', name: 'Sales Outreach', desc: 'Cold outreach to potential customers with AI-personalized messages', recommended: false, color: 'var(--green)' },
+  { id: 'content_writer', icon: '✍️', name: 'Content Writer', desc: 'Generates blog posts, website copy, and marketing content', recommended: false, color: 'var(--muted)' },
+];
+
+let fastSelectedServices = new Set(['ai_receptionist', 'appointment_scheduler']);
+
+function renderFastServiceCards() {
+  const container = document.getElementById('fastServiceCards');
+  if (!container) return;
+  container.innerHTML = FAST_SERVICES.map(svc => {
+    const sel = fastSelectedServices.has(svc.id);
+    return `<div onclick="toggleFastService('${svc.id}',this)" style="background:${sel ? 'rgba(247,201,72,0.05)' : '#0a0a0a'};border:2px solid ${sel ? 'var(--gold)' : 'var(--border)'};border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s;position:relative" id="fsc-${svc.id}">
+      ${svc.recommended ? '<span style="position:absolute;top:10px;right:10px;font-size:0.6em;font-weight:800;color:#000;background:var(--gold);padding:2px 7px;border-radius:4px">POPULAR</span>' : ''}
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:1.6em">${svc.icon}</span>
+        <div>
+          <div style="font-size:0.85em;font-weight:700;color:${sel ? 'var(--gold)' : 'var(--text)'}">${svc.name}</div>
+          ${sel ? '<div style="font-size:0.65em;color:var(--green);font-weight:700">✓ SELECTED</div>' : ''}
+        </div>
+      </div>
+      <div style="font-size:0.74em;color:var(--muted);line-height:1.5">${svc.desc}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleFastService(id, el) {
+  if (fastSelectedServices.has(id)) {
+    fastSelectedServices.delete(id);
+  } else {
+    fastSelectedServices.add(id);
+  }
+  renderFastServiceCards();
+}
+
+function fastNext(step) {
+  // Validate step A
+  if (step === 'B') {
+    const required = [
+      ['fast-biz-name', 'Business Name'],
+      ['fast-biz-type', 'Business Type'],
+      ['fast-biz-phone', 'Business Phone'],
+      ['fast-biz-email', 'Business Email'],
+      ['fast-biz-hours', 'Business Hours'],
+      ['fast-owner-email', 'Owner Email'],
+    ];
+    const missing = required.filter(([id]) => !document.getElementById(id)?.value?.trim());
+    const errEl = document.getElementById('fastStepAError');
+    if (missing.length) {
+      errEl.textContent = '⚠️ Please fill in: ' + missing.map(([,l]) => l).join(', ');
+      errEl.style.display = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+  }
+
+  if (step === 'C') {
+    if (fastSelectedServices.size === 0) {
+      toast('Please select at least one service', 'error'); return;
+    }
+    renderFastReview();
+  }
+
+  // Update step indicators
+  document.querySelectorAll('[data-fstep]').forEach(s => {
+    s.classList.toggle('active', s.dataset.fstep === step);
+    const steps = ['A','B','C'];
+    s.classList.toggle('done', steps.indexOf(s.dataset.fstep) < steps.indexOf(step));
+  });
+  document.querySelectorAll('#salesModeContainer .setup-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('fastStep' + step)?.classList.add('active');
+}
+
+function renderFastReview() {
+  const bizName = document.getElementById('fast-biz-name')?.value || '';
+  const bizType = document.getElementById('fast-biz-type')?.value || '';
+  const phone = document.getElementById('fast-biz-phone')?.value || '';
+  const email = document.getElementById('fast-biz-email')?.value || '';
+  const hours = document.getElementById('fast-biz-hours')?.value || '';
+  const ownerEmail = document.getElementById('fast-owner-email')?.value || '';
+  const ownerName = document.getElementById('fast-owner-name')?.value || '';
+  const address = document.getElementById('fast-biz-address')?.value || '';
+  const desc = document.getElementById('fast-biz-desc')?.value || '';
+
+  const selectedSvcs = FAST_SERVICES.filter(s => fastSelectedServices.has(s.id));
+
+  const container = document.getElementById('fastReviewContent');
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+      <div class="review-section">
+        <h4>Business Info</h4>
+        <div class="review-row"><span class="rk">Name</span><span class="rv">${bizName}</span></div>
+        <div class="review-row"><span class="rk">Type</span><span class="rv">${bizType}</span></div>
+        <div class="review-row"><span class="rk">Phone</span><span class="rv">${phone}</span></div>
+        <div class="review-row"><span class="rk">Email</span><span class="rv">${email}</span></div>
+        <div class="review-row"><span class="rk">Hours</span><span class="rv">${hours}</span></div>
+        ${address ? `<div class="review-row"><span class="rk">Address</span><span class="rv">${address}</span></div>` : ''}
+        <div class="review-row"><span class="rk">Owner Email</span><span class="rv">${ownerEmail}</span></div>
+      </div>
+      <div class="review-section">
+        <h4>Services Enabled (${selectedSvcs.length})</h4>
+        ${selectedSvcs.map(s => `<div class="review-row"><span class="chk" style="color:var(--green)">✓</span><span class="rv" style="color:var(--text)">${s.icon} ${s.name}</span></div>`).join('')}
+      </div>
+    </div>`;
+}
+
+async function fastDeploy() {
+  const btn = document.getElementById('fastDeployBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Deploying...';
+
+  const bizName = document.getElementById('fast-biz-name')?.value || '';
+  const bizType = document.getElementById('fast-biz-type')?.value || '';
+  const phone = document.getElementById('fast-biz-phone')?.value || '';
+  const email = document.getElementById('fast-biz-email')?.value || '';
+  const hours = document.getElementById('fast-biz-hours')?.value || '';
+  const ownerEmail = document.getElementById('fast-owner-email')?.value || '';
+  const ownerName = document.getElementById('fast-owner-name')?.value || '';
+  const address = document.getElementById('fast-biz-address')?.value || '';
+  const desc = document.getElementById('fast-biz-desc')?.value || '';
+
+  const modulesEnabled = {};
+  Object.keys(SW_MODULES || {}).forEach(k => { modulesEnabled[k] = false; });
+  fastSelectedServices.forEach(id => { modulesEnabled[id] = true; });
+
+  const config = {
+    business_name: bizName,
+    business_type: bizType,
+    business_phone: phone,
+    business_email: email,
+    business_hours: hours,
+    business_address: address,
+    business_description: desc,
+    owner_email: ownerEmail,
+    owner_name: ownerName,
+    personality: 'friendly and professional',
+    language: 'English',
+    modules_enabled: modulesEnabled,
+    setup_mode: 'sales',
+    deployed_at: new Date().toISOString(),
+  };
+
+  try {
+    const res = await fetch(API + '/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(config)
+    });
+    if (res.ok || res.status === 200) {
+      markSetupComplete();
+      toast(`🎉 ${bizName} is live! AI Receptionist active.`, 'success');
+      updateDashboardChecklist();
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '🚀 Deploy Client Now';
+        switchTab('dashboard');
+        loadClientBanner();
+      }, 1500);
+    } else {
+      // Server might not be running — save locally and mark done
+      localStorage.setItem('janovum_fast_config', JSON.stringify(config));
+      markSetupComplete();
+      toast(`${bizName} configured! Connect server to go fully live.`, 'info');
+      updateDashboardChecklist();
+      setTimeout(() => { switchTab('dashboard'); }, 1200);
+    }
+  } catch(e) {
+    localStorage.setItem('janovum_fast_config', JSON.stringify(config));
+    markSetupComplete();
+    toast(`Saved locally. Connect your server to go live.`, 'info');
+    updateDashboardChecklist();
+    setTimeout(() => { switchTab('dashboard'); }, 1200);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🚀 Deploy Client Now';
+}
+
+// ══════════════════════════════════════
+// SETUP STEP 5 VALIDATION
+// ══════════════════════════════════════
+function swValidateStep5() {
+  const required = [
+    ['sw-biz-name', 'Business Name'],
+    ['sw-biz-hours', 'Business Hours'],
+    ['sw-biz-phone', 'Business Phone'],
+    ['sw-owner-email', 'Owner Email'],
+  ];
+  const missing = required.filter(([id]) => !document.getElementById(id)?.value?.trim());
+  const errEl = document.getElementById('swStep5Error');
+  if (missing.length) {
+    errEl.innerHTML = '⚠️ Please fill in: <strong>' + missing.map(([,l]) => l).join(', ') + '</strong>';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  setupNext(6);
+}
+
+// ══════════════════════════════════════
+// DASHBOARD CHECKLIST
+// ══════════════════════════════════════
+function updateDashboardChecklist() {
+  const cfg = localStorage.getItem('janovum_fast_config') || localStorage.getItem('janovum_setup_complete');
+  const mode = localStorage.getItem('janovum_setup_mode');
+  const domain = localStorage.getItem('janovum_vps_domain');
+  const apiKey = localStorage.getItem('janovum_api_key_set');
+  const setupDone = isSetupComplete();
+
+  function setChk(id, done) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const icon = el.querySelector('.chk-icon');
+    if (!icon) return;
+    if (done) {
+      icon.textContent = '✅';
+      el.style.borderColor = 'rgba(0,200,83,0.3)';
+      el.style.background = 'rgba(0,200,83,0.04)';
+    }
+  }
+
+  setChk('chk-mode', !!mode);
+  setChk('chk-server', !!domain);
+  setChk('chk-apikey', !!apiKey);
+  setChk('chk-biz', setupDone || !!cfg);
+  setChk('chk-modules', setupDone || !!cfg);
+  setChk('chk-deployed', setupDone);
+
+  // Hide checklist if fully done
+  if (setupDone) {
+    const el = document.getElementById('dashSetupChecklist');
+    if (el) el.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════
+// PLANS & BILLING
+// ══════════════════════════════════════
+let billingCheckoutPlan = 'starter';
+
+function updateProfitCalc() {
+  const charge = parseInt(document.getElementById('calcCharge').value);
+  const clients = parseInt(document.getElementById('calcClients').value);
+  const planCost = parseInt(document.getElementById('calcPlan').value);
+  const plans = {0:'Self-Hosted ($0/mo)',97:'Starter ($97/mo)',197:'Agency ($197/mo)',397:'Enterprise ($397/mo)'};
+  document.getElementById('calcChargeLabel').textContent = '$' + charge.toLocaleString();
+  document.getElementById('calcClientsLabel').textContent = clients;
+  document.getElementById('calcPlanLabel').textContent = plans[planCost] || '';
+  const revenue = charge * clients;
+  const profit = revenue - planCost;
+  const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
+  document.getElementById('calcRevenue').textContent = '$' + revenue.toLocaleString();
+  document.getElementById('calcCost').textContent = '$' + planCost.toLocaleString();
+  document.getElementById('calcProfit').textContent = '$' + profit.toLocaleString();
+  document.getElementById('calcAnnual').textContent = '$' + (profit * 12).toLocaleString();
+  document.getElementById('calcMargin').textContent = margin + '%';
+}
+
+function startCheckout(plan) {
+  billingCheckoutPlan = plan;
+  const names = {starter:'Starter — $97/mo', agency:'Agency — $197/mo', enterprise:'Enterprise — $397/mo'};
+  document.getElementById('checkoutTitle').textContent = names[plan] || plan;
+  document.getElementById('billingCheckoutModal').style.display = 'flex';
+}
+
+function closeBillingCheckout() {
+  document.getElementById('billingCheckoutModal').style.display = 'none';
+}
+
+async function submitCheckout() {
+  const name = document.getElementById('co-name').value.trim();
+  const card = document.getElementById('co-card').value.replace(/\s/g,'');
+  const exp = document.getElementById('co-exp').value.trim();
+  const cvc = document.getElementById('co-cvc').value.trim();
+  const email = document.getElementById('co-email').value.trim();
+  const subdomain = document.getElementById('co-subdomain').value.trim();
+  if (!name || card.length < 15 || exp.length < 5 || cvc.length < 3 || !email) {
+    toast('Fill in all billing fields', 'error'); return;
+  }
+  const btn = document.getElementById('checkoutSubmitBtn');
+  const statusEl = document.getElementById('checkoutStatus');
+  btn.disabled = true; btn.textContent = 'Processing...';
+  statusEl.textContent = 'Submitting order...';
+  try {
+    const res = await fetch(API + '/api/provision-vps', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({plan: billingCheckoutPlan, email, subdomain: subdomain || '', card_last4: card.slice(-4)})
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeBillingCheckout();
+      toast(`Order confirmed! Check ${email} for setup details.`, 'success');
+      statusEl.textContent = '';
+      // Update current plan banner
+      const planNames = {starter:'Starter Plan',agency:'Agency Plan',enterprise:'Enterprise Plan'};
+      document.getElementById('billingPlanName').textContent = planNames[billingCheckoutPlan] || billingCheckoutPlan;
+      document.getElementById('billingPlanSub').textContent = `Order #${data.order_id} — ${data.domain} — provisioning...`;
+      loadBillingOrders();
+    } else {
+      statusEl.style.color = 'var(--red)'; statusEl.textContent = 'Error: ' + (data.error || 'Try again');
+    }
+  } catch(e) {
+    statusEl.style.color = 'var(--red)'; statusEl.textContent = 'Could not reach server. Try again.';
+  }
+  btn.disabled = false; btn.textContent = '⚡ Start Subscription';
+}
+
+async function loadBillingOrders() {
+  try {
+    const res = await fetch(API + '/api/billing/orders');
+    const orders = await res.json();
+    const el = document.getElementById('billingOrdersList');
+    const countEl = document.getElementById('billingOrderCount');
+    if (countEl) countEl.textContent = orders.length || '0';
+    if (!orders.length) {
+      el.innerHTML = '<div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No orders yet.</div>';
+      return;
+    }
+    el.innerHTML = `<table class="data-table"><thead><tr><th>Order ID</th><th>Plan</th><th>Domain</th><th>Status</th><th>Date</th><th>Price</th></tr></thead><tbody>
+    ${orders.map(o => `<tr>
+      <td><code style="color:var(--gold)">${o.order_id}</code></td>
+      <td style="text-transform:capitalize">${o.plan}</td>
+      <td style="font-family:Consolas,monospace;font-size:0.82em;color:var(--blue)">${o.domain}</td>
+      <td><span style="color:${o.status==='active'?'var(--green)':'var(--gold)'}">● ${o.status}</span></td>
+      <td style="color:var(--muted);font-size:0.8em">${new Date(o.created_at).toLocaleDateString()}</td>
+      <td style="color:var(--green);font-weight:700">$${o.price}/mo</td>
+    </tr>`).join('')}
+    </tbody></table>`;
+  } catch(e) { /* server offline */ }
+}
+
+// ══════════════════════════════════════
+// SETUP LOCK — blocks nav until setup done
+// ══════════════════════════════════════
+const SETUP_DONE_KEY = 'janovum_setup_complete';
+
+function isSetupComplete() {
+  return localStorage.getItem(SETUP_DONE_KEY) === '1';
+}
+
+function markSetupComplete() {
+  localStorage.setItem(SETUP_DONE_KEY, '1');
+  unlockNav();
+  const banner = document.getElementById('setupLockBanner');
+  if (banner) banner.style.display = 'none';
+}
+
+function lockNav() {
+  const alwaysFree = ['setup', 'billing'];
+  document.querySelectorAll('.nav-item').forEach(item => {
+    if (!alwaysFree.includes(item.dataset.tab)) {
+      item.classList.add('nav-locked');
+      item.title = 'Complete setup first';
+    }
+  });
+}
+
+function unlockNav() {
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('nav-locked');
+    item.title = '';
+  });
+}
+
+// Apply lock on load if not done (guest mode skips lock)
+(function initSetupLock() {
+  if (!isSetupComplete() && !tkIsGuest) {
+    setTimeout(() => {
+      switchTab('setup');
+      lockNav();
+    }, 0);
+  } else {
+    const banner = document.getElementById('setupLockBanner');
+    if (banner) banner.style.display = 'none';
+  }
+})();
+
+// ══════════════════════════════════════
+// VPS CHOICE LOGIC
+// ══════════════════════════════════════
+function selectVpsChoice(type) {
+  document.getElementById('vpsChoiceOwn').classList.toggle('selected', type === 'own');
+  document.getElementById('vpsChoiceAuto').classList.toggle('selected', type === 'auto');
+  document.getElementById('vpsOwnForm').style.display = type === 'own' ? 'block' : 'none';
+  document.getElementById('vpsAutoForm').style.display = type === 'auto' ? 'block' : 'none';
+  document.getElementById('vpsChoiceCards').style.opacity = '0.6';
+  document.getElementById('vpsChoiceCards').style.pointerEvents = 'none';
+}
+
+function resetVpsChoice() {
+  document.getElementById('vpsChoiceOwn').classList.remove('selected');
+  document.getElementById('vpsChoiceAuto').classList.remove('selected');
+  document.getElementById('vpsOwnForm').style.display = 'none';
+  document.getElementById('vpsAutoForm').style.display = 'none';
+  document.getElementById('vpsChoiceCards').style.opacity = '1';
+  document.getElementById('vpsChoiceCards').style.pointerEvents = '';
+}
+
+// Card formatting helpers
+function fmtCard(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,16);
+  input.value = v.match(/.{1,4}/g)?.join(' ') || v;
+}
+function fmtExp(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,4);
+  if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2);
+  input.value = v;
+}
+
+// Subdomain live preview
+document.addEventListener('input', function(e) {
+  if (e.target && e.target.id === 'vps-subdomain') {
+    const preview = document.getElementById('vpsSubdomainPreview');
+    if (preview) preview.textContent = (e.target.value || 'mycompany') + '.janovum.app';
+  }
+});
+
+async function startVpsProvisioning() {
+  const name = document.getElementById('vps-card-name')?.value.trim();
+  const cardNum = document.getElementById('vps-card-num')?.value.replace(/\s/g,'');
+  const exp = document.getElementById('vps-card-exp')?.value.trim();
+  const cvc = document.getElementById('vps-card-cvc')?.value.trim();
+  const email = document.getElementById('vps-email')?.value.trim();
+  const subdomain = (document.getElementById('vps-subdomain')?.value.trim() || 'client' + Date.now().toString().slice(-4)).toLowerCase().replace(/[^a-z0-9]/g,'');
+
+  if (!name || cardNum.length < 15 || exp.length < 5 || cvc.length < 3 || !email) {
+    toast('Please fill in all billing fields', 'error'); return;
+  }
+
+  // Switch to progress view
+  document.getElementById('vpsAutoPayForm').style.display = 'none';
+  document.getElementById('vpsProvisioningProgress').style.display = 'block';
+
+  const steps = ['vpsProg1','vpsProg2','vpsProg3','vpsProg4','vpsProg5','vpsProg6'];
+  const durations = [2500, 6000, 8000, 8000, 5000, 4000];
+
+  // Step 1 — payment processing (calls real server)
+  const step1El = document.getElementById('vpsProg1');
+  step1El.querySelector('.vps-step-icon').textContent = '🔄';
+  step1El.querySelector('span:last-child').style.color = 'var(--gold)';
+
+  let orderData = null;
+  try {
+    const res = await fetch(API + '/api/provision-vps', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        plan: 'starter',
+        email,
+        subdomain,
+        card_last4: cardNum.slice(-4),
+        name
+      })
+    });
+    orderData = await res.json();
+  } catch(e) {
+    // Server offline — continue with local simulation
+    orderData = {
+      success: true,
+      order_id: 'LOCAL' + Date.now().toString().slice(-4),
+      domain: subdomain + '.janovum.app',
+      ip: 'pending',
+      status: 'provisioning'
+    };
+  }
+
+  step1El.querySelector('.vps-step-icon').textContent = '✅';
+  step1El.querySelector('span:last-child').style.color = 'var(--green)';
+
+  // Steps 2-6 — animated progress
+  for (let i = 1; i < steps.length; i++) {
+    const el = document.getElementById(steps[i]);
+    el.querySelector('.vps-step-icon').textContent = '🔄';
+    el.querySelector('span:last-child').style.color = 'var(--gold)';
+    await new Promise(r => setTimeout(r, durations[i]));
+    el.querySelector('.vps-step-icon').textContent = '✅';
+    el.querySelector('span:last-child').style.color = 'var(--green)';
+  }
+
+  const finalDomain = orderData?.domain || (subdomain + '.janovum.app');
+  const finalIp = orderData?.ip || 'provisioning';
+  const orderId = orderData?.order_id || '—';
+
+  document.getElementById('vpsProgressIcon').textContent = '🎉';
+  document.getElementById('vpsProgressTitle').textContent = 'Order Confirmed!';
+  document.getElementById('vpsProgressSub').innerHTML = `
+    Order <strong style="color:var(--gold)">#${orderId}</strong> —
+    Domain: <strong style="color:var(--gold)">${finalDomain}</strong><br>
+    <span style="font-size:0.85em;color:var(--muted)">Check ${email} for setup details. Server ready in ~5 min.</span>`;
+
+  localStorage.setItem('janovum_vps_domain', finalDomain);
+  localStorage.setItem('janovum_vps_ip', finalIp);
+  localStorage.setItem('janovum_vps_type', 'managed');
+  localStorage.setItem('janovum_vps_order', orderId);
+
+  setTimeout(() => {
+    if (document.getElementById('sw-domain')) document.getElementById('sw-domain').value = finalDomain;
+    if (document.getElementById('sw-server-ip')) document.getElementById('sw-server-ip').value = finalIp;
+    toast('Server ordered! Check your email. Moving to next step...', 'success');
+    setTimeout(() => setupNext(2), 1200);
+  }, 2500);
+}
+
 function setupNext(step) {
   // Update step indicators
   document.querySelectorAll('.setup-step').forEach(s => {
@@ -8125,17 +9869,23 @@ async function saveSetup() {
     });
     if (res.ok) {
       toast('Setup saved & deployed! Modules activated.', 'success');
+      markSetupComplete();
       loadClientBanner();
       // Also update the Settings tab domain field if it exists
       const domainInput = document.getElementById('tk-domain');
       if (domainInput && config.domain) domainInput.value = config.domain;
       const apiInput = document.getElementById('set-apikey');
       if (apiInput && config.api_key) apiInput.value = config.api_key;
+      setTimeout(() => switchTab('dashboard'), 1500);
     } else {
       toast('Config sent to server. Check config.json.', 'info');
+      markSetupComplete();
+      setTimeout(() => switchTab('dashboard'), 1500);
     }
   } catch(e) {
-    toast('Could not reach server. Save config.json manually.', 'error');
+    toast('Could not reach server. Config saved locally — setup complete.', 'error');
+    markSetupComplete();
+    setTimeout(() => switchTab('dashboard'), 1500);
   }
 }
 

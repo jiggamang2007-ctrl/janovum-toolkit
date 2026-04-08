@@ -400,7 +400,17 @@
         <span id="topStatus">--</span>
       </div>
       <button class="btn-sm btn-outline" onclick="refreshCurrentTab()">&#8635; Refresh</button>
+      <div id="topbarAuthBtns" style="display:flex;gap:6px"></div>
+      <button class="btn-sm" id="demoToggleBtn" onclick="toggleDemoMode()" style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;font-weight:700;letter-spacing:0.03em;box-shadow:0 0 12px #a855f740;transition:all 0.2s">&#127917; Demo</button>
     </div>
+  </div>
+  <div id="demoBanner" style="display:none;background:linear-gradient(135deg,#2d1b69 0%,#1a0a3d 100%);border:1px solid #a855f755;border-radius:10px;padding:12px 20px;margin:8px 16px 0;display:none;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:1.4em">&#127917;</span>
+    <div style="flex:1">
+      <span style="font-weight:700;color:#c084fc">Demo Mode Active</span>
+      <span style="color:var(--dim);font-size:0.88em;margin-left:8px">— Showing sample data for sales demos. No real data is affected.</span>
+    </div>
+    <button onclick="toggleDemoMode()" style="background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:0.85em">Exit Demo</button>
   </div>
   <div class="guest-banner" id="guestBanner">You're viewing as a guest. <a onclick="showAuthScreen()">Sign up</a> to save your data and unlock full access.</div>
   <div class="content">
@@ -1668,8 +1678,33 @@
         <div id="comTrending" style="display:flex;gap:8px;flex-wrap:wrap"></div>
       </div>
 
-      <!-- Results -->
-      <div id="comResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+      <!-- My Creations -->
+      <div class="panel" id="comMyCreationsPanel" style="margin-top:16px">
+        <div class="panel-header">
+          <div class="panel-title">⭐ My Creations</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-outline" onclick="openToolBuilder()">+ New Tool</button>
+            <button class="btn-sm btn-outline" onclick="openCustomEmployeeBuilder()" style="border-color:var(--purple);color:var(--purple)">+ New Employee</button>
+          </div>
+        </div>
+        <div id="comMyCreations" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+          <div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--dim);font-size:0.85em">
+            <div style="font-size:2em;margin-bottom:8px">🛠️</div>
+            <div style="font-weight:600;margin-bottom:4px">No creations yet</div>
+            <div style="font-size:0.88em">Build a custom tool or employee and publish it here to share with the community.</div>
+            <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+              <button class="btn-sm" onclick="openToolBuilder()">Build a Tool</button>
+              <button class="btn-sm btn-outline" onclick="openCustomEmployeeBuilder()">Build an Employee</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Community Results -->
+      <div class="panel" style="margin-top:16px">
+        <div class="panel-header"><div class="panel-title">🌍 Community Marketplace</div><span style="font-size:0.72em;color:var(--dim)">Install anything with one click</span></div>
+        <div id="comResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px"></div>
+      </div>
     </div>
 
     <div class="tab-pane" id="tab-setup">
@@ -1677,7 +1712,8 @@
       <!-- Lock banner (shown until setup complete) -->
       <div class="setup-lock-banner" id="setupLockBanner">
         <span style="font-size:1.4em">🔒</span>
-        <div><strong>Complete setup to unlock all tabs.</strong> Pick your mode below — takes under 5 minutes. <span style="color:var(--gold)">Sales setup = 3 steps.</span></div>
+        <div style="flex:1"><strong>Complete setup to unlock all tabs.</strong> Pick your mode below — takes under 5 minutes. <span style="color:var(--gold)">Sales setup = 3 steps.</span></div>
+        <button onclick="skipSetup()" style="background:none;border:1px solid var(--border);color:var(--dim);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.78em;white-space:nowrap">Already set up →</button>
       </div>
 
       <!-- ══ MODE SELECTOR (shown first, hides once chosen) ══ -->
@@ -1699,15 +1735,16 @@
             <button style="margin-top:20px;width:100%;background:linear-gradient(135deg,var(--green),#2ecc71);border:none;color:#000;font-weight:700;padding:11px;border-radius:8px;font-size:0.85em;cursor:pointer">Start Client Setup →</button>
           </div>
           <div onclick="selectSetupMode('self')" style="background:linear-gradient(135deg,#0d1525,#0a0a0a);border:2px solid var(--border);border-radius:16px;padding:32px 28px;cursor:pointer;transition:all 0.2s;text-align:center" onmouseover="this.style.borderColor='var(--blue)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
-            <div style="font-size:2.5em;margin-bottom:14px">🧑‍💻</div>
-            <div style="font-size:1.05em;font-weight:800;color:var(--blue);margin-bottom:8px">Setting Up for Myself</div>
-            <div style="font-size:0.78em;color:var(--muted);line-height:1.6;margin-bottom:16px">You want to run the full toolkit for your own business or personal use. Full 7-step setup with all options.</div>
+            <div style="font-size:2.5em;margin-bottom:14px">🖥️</div>
+            <div style="font-size:1.05em;font-weight:800;color:var(--blue);margin-bottom:8px">Agency / Self-Hosted</div>
+            <div style="font-size:0.78em;color:var(--muted);line-height:1.6;margin-bottom:16px">You have your own VPS and want to run the full platform for yourself or your own clients. Full control, your infrastructure.</div>
             <div style="display:flex;flex-direction:column;gap:5px;text-align:left">
-              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Connect your VPS & API keys</div>
-              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Pick every module manually</div>
-              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Full control over configuration</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Point toolkit at your own server domain</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Your clients run on YOUR VPS</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Create tools &amp; employees from terminal</div>
+              <div style="font-size:0.72em;color:var(--muted);display:flex;align-items:center;gap:6px"><span style="color:var(--blue)">✓</span> Full module + API key control</div>
             </div>
-            <button style="margin-top:20px;width:100%;background:linear-gradient(135deg,var(--blue),#1565c0);border:none;color:#fff;font-weight:700;padding:11px;border-radius:8px;font-size:0.85em;cursor:pointer">Start Full Setup →</button>
+            <button style="margin-top:20px;width:100%;background:linear-gradient(135deg,var(--blue),#1565c0);border:none;color:#fff;font-weight:700;padding:11px;border-radius:8px;font-size:0.85em;cursor:pointer">Start Agency Setup →</button>
           </div>
         </div>
         <div style="text-align:center;font-size:0.75em;color:var(--dim)">Already set up? <a onclick="skipSetup()" style="color:var(--gold);cursor:pointer;text-decoration:underline">Skip to dashboard →</a></div>
@@ -1779,6 +1816,11 @@
               <div class="hint">We'll send appointment notifications here</div>
             </div>
             <div class="setup-field" style="grid-column:span 2">
+              <label>Twilio Phone Number <span style="color:var(--red)">*</span></label>
+              <input id="fast-twilio-phone" placeholder="+13055550001 (format: +1xxxxxxxxxx)">
+              <div class="hint">The AI receptionist will answer calls on this number. Buy one at <strong>twilio.com/console</strong> (~$1/mo). Must be in +1xxxxxxxxxx format.</div>
+            </div>
+            <div class="setup-field" style="grid-column:span 2">
               <label>Business Address</label>
               <input id="fast-biz-address" placeholder="123 Main St, Miami, FL 33101">
             </div>
@@ -1787,6 +1829,10 @@
               <input id="fast-biz-desc" placeholder="e.g. Premium barbershop serving Miami since 2015. Specializes in fades, beard trims, and hot towel shaves.">
               <div class="hint">The AI uses this to answer questions about the business</div>
             </div>
+          </div>
+          <div style="background:linear-gradient(135deg,#0a1a0a,#050f05);border:1px solid var(--green)33;border-radius:10px;padding:12px 16px;margin-top:14px;font-size:0.78em">
+            <div style="color:var(--green);font-weight:700;margin-bottom:4px">ℹ️ How deployment works</div>
+            <div style="color:var(--dim);line-height:1.6">The client's AI receptionist will live on <strong style="color:var(--text)">Janovum's server</strong> — no VPS needed on their end. Once deployed, their Twilio number routes calls to our server and the AI handles it 24/7. You just need to set the Twilio webhook (we'll show you how after deploy).</div>
           </div>
           <div id="fastStepAError" style="color:var(--red);font-size:0.78em;margin-top:8px;display:none"></div>
           <div style="margin-top:20px;display:flex;justify-content:flex-end">
@@ -1837,7 +1883,7 @@
       <div id="fullModeContainer" style="display:none">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
           <button onclick="resetSetupMode()" style="background:none;border:none;color:var(--dim);font-size:0.8em;cursor:pointer;padding:0">← Change mode</button>
-          <div style="font-size:0.82em;font-weight:700;color:var(--blue)">🧑‍💻 Full Setup — Self Mode</div>
+          <div style="font-size:0.82em;font-weight:700;color:var(--blue)">🖥️ Agency / Self-Hosted Setup</div>
         </div>
 
       <!-- Step indicator -->
@@ -1891,8 +1937,17 @@
 
       <!-- STEP 1: VPS & Domain Setup -->
       <div class="setup-panel active" id="setupStep1">
-        <h3 style="margin-bottom:6px">VPS & Server Setup</h3>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:24px">Your toolkit needs a server to run on. Choose your setup option below to get started.</p>
+        <h3 style="margin-bottom:6px">Your VPS & Server Domain</h3>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:12px">Your toolkit needs to point at your own server. Enter your VPS domain below, or auto-provision one.</p>
+        <div style="background:linear-gradient(135deg,#0a1a0a,#050f05);border:1px solid var(--green)33;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:0.78em">
+          <div style="color:var(--green);font-weight:700;margin-bottom:6px">🖥️ How Agency Mode Works</div>
+          <div style="color:var(--dim);line-height:1.7">
+            <div>1. You have a VPS running the Janovum platform (Flask server)</div>
+            <div>2. This toolkit UI connects to <strong style="color:var(--text)">your</strong> server — not Janovum's</div>
+            <div>3. Your clients deploy on <strong style="color:var(--text)">your</strong> VPS — you control everything</div>
+            <div>4. Create tools &amp; employees from your terminal: <code style="background:#0a0a0a;padding:1px 6px;border-radius:4px;color:var(--gold)">python3 janovum.py create tool</code></div>
+          </div>
+        </div>
 
         <!-- VPS Choice Cards -->
         <div id="vpsChoiceSection">
@@ -2284,56 +2339,89 @@ cd /opt/janovum/platform && python3 install.py</pre>
         </div>
       </div>
 
-      <!-- Plan Cards -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:32px">
-        <!-- Starter -->
-        <div class="plan-card">
-          <div style="font-size:0.8em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Starter</div>
-          <div class="plan-price gold">$97<span>/mo</span></div>
-          <div style="font-size:0.72em;color:var(--dim);margin:8px 0 16px">Managed VPS included</div>
-          <div class="plan-feature"><span class="chk">✓</span> Managed VPS (2 vCPU / 4GB RAM)</div>
-          <div class="plan-feature"><span class="chk">✓</span> Up to 5 client deployments</div>
-          <div class="plan-feature"><span class="chk">✓</span> AI Receptionist, CRM, Scheduler</div>
-          <div class="plan-feature"><span class="chk">✓</span> Email support</div>
-          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> White-label</div>
-          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> Custom domain</div>
-          <button class="btn" style="width:100%;margin-top:18px;background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="startCheckout('starter')">Get Started</button>
-        </div>
-        <!-- Agency (recommended) -->
-        <div class="plan-card recommended">
-          <div style="font-size:0.8em;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Agency</div>
-          <div class="plan-price" style="color:var(--orange)">$197<span>/mo</span></div>
-          <div style="font-size:0.72em;color:var(--dim);margin:8px 0 16px">Managed VPS included</div>
-          <div class="plan-feature"><span class="chk">✓</span> Managed VPS (4 vCPU / 8GB RAM)</div>
-          <div class="plan-feature"><span class="chk">✓</span> Up to 25 client deployments</div>
-          <div class="plan-feature"><span class="chk">✓</span> All modules including premium</div>
-          <div class="plan-feature"><span class="chk">✓</span> White-label (remove Janovum logo)</div>
-          <div class="plan-feature"><span class="chk">✓</span> Custom domain (yourbrand.com)</div>
-          <div class="plan-feature"><span class="chk">✓</span> Priority support</div>
-          <button class="btn" style="width:100%;margin-top:18px" onclick="startCheckout('agency')">Get Agency Plan</button>
-        </div>
-        <!-- Enterprise -->
-        <div class="plan-card">
-          <div style="font-size:0.8em;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Enterprise</div>
-          <div class="plan-price purple">$397<span>/mo</span></div>
-          <div style="font-size:0.72em;color:var(--dim);margin:8px 0 16px">Dedicated VPS included</div>
-          <div class="plan-feature"><span class="chk">✓</span> Dedicated VPS (8 vCPU / 16GB)</div>
-          <div class="plan-feature"><span class="chk">✓</span> Unlimited clients</div>
-          <div class="plan-feature"><span class="chk">✓</span> All modules + custom builds</div>
-          <div class="plan-feature"><span class="chk">✓</span> Full white-label + custom domain</div>
-          <div class="plan-feature"><span class="chk">✓</span> Dedicated Slack channel</div>
-          <div class="plan-feature"><span class="chk">✓</span> SLA + uptime guarantee</div>
-          <button class="btn" style="width:100%;margin-top:18px;background:linear-gradient(135deg,var(--purple),#9c6fff);color:#000" onclick="startCheckout('enterprise')">Go Enterprise</button>
-        </div>
+      <!-- Pricing intro -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:0.82em;color:var(--dim);line-height:1.7">All plans include the full Janovum platform — every tool, every AI employee, every module. The only difference is how many clients you can deploy and whether Janovum hosts your server or you bring your own.</div>
       </div>
 
-      <!-- Self-Hosted Option -->
-      <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:12px;padding:20px;margin-bottom:32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div>
-          <div style="font-size:0.88em;font-weight:700;margin-bottom:4px">Self-Hosted — Free Forever</div>
-          <div style="font-size:0.75em;color:var(--muted)">Run on your own VPS. You pay hosting costs (~$6-20/mo to Vultr/DO). No Janovum subscription needed.</div>
+      <!-- Plan Cards -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:28px">
+
+        <!-- Personal -->
+        <div class="plan-card">
+          <div style="font-size:0.72em;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Personal</div>
+          <div class="plan-price gold" style="font-size:2em">$19<span style="font-size:0.5em;font-weight:400">/mo</span></div>
+          <div style="font-size:0.7em;color:var(--dim);margin:6px 0 14px;font-weight:600">1 client — just yourself</div>
+          <div class="plan-feature"><span class="chk">✓</span> 1 deployment</div>
+          <div class="plan-feature"><span class="chk">✓</span> All tools &amp; AI employees</div>
+          <div class="plan-feature"><span class="chk">✓</span> Full platform access</div>
+          <div class="plan-feature"><span class="chk">✓</span> You host your own VPS</div>
+          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> Managed hosting</div>
+          <button class="btn" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:0.82em" onclick="startCheckout('personal')">Get Personal</button>
         </div>
-        <button class="btn-outline" onclick="switchTab('setup')" style="font-size:0.8em">Go to Setup →</button>
+
+        <!-- Starter -->
+        <div class="plan-card">
+          <div style="font-size:0.72em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Starter</div>
+          <div class="plan-price gold" style="font-size:2em">$49<span style="font-size:0.5em;font-weight:400">/mo</span></div>
+          <div style="font-size:0.7em;color:var(--dim);margin:6px 0 14px;font-weight:600">1–5 clients</div>
+          <div class="plan-feature"><span class="chk">✓</span> Up to 5 deployments</div>
+          <div class="plan-feature"><span class="chk">✓</span> All tools &amp; AI employees</div>
+          <div class="plan-feature"><span class="chk">✓</span> Full platform access</div>
+          <div class="plan-feature"><span class="chk">✓</span> You host your own VPS</div>
+          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> Managed hosting</div>
+          <button class="btn" style="width:100%;margin-top:16px;background:transparent;border:1px solid var(--gold);color:var(--gold);font-size:0.82em" onclick="startCheckout('starter')">Get Starter</button>
+        </div>
+
+        <!-- Growth — recommended -->
+        <div class="plan-card recommended">
+          <div style="font-size:0.72em;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Growth</div>
+          <div class="plan-price" style="color:var(--orange);font-size:2em">$97<span style="font-size:0.5em;font-weight:400">/mo</span></div>
+          <div style="font-size:0.7em;color:var(--dim);margin:6px 0 14px;font-weight:600">5–15 clients</div>
+          <div class="plan-feature"><span class="chk">✓</span> Up to 15 deployments</div>
+          <div class="plan-feature"><span class="chk">✓</span> All tools &amp; AI employees</div>
+          <div class="plan-feature"><span class="chk">✓</span> Managed VPS included</div>
+          <div class="plan-feature"><span class="chk">✓</span> Priority support</div>
+          <div class="plan-feature" style="color:var(--dim)"><span style="color:var(--dim)">✕</span> White-label</div>
+          <button class="btn" style="width:100%;margin-top:16px;font-size:0.82em" onclick="startCheckout('growth')">Get Growth</button>
+        </div>
+
+        <!-- Pro -->
+        <div class="plan-card">
+          <div style="font-size:0.72em;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Pro</div>
+          <div class="plan-price purple" style="font-size:2em">$147<span style="font-size:0.5em;font-weight:400">/mo</span></div>
+          <div style="font-size:0.7em;color:var(--dim);margin:6px 0 14px;font-weight:600">15–25 clients</div>
+          <div class="plan-feature"><span class="chk">✓</span> Up to 25 deployments</div>
+          <div class="plan-feature"><span class="chk">✓</span> All tools &amp; AI employees</div>
+          <div class="plan-feature"><span class="chk">✓</span> Managed VPS included</div>
+          <div class="plan-feature"><span class="chk">✓</span> White-label branding</div>
+          <div class="plan-feature"><span class="chk">✓</span> Custom domain</div>
+          <button class="btn" style="width:100%;margin-top:16px;background:linear-gradient(135deg,var(--blue),#1565c0);font-size:0.82em" onclick="startCheckout('pro')">Get Pro</button>
+        </div>
+
+        <!-- Agency -->
+        <div class="plan-card">
+          <div style="font-size:0.72em;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Agency</div>
+          <div class="plan-price purple" style="font-size:2em">$197<span style="font-size:0.5em;font-weight:400">/mo</span></div>
+          <div style="font-size:0.7em;color:var(--dim);margin:6px 0 14px;font-weight:600">25+ clients — unlimited</div>
+          <div class="plan-feature"><span class="chk">✓</span> Unlimited deployments</div>
+          <div class="plan-feature"><span class="chk">✓</span> All tools &amp; AI employees</div>
+          <div class="plan-feature"><span class="chk">✓</span> Dedicated managed VPS</div>
+          <div class="plan-feature"><span class="chk">✓</span> Full white-label + domain</div>
+          <div class="plan-feature"><span class="chk">✓</span> Onboarding call + Slack</div>
+          <button class="btn" style="width:100%;margin-top:16px;background:linear-gradient(135deg,var(--purple),#9c6fff);color:#fff;font-size:0.82em" onclick="startCheckout('agency')">Get Agency</button>
+        </div>
+
+      </div>
+
+      <!-- Self-hosted note — still paid -->
+      <div style="background:#0d0d0d;border:1px solid #1e1e1e;border-radius:10px;padding:14px 18px;margin-bottom:28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="font-size:1.2em">🖥️</div>
+        <div style="flex:1">
+          <div style="font-size:0.85em;font-weight:700;margin-bottom:2px">Bringing your own VPS?</div>
+          <div style="font-size:0.75em;color:var(--dim)">Personal and Starter plans are self-hosted — you run it on your own server. Growth, Pro, and Agency include a Janovum-managed VPS.</div>
+        </div>
+        <button class="btn-outline" onclick="selectSetupMode('self');switchTab('setup')" style="font-size:0.8em;white-space:nowrap">Setup My VPS →</button>
       </div>
 
       <!-- Profit Calculator -->
@@ -2355,10 +2443,11 @@ cd /opt/janovum/platform && python3 install.py</pre>
         <div style="margin-top:8px;margin-bottom:16px">
           <div style="font-size:0.78em;font-weight:600;color:#bbb;margin-bottom:8px">Your Janovum plan: <strong style="color:var(--gold)" id="calcPlanLabel">Agency ($197/mo)</strong></div>
           <select id="calcPlan" onchange="updateProfitCalc()" style="background:#111;border:1px solid #222;border-radius:8px;color:var(--text);padding:8px 12px;font-size:0.82em;width:100%;max-width:280px">
-            <option value="0">Self-Hosted ($0/mo to Janovum)</option>
-            <option value="97">Starter ($97/mo)</option>
-            <option value="197" selected>Agency ($197/mo)</option>
-            <option value="397">Enterprise ($397/mo)</option>
+            <option value="19">Personal ($19/mo — 1 client)</option>
+            <option value="49">Starter ($49/mo — 1-5 clients)</option>
+            <option value="97" selected>Growth ($97/mo — 5-15 clients)</option>
+            <option value="147">Pro ($147/mo — 15-25 clients)</option>
+            <option value="197">Agency ($197/mo — 25+ clients)</option>
           </select>
         </div>
         <div class="profit-result">
@@ -2889,8 +2978,9 @@ sudo ufw enable
           <div style="font-size:1.15em;font-weight:800;background:linear-gradient(135deg,var(--orange),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent">AI Employees</div>
           <div style="font-size:0.78em;color:var(--muted);margin-top:4px">Hire AI employees that work 24/7. Create from scratch or deploy pre-built templates in one click.</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn" onclick="openEmployeeWizard()">+ Hire New Employee</button>
+          <button class="btn-outline" onclick="openCustomEmployeeBuilder()" style="border-color:var(--purple);color:var(--purple)">⚡ Build Custom Employee</button>
           <input class="form-input" id="empSearch" placeholder="Search roles..." style="width:180px;padding:7px 12px;font-size:0.82em" oninput="filterEmployees(this.value)">
           <select class="form-select" id="empCategory" style="width:150px;padding:7px 12px;font-size:0.82em" onchange="filterEmployeesCat(this.value)">
             <option value="all">All Categories</option>
@@ -2913,6 +3003,41 @@ sudo ufw enable
         <div class="stat-card"><div class="stat-label">Active Now</div><div class="stat-value green" id="empStatActive">0</div><div class="stat-sub">working</div></div>
         <div class="stat-card"><div class="stat-label">Messages Today</div><div class="stat-value blue" id="empStatMsgs">0</div><div class="stat-sub">handled</div></div>
         <div class="stat-card"><div class="stat-label">Uptime</div><div class="stat-value purple" id="empStatUptime">99.9%</div><div class="stat-sub">last 30 days</div></div>
+      </div>
+
+      <!-- My Custom Employees -->
+      <div id="myCustomEmployeesPanel" style="display:none" class="panel" style="border-color:var(--purple)44;margin-bottom:16px">
+        <div class="panel-header">
+          <div class="panel-title" style="color:var(--purple)">⚡ My Custom Employees</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-outline" onclick="openCustomEmployeeBuilder()">+ Build New</button>
+            <button class="btn-sm btn-outline" onclick="switchTab('community')">Browse Community</button>
+          </div>
+        </div>
+        <div id="myCustomEmployeesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+      </div>
+
+      <!-- Custom Employee Builder Modal -->
+      <div id="customEmployeeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+        <div style="background:var(--card);border:1px solid #a855f744;border-radius:18px;max-width:720px;width:100%;padding:0;box-shadow:0 24px 80px #000e;margin:auto">
+          <div style="padding:24px 28px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:1.1em;font-weight:800;background:linear-gradient(135deg,var(--purple),#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent">⚡ Custom AI Employee Builder</div>
+              <div style="font-size:0.75em;color:var(--dim);margin-top:3px">Design your own AI employee with a custom pipeline. No coding required.</div>
+            </div>
+            <button onclick="closeCustomEmployeeModal()" style="background:none;border:none;color:var(--dim);font-size:1.4em;cursor:pointer">✕</button>
+          </div>
+          <div style="padding:16px 28px 0">
+            <div style="display:flex;gap:0" id="cebProgress">
+              <div style="flex:1;text-align:center"><div style="height:3px;background:var(--purple);border-radius:2px 0 0 2px" id="cebBar1"></div><div style="font-size:0.7em;color:var(--purple);margin-top:5px;font-weight:700" id="cebLbl1">1 · Identity</div></div>
+              <div style="flex:1;text-align:center"><div style="height:3px;background:#222" id="cebBar2"></div><div style="font-size:0.7em;color:var(--dim);margin-top:5px" id="cebLbl2">2 · Pipeline</div></div>
+              <div style="flex:1;text-align:center"><div style="height:3px;background:#222" id="cebBar3"></div><div style="font-size:0.7em;color:var(--dim);margin-top:5px" id="cebLbl3">3 · Channels</div></div>
+              <div style="flex:1;text-align:center"><div style="height:3px;background:#222" id="cebBar4"></div><div style="font-size:0.7em;color:var(--dim);margin-top:5px" id="cebLbl4">4 · Knowledge</div></div>
+              <div style="flex:1;text-align:center"><div style="height:3px;background:#222;border-radius:0 2px 2px 0" id="cebBar5"></div><div style="font-size:0.7em;color:var(--dim);margin-top:5px" id="cebLbl5">5 · Deploy</div></div>
+            </div>
+          </div>
+          <div style="padding:20px 28px 28px" id="cebBody"></div>
+        </div>
       </div>
 
       <!-- Quick Deploy Templates -->
@@ -3068,12 +3193,68 @@ sudo ufw enable
 
     <!-- ═══ TOOLS TAB ═══ -->
     <div class="tab-pane" id="tab-tools">
-      <div style="margin-bottom:20px">
-        <div style="font-size:1.15em;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Orchestrator Tools</div>
-        <div style="font-size:0.78em;color:var(--muted);margin-top:4px">185 tools across 52 categories. Everything the AI can do.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:1.15em;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Tools</div>
+          <div style="font-size:0.78em;color:var(--muted);margin-top:4px">185 built-in tools + any custom tools you create. Everything the AI can do.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" onclick="openToolBuilder()" style="background:linear-gradient(135deg,var(--blue),var(--purple));border:none">+ Create Custom Tool</button>
+          <button class="btn-outline" onclick="switchTab('community')">Browse Community</button>
+        </div>
       </div>
+
+      <!-- Custom Tools Panel -->
+      <div id="customToolsPanel" style="display:none" class="panel" style="border-color:var(--blue)44;margin-bottom:16px">
+        <div class="panel-header">
+          <div class="panel-title" style="background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">🔧 My Custom Tools</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-outline" onclick="openToolBuilder()">+ New Tool</button>
+          </div>
+        </div>
+        <div id="myCustomToolsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px"></div>
+      </div>
+
       <div class="stats-grid" id="toolStats"></div>
       <div id="toolCategories"></div>
+
+      <!-- ═══ CUSTOM TOOL BUILDER MODAL ═══ -->
+      <div id="toolBuilderModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;padding:20px;overflow-y:auto">
+        <div style="background:var(--card);border:1px solid #3b82f655;border-radius:18px;max-width:680px;width:100%;padding:0;box-shadow:0 24px 80px #000e;margin:auto">
+          <!-- Header -->
+          <div style="padding:24px 28px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:1.1em;font-weight:800;background:linear-gradient(135deg,var(--blue),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">🔧 Custom Tool Builder</div>
+              <div style="font-size:0.75em;color:var(--dim);margin-top:3px">Build any tool — AI-powered, API-driven, or script-based. Saved to your toolkit forever.</div>
+            </div>
+            <button onclick="closeToolBuilder()" style="background:none;border:none;color:var(--dim);font-size:1.4em;cursor:pointer">✕</button>
+          </div>
+
+          <!-- Step Progress -->
+          <div style="padding:16px 28px 0">
+            <div style="display:flex;gap:0" id="tbProgress">
+              <div style="flex:1;text-align:center" id="tbStep1Ind">
+                <div style="height:3px;background:var(--blue);border-radius:2px 0 0 2px"></div>
+                <div style="font-size:0.7em;color:var(--blue);margin-top:5px;font-weight:700">1 · Identity</div>
+              </div>
+              <div style="flex:1;text-align:center" id="tbStep2Ind">
+                <div style="height:3px;background:#222"></div>
+                <div style="font-size:0.7em;color:var(--dim);margin-top:5px">2 · Pipeline</div>
+              </div>
+              <div style="flex:1;text-align:center" id="tbStep3Ind">
+                <div style="height:3px;background:#222"></div>
+                <div style="font-size:0.7em;color:var(--dim);margin-top:5px">3 · Inputs</div>
+              </div>
+              <div style="flex:1;text-align:center" id="tbStep4Ind">
+                <div style="height:3px;background:#222;border-radius:0 2px 2px 0"></div>
+                <div style="font-size:0.7em;color:var(--dim);margin-top:5px">4 · Deploy</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:20px 28px 28px" id="tbBody"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ═══ KNOWLEDGE TAB ═══ -->
@@ -6063,7 +6244,8 @@ document.getElementById('authUser').addEventListener('keydown', e => { if (e.key
 // ══════════════════════════════════════
 // CONFIG & STATE
 // ══════════════════════════════════════
-const API = window.location.origin || 'http://localhost:5050';
+const _origin = window.location.origin;
+const API = (_origin && _origin !== 'null' && _origin.startsWith('http')) ? _origin : 'http://localhost:5050';
 let currentTab = 'dashboard';
 let refreshTimer = null;
 let eventRefreshTimer = null;
@@ -6145,8 +6327,8 @@ function buildMobileNav() {
       '<span>' + text + '</span>' +
       (badge ? '<span class="mnav-badge">' + badge.textContent + '</span>' : '');
     div.onclick = function() {
-      switchTab(tab);
       closeMobileNav();
+      switchTab(tab);
     };
     list.appendChild(div);
   });
@@ -6445,13 +6627,7 @@ function removeTabFromAllGroups(tab, skipRender) {
 try { renderNavGroups(); } catch(e) { console.error('Groups init error:', e); }
 
 function switchTab(tab) {
-  // Block navigation if setup not complete and trying to go anywhere other than setup/billing
-  // Guest mode and billing tab bypass the lock
-  const freeTabsBeforeSetup = ['setup', 'billing'];
-  if (!freeTabsBeforeSetup.includes(tab) && !isSetupComplete() && !tkIsGuest) {
-    toast('Complete setup first to unlock the platform', 'error');
-    tab = 'setup';
-  }
+  // Nav is always open — no hard locks. Actions inside tabs handle their own auth.
   currentTab = tab;
   document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.tab === tab));
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
@@ -9313,67 +9489,89 @@ async function fastDeploy() {
   btn.disabled = true;
   btn.textContent = '⏳ Deploying...';
 
-  const bizName = document.getElementById('fast-biz-name')?.value || '';
+  const bizName = document.getElementById('fast-biz-name')?.value?.trim() || '';
   const bizType = document.getElementById('fast-biz-type')?.value || '';
-  const phone = document.getElementById('fast-biz-phone')?.value || '';
-  const email = document.getElementById('fast-biz-email')?.value || '';
-  const hours = document.getElementById('fast-biz-hours')?.value || '';
-  const ownerEmail = document.getElementById('fast-owner-email')?.value || '';
-  const ownerName = document.getElementById('fast-owner-name')?.value || '';
-  const address = document.getElementById('fast-biz-address')?.value || '';
-  const desc = document.getElementById('fast-biz-desc')?.value || '';
+  const phone = document.getElementById('fast-biz-phone')?.value?.trim() || '';
+  const twilioPhone = document.getElementById('fast-twilio-phone')?.value?.trim() || '';
+  const email = document.getElementById('fast-biz-email')?.value?.trim() || '';
+  const hours = document.getElementById('fast-biz-hours')?.value?.trim() || '';
+  const ownerEmail = document.getElementById('fast-owner-email')?.value?.trim() || '';
+  const ownerName = document.getElementById('fast-owner-name')?.value?.trim() || '';
+  const address = document.getElementById('fast-biz-address')?.value?.trim() || '';
+  const desc = document.getElementById('fast-biz-desc')?.value?.trim() || '';
+
+  if (!bizName) { toast('Business name is required', 'error'); btn.disabled=false; btn.textContent='🚀 Deploy Client Now'; return; }
 
   const modulesEnabled = {};
   Object.keys(SW_MODULES || {}).forEach(k => { modulesEnabled[k] = false; });
   fastSelectedServices.forEach(id => { modulesEnabled[id] = true; });
 
-  const config = {
+  // Build the client config for the server's client manager
+  const clientPayload = {
     business_name: bizName,
-    business_type: bizType,
+    business_type: bizType || 'General Business',
+    twilio_phone_number: twilioPhone || phone,  // use twilio if provided, fall back to business phone
     business_phone: phone,
     business_email: email,
-    business_hours: hours,
+    notification_email: ownerEmail,
+    owner_name: ownerName,
     business_address: address,
     business_description: desc,
-    owner_email: ownerEmail,
-    owner_name: ownerName,
-    personality: 'friendly and professional',
-    language: 'English',
+    hours: hours,
+    greeting: `Hi, thanks for calling ${bizName}! How can I help you today?`,
+    tone: 'warm and professional',
     modules_enabled: modulesEnabled,
     setup_mode: 'sales',
     deployed_at: new Date().toISOString(),
+    services: fastSelectedServices.map(s => ({ name: s, duration_minutes: 30 })),
   };
 
+  // Save locally regardless
+  const localClients = JSON.parse(localStorage.getItem('janovum_deployed_clients') || '[]');
+  localClients.unshift({ ...clientPayload, status: 'deploying', deployed_at: new Date().toISOString() });
+  localStorage.setItem('janovum_deployed_clients', JSON.stringify(localClients));
+
   try {
-    const res = await fetch(API + '/api/config', {
+    // Hit the real multi-client endpoint — creates data/clients/businessname.json on server
+    const res = await fetch(API + '/api/receptionist/clients/add', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config)
+      body: JSON.stringify(clientPayload)
     });
-    if (res.ok || res.status === 200) {
+    const data = await res.json();
+
+    if (res.ok && !data.error) {
+      // Update local record with server response
+      localClients[0].status = 'active';
+      localClients[0].client_id = data.client_id;
+      localClients[0].port = data.port;
+      localStorage.setItem('janovum_deployed_clients', JSON.stringify(localClients));
       markSetupComplete();
-      toast(`🎉 ${bizName} is live! AI Receptionist active.`, 'success');
       updateDashboardChecklist();
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.textContent = '🚀 Deploy Client Now';
-        switchTab('dashboard');
-        loadClientBanner();
-      }, 1500);
+      // Show success modal with Twilio webhook instructions
+      showDeploySuccessModal(bizName, data.client_id, twilioPhone || phone, data.port);
     } else {
-      // Server might not be running — save locally and mark done
-      localStorage.setItem('janovum_fast_config', JSON.stringify(config));
+      // Server error — still save locally, show fallback
+      localClients[0].status = 'pending';
+      localStorage.setItem('janovum_deployed_clients', JSON.stringify(localClients));
       markSetupComplete();
-      toast(`${bizName} configured! Connect server to go fully live.`, 'info');
       updateDashboardChecklist();
-      setTimeout(() => { switchTab('dashboard'); }, 1200);
+      const errMsg = data.error || 'Server error';
+      if (errMsg.includes('twilio_phone_number is required')) {
+        toast('⚠️ Twilio number required to go fully live. Client saved — add Twilio number in Clients tab.', 'error');
+      } else {
+        toast(`Saved locally. Server said: ${errMsg}`, 'info');
+      }
+      setTimeout(() => { btn.disabled=false; btn.textContent='🚀 Deploy Client Now'; switchTab('dashboard'); }, 1200);
     }
   } catch(e) {
-    localStorage.setItem('janovum_fast_config', JSON.stringify(config));
+    // No server connection — save config locally, mark setup done
+    localClients[0].status = 'offline';
+    localStorage.setItem('janovum_deployed_clients', JSON.stringify(localClients));
     markSetupComplete();
-    toast(`Saved locally. Connect your server to go live.`, 'info');
     updateDashboardChecklist();
-    setTimeout(() => { switchTab('dashboard'); }, 1200);
+    toast(`${bizName} saved! Connect to janovum.com server to go fully live.`, 'info');
+    setTimeout(() => { btn.disabled=false; btn.textContent='🚀 Deploy Client Now'; switchTab('dashboard'); }, 1200);
   }
 
   btn.disabled = false;
@@ -9551,13 +9749,9 @@ function markSetupComplete() {
 }
 
 function lockNav() {
-  const alwaysFree = ['setup', 'billing'];
-  document.querySelectorAll('.nav-item').forEach(item => {
-    if (!alwaysFree.includes(item.dataset.tab)) {
-      item.classList.add('nav-locked');
-      item.title = 'Complete setup first';
-    }
-  });
+  // SOFT lock only — never block clicks, just dim non-setup tabs slightly
+  // Hard CSS pointer-events lock removed — users can always browse
+  unlockNav(); // ensure always unlocked
 }
 
 function unlockNav() {
@@ -9567,17 +9761,314 @@ function unlockNav() {
   });
 }
 
-// Apply lock on load if not done (guest mode skips lock)
-(function initSetupLock() {
-  if (!isSetupComplete() && !tkIsGuest) {
-    setTimeout(() => {
-      switchTab('setup');
-      lockNav();
-    }, 0);
-  } else {
-    const banner = document.getElementById('setupLockBanner');
-    if (banner) banner.style.display = 'none';
+// ── User Auth & Trial System ──────────────────────────────────────────────
+// States: 'guest' | 'trial' | 'paid' | 'admin' | 'expired'
+const USER_KEY        = 'janovum_user';
+const TRIAL_START_KEY = 'janovum_trial_start';
+const TRIAL_DAYS      = 7;
+
+function getUser() {
+  try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch(e) { return null; }
+}
+function getUserState() {
+  const u = getUser();
+  if (!u) return 'guest';
+  if (u.role === 'admin') return 'admin';
+  if (u.plan === 'paid') return 'paid';
+  const start = parseInt(localStorage.getItem(TRIAL_START_KEY) || '0');
+  if (!start) return 'guest';
+  const daysUsed = (Date.now() - start) / 86400000;
+  if (daysUsed <= TRIAL_DAYS) return 'trial';
+  return 'expired';
+}
+function getTrialDaysLeft() {
+  const start = parseInt(localStorage.getItem(TRIAL_START_KEY) || '0');
+  if (!start) return 0;
+  return Math.max(0, Math.ceil(TRIAL_DAYS - (Date.now() - start) / 86400000));
+}
+
+function canDoAction() {
+  // Can perform real actions (deploy, save data, etc.)
+  const state = getUserState();
+  return ['admin','paid','trial'].includes(state);
+}
+
+// Show trial / expiry banner
+function renderAuthBanner() {
+  const state = getUserState();
+  let existing = document.getElementById('authTrialBanner');
+  if (!existing) {
+    existing = document.createElement('div');
+    existing.id = 'authTrialBanner';
+    existing.style.cssText = 'margin:8px 16px 0;border-radius:10px;padding:10px 18px;display:none;align-items:center;gap:12px;font-size:0.8em;flex-wrap:wrap';
+    const demoBanner = document.getElementById('demoBanner');
+    if (demoBanner) demoBanner.after(existing);
+    else document.querySelector('.content')?.prepend(existing);
   }
+  if (state === 'trial') {
+    const days = getTrialDaysLeft();
+    existing.style.display = 'flex';
+    existing.style.background = 'linear-gradient(135deg,#1a1000,#0a0a0a)';
+    existing.style.border = '1px solid #f7c94844';
+    existing.innerHTML = `<span style="font-size:1.2em">⏳</span><div style="flex:1"><span style="color:var(--gold);font-weight:700">${days} day${days!==1?'s':''} left in your free trial</span> <span style="color:var(--dim)">— all features unlocked. No credit card needed yet.</span></div><button onclick="showPaywallModal()" style="padding:5px 14px;border-radius:6px;border:none;background:var(--gold);color:#000;font-weight:700;cursor:pointer;font-size:0.82em">Extend →</button>`;
+  } else if (state === 'expired') {
+    existing.style.display = 'flex';
+    existing.style.background = 'linear-gradient(135deg,#1a0000,#0a0a0a)';
+    existing.style.border = '1px solid #ef444455';
+    existing.innerHTML = `<span style="font-size:1.2em">🔴</span><div style="flex:1"><span style="color:#ef4444;font-weight:700">Trial expired</span> <span style="color:var(--dim)">— your data is saved. Subscribe to continue deploying &amp; saving.</span></div><button onclick="showPaywallModal()" style="padding:5px 14px;border-radius:6px;border:none;background:#ef4444;color:#fff;font-weight:700;cursor:pointer;font-size:0.82em">Subscribe Now</button>`;
+  } else if (state === 'guest') {
+    existing.style.display = 'flex';
+    existing.style.background = 'linear-gradient(135deg,#0a0a1a,#0a0a0a)';
+    existing.style.border = '1px solid #3b82f655';
+    existing.innerHTML = `<span style="font-size:1.2em">👋</span><div style="flex:1"><span style="color:var(--blue);font-weight:700">You're browsing as a guest</span> <span style="color:var(--dim)">— explore everything. Sign up for a free 7-day trial to start deploying.</span></div><button onclick="showSignupModal()" style="padding:5px 14px;border-radius:6px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;font-size:0.82em">Sign Up Free →</button>`;
+  } else {
+    existing.style.display = 'none';
+  }
+}
+
+// Guard for actions that require account
+function requireAccount(action) {
+  const state = getUserState();
+  if (state === 'guest') {
+    showSignupModal(`Sign up free to ${action}`);
+    return false;
+  }
+  if (state === 'expired') {
+    showPaywallModal();
+    return false;
+  }
+  return true;
+}
+
+// Sign-up modal
+function showSignupModal(msg) {
+  const existing = document.getElementById('signupModal');
+  if (existing) { existing.style.display='flex'; return; }
+  const modal = document.createElement('div');
+  modal.id = 'signupModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#000b;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--blue)55;border-radius:18px;max-width:460px;width:100%;padding:0;box-shadow:0 24px 80px #000e">
+      <div style="padding:28px 28px 20px;border-bottom:1px solid var(--border);text-align:center">
+        <div style="font-size:2em;margin-bottom:8px">🚀</div>
+        <div style="font-size:1.1em;font-weight:900">Start Your Free 7-Day Trial</div>
+        <div style="font-size:0.82em;color:var(--dim);margin-top:6px">${msg||'Full access. No credit card. Your data saves immediately.'}</div>
+      </div>
+      <div style="padding:24px 28px">
+        <div style="display:grid;gap:10px;margin-bottom:16px">
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:4px">Full Name</label>
+            <input id="suName" placeholder="Your name" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+          </div>
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:4px">Email</label>
+            <input id="suEmail" type="email" placeholder="you@email.com" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+          </div>
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:4px">Password</label>
+            <input id="suPassword" type="password" placeholder="Create a password" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+          </div>
+        </div>
+        <div style="background:linear-gradient(135deg,#0a1a0a,#050f05);border:1px solid var(--green)33;border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.78em">
+          <div style="color:var(--green);font-weight:700;margin-bottom:4px">✓ What you get free for 7 days:</div>
+          <div style="color:var(--dim);line-height:1.7">
+            Full platform access · Deploy real clients · AI employees · Custom tools · CRM & analytics · All 33 tabs
+          </div>
+        </div>
+        <button onclick="doSignup()" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:800;font-size:0.95em;cursor:pointer">Create Free Account →</button>
+        <div style="text-align:center;margin-top:12px;font-size:0.75em;color:var(--dim)">Already have an account? <a onclick="showLoginModal()" style="color:var(--blue);cursor:pointer">Log in</a></div>
+        <button onclick="document.getElementById('signupModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--dim);font-size:1.3em;cursor:pointer">✕</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function doSignup() {
+  const name = document.getElementById('suName')?.value?.trim();
+  const email = document.getElementById('suEmail')?.value?.trim();
+  const pass = document.getElementById('suPassword')?.value;
+  if (!name || !email || !pass) { toast('Fill in all fields', 'error'); return; }
+  if (!email.includes('@')) { toast('Enter a valid email', 'error'); return; }
+  if (pass.length < 6) { toast('Password must be at least 6 characters', 'error'); return; }
+  // Save user locally + start trial
+  const user = { name, email, role: 'user', plan: 'trial', createdAt: new Date().toISOString() };
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  localStorage.setItem(TRIAL_START_KEY, Date.now().toString());
+  localStorage.setItem(SETUP_DONE_KEY, '1'); // unlock setup
+  // Try to register on server
+  fetch(API + '/api/users/signup', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ name, email, password: pass })
+  }).catch(() => {});
+  document.getElementById('signupModal')?.remove();
+  renderAuthBanner();
+  renderTopbarAuth();
+  unlockNav();
+  toast(`🎉 Welcome ${name}! 7-day free trial started. Full access unlocked.`, 'success');
+  setTimeout(() => switchTab('setup'), 500);
+}
+
+// Login modal
+function showLoginModal() {
+  document.getElementById('signupModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'loginModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#000b;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:18px;max-width:400px;width:100%;padding:28px;box-shadow:0 24px 80px #000e;position:relative">
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--dim);font-size:1.3em;cursor:pointer">✕</button>
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:1.1em;font-weight:900">Log In</div>
+        <div style="font-size:0.82em;color:var(--dim);margin-top:4px">Welcome back</div>
+      </div>
+      <div style="display:grid;gap:10px;margin-bottom:16px">
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:4px">Email</label>
+          <input id="liEmail" type="email" placeholder="you@email.com" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:4px">Password</label>
+          <input id="liPassword" type="password" placeholder="Your password" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+      </div>
+      <button onclick="doLogin()" style="width:100%;padding:11px;border-radius:10px;border:none;background:var(--gold);color:#000;font-weight:800;font-size:0.92em;cursor:pointer">Log In</button>
+      <div style="text-align:center;margin-top:12px;font-size:0.75em;color:var(--dim)">No account? <a onclick="showSignupModal()" style="color:var(--blue);cursor:pointer">Sign up free</a></div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function doLogin() {
+  const email = document.getElementById('liEmail')?.value?.trim();
+  const pass = document.getElementById('liPassword')?.value;
+  if (!email || !pass) { toast('Enter email and password', 'error'); return; }
+  fetch(API + '/api/users/login', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email, password: pass })
+  }).then(r => r.json()).then(d => {
+    if (d.success && d.user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(d.user));
+      if (d.user.plan === 'paid') localStorage.removeItem(TRIAL_START_KEY);
+      if (d.trial_start) localStorage.setItem(TRIAL_START_KEY, d.trial_start);
+      localStorage.setItem(SETUP_DONE_KEY, '1');
+      document.getElementById('loginModal')?.remove();
+      renderAuthBanner();
+      renderTopbarAuth();
+      unlockNav();
+      toast(`Welcome back, ${d.user.name}!`, 'success');
+    } else {
+      toast(d.error || 'Login failed — check your email and password', 'error');
+    }
+  }).catch(() => {
+    // Offline fallback — check locally
+    const stored = getUser();
+    if (stored && stored.email === email) {
+      document.getElementById('loginModal')?.remove();
+      renderAuthBanner();
+      unlockNav();
+      toast(`Welcome back, ${stored.name}!`, 'success');
+    } else {
+      toast('Could not connect to server. Try again.', 'error');
+    }
+  });
+}
+
+// Paywall modal
+function showPaywallModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:#000b;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--gold)55;border-radius:18px;max-width:500px;width:100%;padding:0;box-shadow:0 24px 80px #000e">
+      <div style="padding:28px 28px 20px;border-bottom:1px solid var(--border);text-align:center">
+        <div style="font-size:2em;margin-bottom:8px">💳</div>
+        <div style="font-size:1.1em;font-weight:900">Choose Your Plan</div>
+        <div style="font-size:0.82em;color:var(--dim);margin-top:6px">Your data is saved. Subscribe to continue.</div>
+      </div>
+      <div style="padding:20px 28px 28px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+          ${[
+            {name:'Starter',price:'$49',sub:'1–5 clients',color:'var(--gold)',id:'starter'},
+            {name:'Growth',price:'$97',sub:'5–15 clients',color:'var(--orange)',id:'growth',popular:true},
+            {name:'Agency',price:'$197',sub:'25+ clients',color:'var(--purple)',id:'agency'},
+          ].map(p=>`
+          <div onclick="document.querySelectorAll('.pw-plan').forEach(x=>x.style.borderColor='var(--border)');this.style.borderColor='${p.color}'" class="pw-plan" style="background:var(--card2);border:2px solid ${p.popular?p.color:'var(--border)'};border-radius:10px;padding:14px;text-align:center;cursor:pointer;position:relative">
+            ${p.popular?`<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);background:${p.color};color:#000;font-size:0.6em;font-weight:800;padding:2px 10px;border-radius:8px;white-space:nowrap">POPULAR</div>`:''}
+            <div style="font-size:0.78em;font-weight:700;color:${p.color};margin-bottom:4px">${p.name}</div>
+            <div style="font-size:1.3em;font-weight:900">${p.price}</div>
+            <div style="font-size:0.65em;color:var(--dim)">/mo · ${p.sub}</div>
+            <input type="radio" name="pwPlan" value="${p.id}" ${p.popular?'checked':''} style="display:none">
+          </div>`).join('')}
+        </div>
+        <button onclick="startCheckout(document.querySelector('[name=pwPlan]:checked')?.value||'agency')" style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--gold);color:#000;font-weight:800;font-size:0.95em;cursor:pointer;margin-bottom:10px">Subscribe Now →</button>
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--dim);cursor:pointer;font-size:0.85em">Maybe Later</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function renderTopbarAuth() {
+  const btns = document.getElementById('topbarAuthBtns');
+  if (!btns) return;
+  const state = getUserState();
+  const user = getUser();
+  if (state === 'guest') {
+    btns.innerHTML = `
+      <button onclick="showLoginModal()" class="btn-sm btn-outline" style="font-size:0.78em">Log In</button>
+      <button onclick="showSignupModal()" class="btn-sm" style="background:var(--blue);color:#fff;border:none;font-size:0.78em;font-weight:700">Sign Up Free</button>`;
+  } else if (state === 'trial') {
+    const days = getTrialDaysLeft();
+    btns.innerHTML = `<span style="font-size:0.72em;color:var(--gold);font-weight:700;padding:4px 8px;background:var(--gold)15;border-radius:6px;border:1px solid var(--gold)33">${days}d trial</span>
+      <button onclick="showUserMenu()" class="btn-sm btn-outline" style="font-size:0.78em">${user?.name?.split(' ')[0]||'Account'} ▾</button>`;
+  } else if (state === 'expired') {
+    btns.innerHTML = `<button onclick="showPaywallModal()" class="btn-sm" style="background:#ef4444;color:#fff;border:none;font-size:0.78em;font-weight:700">Trial Expired — Subscribe</button>`;
+  } else if (state === 'paid' || state === 'admin') {
+    btns.innerHTML = `<button onclick="showUserMenu()" class="btn-sm btn-outline" style="font-size:0.78em">${user?.name?.split(' ')[0]||'Account'} ▾</button>`;
+  }
+}
+
+function showUserMenu() {
+  const user = getUser();
+  const state = getUserState();
+  const existing = document.getElementById('userMenuDropdown');
+  if (existing) { existing.remove(); return; }
+  const btn = document.querySelector('#topbarAuthBtns button:last-child');
+  const rect = btn?.getBoundingClientRect();
+  const menu = document.createElement('div');
+  menu.id = 'userMenuDropdown';
+  menu.style.cssText = `position:fixed;top:${(rect?.bottom||60)+6}px;right:${window.innerWidth-(rect?.right||200)}px;background:var(--card);border:1px solid var(--border);border-radius:10px;min-width:180px;z-index:9999;box-shadow:0 8px 32px #000a;padding:6px 0`;
+  menu.innerHTML = `
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+      <div style="font-weight:700;font-size:0.88em">${user?.name||'User'}</div>
+      <div style="font-size:0.72em;color:var(--dim)">${user?.email||''}</div>
+      <div style="font-size:0.7em;color:var(--gold);margin-top:2px;text-transform:uppercase">${state === 'trial' ? `Trial — ${getTrialDaysLeft()}d left` : state}</div>
+    </div>
+    ${state==='trial'||state==='expired'?`<div onclick="showPaywallModal();document.getElementById('userMenuDropdown')?.remove()" style="padding:9px 14px;cursor:pointer;font-size:0.82em;color:var(--gold)" onmouseover="this.style.background='#ffffff08'" onmouseout="this.style.background=''">💳 Upgrade Plan</div>`:''}
+    <div onclick="switchTab('settings');document.getElementById('userMenuDropdown')?.remove()" style="padding:9px 14px;cursor:pointer;font-size:0.82em" onmouseover="this.style.background='#ffffff08'" onmouseout="this.style.background=''">⚙️ Settings</div>
+    <div onclick="logoutUser()" style="padding:9px 14px;cursor:pointer;font-size:0.82em;color:#ef4444" onmouseover="this.style.background='#ffffff08'" onmouseout="this.style.background=''">🚪 Log Out</div>`;
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', function h(e){ if(!menu.contains(e.target)){menu.remove();document.removeEventListener('click',h);} }), 50);
+}
+
+function logoutUser() {
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(TRIAL_START_KEY);
+  document.getElementById('userMenuDropdown')?.remove();
+  renderTopbarAuth();
+  renderAuthBanner();
+  toast('Logged out', 'info');
+}
+
+// Apply on load — NEVER hard-lock nav, just show appropriate banner
+(function initSetupLock() {
+  const state = getUserState();
+  // Always unlock nav — browsing is always allowed
+  unlockNav();
+  // Hide setup banner if user is set up or is admin/paid/trial
+  const banner = document.getElementById('setupLockBanner');
+  if (banner) {
+    banner.style.display = (state === 'guest' && !isSetupComplete()) ? 'flex' : 'none';
+  }
+  // Show appropriate auth banner + topbar buttons
+  setTimeout(() => { renderAuthBanner(); renderTopbarAuth(); }, 100);
 })();
 
 // ══════════════════════════════════════
@@ -9977,7 +10468,12 @@ async function clLoadClients() {
     const banner = document.getElementById('setupBanner');
     if (banner) banner.style.display = data.domain_configured === false ? 'block' : 'none';
   } catch (e) {
-    document.getElementById('clClientGrid').innerHTML = '<div style="text-align:center;padding:40px;color:var(--dim);font-size:0.88em">Cannot connect to server. Make sure server_v8.py is running.</div>';
+    // Only show error if we don't already have client data rendered
+    if (clAllClients.length === 0) {
+      document.getElementById('clClientGrid').innerHTML = '<div style="text-align:center;padding:40px;color:var(--dim);font-size:0.88em">Cannot reach server. Make sure the Janovum toolkit server is running.</div>';
+    } else {
+      toast('Could not refresh clients — server unreachable', 'error');
+    }
   }
 }
 
@@ -17133,6 +17629,1297 @@ function stLoadSettings() {
   if (cfg.notifsSound !== undefined && document.getElementById('stNotifSound')) document.getElementById('stNotifSound').checked = cfg.notifsSound;
   if (cfg.notifsDesktop !== undefined && document.getElementById('stNotifDesktop')) document.getElementById('stNotifDesktop').checked = cfg.notifsDesktop;
 }
+
+// ═══════════════════════════════════════════════
+//  DEMO MODE — fills platform with realistic sample data for sales pitches
+// ═══════════════════════════════════════════════
+let demoModeActive = false;
+let demoBackup = {};
+
+const DEMO_CLIENTS = [
+  { id:'demo_1', name:'Luxe Hair Studio', type:'Hair Salon', phone:'(305) 555-0101', email:'owner@luxehair.com', status:'active', calls_week:47, appts_week:12, revenue:1000, health:98 },
+  { id:'demo_2', name:'PeakFit Gym', type:'Fitness Studio', phone:'(786) 555-0202', email:'front@peakfit.com', status:'active', calls_week:63, appts_week:19, revenue:1000, health:100 },
+  { id:'demo_3', name:'Bright Smiles Dental', type:'Dental Office', phone:'(954) 555-0303', email:'info@brightsmiles.com', status:'active', calls_week:31, appts_week:8, revenue:1000, health:95 },
+  { id:'demo_4', name:'Zen Balance Spa', type:'Spa & Wellness', phone:'(561) 555-0404', email:'hello@zenbalance.com', status:'active', calls_week:28, appts_week:9, revenue:1000, health:97 },
+  { id:'demo_5', name:'AutoPro Detail', type:'Auto Detailing', phone:'(305) 555-0505', email:'book@autopro.com', status:'active', calls_week:22, appts_week:6, revenue:1000, health:92 },
+];
+
+const DEMO_CALLS = [
+  { time:'Today 11:42 AM', caller:'(305) 823-7741', business:'Luxe Hair Studio', outcome:'Booked', duration:'1m 23s', appt:'Fri Apr 10 @ 2:00 PM' },
+  { time:'Today 11:18 AM', caller:'(786) 441-2290', business:'PeakFit Gym', outcome:'Booked', duration:'2m 05s', appt:'Sat Apr 11 @ 10:00 AM' },
+  { time:'Today 10:55 AM', caller:'(954) 661-8823', business:'Bright Smiles Dental', outcome:'Info Only', duration:'0m 48s', appt:null },
+  { time:'Today 10:31 AM', caller:'(305) 774-5512', business:'Zen Balance Spa', outcome:'Booked', duration:'1m 52s', appt:'Mon Apr 13 @ 3:30 PM' },
+  { time:'Today 9:47 AM', caller:'(786) 330-9944', business:'Luxe Hair Studio', outcome:'Booked', duration:'1m 17s', appt:'Thu Apr 9 @ 4:00 PM' },
+  { time:'Today 9:22 AM', caller:'(561) 229-6671', business:'AutoPro Detail', outcome:'Voicemail', duration:'0m 22s', appt:null },
+  { time:'Yesterday 5:14 PM', caller:'(305) 882-3341', business:'PeakFit Gym', outcome:'Booked', duration:'1m 44s', appt:'Wed Apr 8 @ 9:00 AM' },
+  { time:'Yesterday 4:48 PM', caller:'(954) 552-7723', business:'Bright Smiles Dental', outcome:'Booked', duration:'2m 11s', appt:'Tue Apr 14 @ 11:00 AM' },
+  { time:'Yesterday 3:30 PM', caller:'(786) 993-4412', business:'Luxe Hair Studio', outcome:'Info Only', duration:'0m 55s', appt:null },
+  { time:'Yesterday 2:07 PM', caller:'(305) 441-8820', business:'Zen Balance Spa', outcome:'Booked', duration:'1m 38s', appt:'Fri Apr 10 @ 1:00 PM' },
+];
+
+const DEMO_CRM = [
+  { name:'Monica Tran', biz:'Luxe Hair Studio', phone:'(305) 823-7741', email:'mtran@gmail.com', status:'Client', value:'$1,000/mo', last:'Today' },
+  { name:'DeShawn Brooks', biz:'PeakFit Gym', phone:'(786) 441-2290', email:'dbrooks@gmail.com', status:'Client', value:'$1,000/mo', last:'Today' },
+  { name:'Karen Hollis', biz:'Bright Smiles Dental', phone:'(954) 661-8823', email:'khollis@gmail.com', status:'Prospect', value:'$1,500/mo', last:'Yesterday' },
+  { name:'Raj Patel', biz:'Zen Balance Spa', phone:'(305) 774-5512', email:'rajp@gmail.com', status:'Client', value:'$1,000/mo', last:'Today' },
+  { name:'Marcus Webb', biz:'AutoPro Detail', phone:'(786) 330-9944', email:'mwebb@gmail.com', status:'Client', value:'$1,000/mo', last:'Today' },
+  { name:'Destiny King', biz:'Elite Lashes', phone:'(561) 229-6671', email:'destk@gmail.com', status:'Lead', value:'$1,000/mo', last:'2d ago' },
+  { name:'James Ortega', biz:'The Barbershop Co', phone:'(305) 882-3341', email:'jortega@gmail.com', status:'Prospect', value:'$1,000/mo', last:'Yesterday' },
+  { name:'Tanya Reeves', biz:'NailBar Miami', phone:'(954) 552-7723', email:'treeves@gmail.com', status:'Lead', value:'$1,000/mo', last:'3d ago' },
+];
+
+function toggleDemoMode() {
+  if (demoModeActive) {
+    disableDemoMode();
+  } else {
+    enableDemoMode();
+  }
+}
+
+function enableDemoMode() {
+  demoModeActive = true;
+  const btn = document.getElementById('demoToggleBtn');
+  if (btn) { btn.textContent = '✕ Exit Demo'; btn.style.background = '#ef4444'; btn.style.boxShadow = '0 0 12px #ef444440'; }
+  const banner = document.getElementById('demoBanner');
+  if (banner) banner.style.display = 'flex';
+  toast('Demo Mode ON — showing sample client data', 'success');
+  // Force unlock everything for the demo
+  const wasComplete = isSetupComplete();
+  if (!wasComplete) { localStorage.setItem('janovum_setup_complete', '1'); tkIsGuest = true; }
+  fillDemoDashboard();
+  fillDemoClients();
+  fillDemoCallLog();
+  fillDemoCRM();
+  fillDemoAnalytics();
+  fillDemoBilling();
+  switchTab('dashboard');
+}
+
+function disableDemoMode() {
+  demoModeActive = false;
+  const btn = document.getElementById('demoToggleBtn');
+  if (btn) { btn.textContent = '🎭 Demo'; btn.style.background = 'linear-gradient(135deg,#7c3aed,#a855f7)'; btn.style.boxShadow = '0 0 12px #a855f740'; }
+  const banner = document.getElementById('demoBanner');
+  if (banner) banner.style.display = 'none';
+  toast('Demo Mode OFF — real data restored', 'info');
+  refreshCurrentTab();
+}
+
+function fillDemoDashboard() {
+  const el = (id) => document.getElementById(id);
+  // Stats
+  if (el('dashStatClients')) el('dashStatClients').textContent = '5';
+  if (el('dashStatCalls')) el('dashStatCalls').textContent = '191';
+  if (el('dashStatAppts')) el('dashStatAppts').textContent = '54';
+  if (el('dashStatRevenue')) el('dashStatRevenue').textContent = '$5,000';
+  // Checklist — mark all done
+  const checks = document.querySelectorAll('.dash-check-item');
+  checks.forEach(c => { c.style.color = 'var(--green)'; c.style.textDecoration = 'line-through'; });
+  // Recent activity feed
+  const feed = el('dashActivityFeed') || el('dashActivity') || el('dashRecentActivity');
+  if (feed) {
+    feed.innerHTML = DEMO_CALLS.slice(0,5).map(c => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+        <div style="width:8px;height:8px;border-radius:50%;background:${c.outcome==='Booked'?'var(--green)':c.outcome==='Info Only'?'var(--gold)':'var(--dim)'}"></div>
+        <div style="flex:1">
+          <div style="font-size:0.9em;font-weight:600">${c.business}</div>
+          <div style="font-size:0.8em;color:var(--dim)">${c.caller} · ${c.outcome}${c.appt?' · '+c.appt:''}</div>
+        </div>
+        <div style="font-size:0.8em;color:var(--dim)">${c.time.split(' ').slice(0,2).join(' ')}</div>
+      </div>`).join('');
+  }
+  // Mini client list on dashboard
+  const clientList = el('dashClientList') || el('dashMiniClients');
+  if (clientList) {
+    clientList.innerHTML = DEMO_CLIENTS.map(c => `
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:8px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:1.1em">🏢</div>
+        <div style="flex:1"><div style="font-size:0.9em;font-weight:600">${c.name}</div><div style="font-size:0.78em;color:var(--dim)">${c.type} · ${c.calls_week} calls this week</div></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
+      </div>`).join('');
+  }
+}
+
+function fillDemoClients() {
+  const grid = document.getElementById('clientsGrid') || document.getElementById('clientGrid') || document.querySelector('#tab-clients .clients-grid');
+  if (!grid) return;
+  grid.innerHTML = DEMO_CLIENTS.map(c => `
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:20px;transition:transform 0.15s,box-shadow 0.15s;cursor:pointer" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px #0006'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,#1a3a1a,#0f2a0f);display:flex;align-items:center;justify-content:center;font-size:1.5em">🏢</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:1em">${c.name}</div>
+          <div style="font-size:0.8em;color:var(--dim)">${c.type}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.78em;color:var(--green);font-weight:600">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green)"></div>Active
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+        <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:1.1em;font-weight:700;color:var(--green)">${c.calls_week}</div>
+          <div style="font-size:0.72em;color:var(--dim)">Calls/wk</div>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:1.1em;font-weight:700;color:var(--gold)">${c.appts_week}</div>
+          <div style="font-size:0.72em;color:var(--dim)">Appts/wk</div>
+        </div>
+        <div style="background:var(--card);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:1.1em;font-weight:700;color:#a855f7">${c.health}%</div>
+          <div style="font-size:0.72em;color:var(--dim)">Health</div>
+        </div>
+      </div>
+      <div style="font-size:0.8em;color:var(--dim);margin-bottom:10px">${c.phone} · ${c.email}</div>
+      <div style="display:flex;gap:8px">
+        <button style="flex:1;padding:7px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.82em;cursor:pointer">View Dashboard</button>
+        <button style="flex:1;padding:7px;border-radius:8px;border:none;background:var(--gold);color:#000;font-size:0.82em;font-weight:700;cursor:pointer">Manage</button>
+      </div>
+    </div>`).join('');
+}
+
+function fillDemoCallLog() {
+  const table = document.getElementById('callLogTable') || document.getElementById('callLogBody') || document.querySelector('#tab-calls table tbody, #tab-calllog table tbody, #tab-receptionist table tbody');
+  if (table) {
+    const isBody = table.tagName === 'TBODY';
+    const rows = DEMO_CALLS.map(c => `
+      <tr>
+        <td style="padding:10px 12px;font-size:0.85em;color:var(--dim)">${c.time}</td>
+        <td style="padding:10px 12px;font-size:0.85em">${c.caller}</td>
+        <td style="padding:10px 12px;font-size:0.85em">${c.business}</td>
+        <td style="padding:10px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:0.78em;font-weight:700;background:${c.outcome==='Booked'?'#14532d':c.outcome==='Info Only'?'#451a03':'#1f1f1f'};color:${c.outcome==='Booked'?'var(--green)':c.outcome==='Info Only'?'var(--gold)':'var(--dim)'}">${c.outcome}</span></td>
+        <td style="padding:10px 12px;font-size:0.85em;color:var(--dim)">${c.duration}</td>
+        <td style="padding:10px 12px;font-size:0.82em;color:var(--green)">${c.appt||'—'}</td>
+      </tr>`).join('');
+    if (isBody) { table.innerHTML = rows; } else { table.innerHTML = rows; }
+  }
+  // Also fill any call count stat
+  const callCount = document.getElementById('receptionistCallCount') || document.getElementById('callCount');
+  if (callCount) callCount.textContent = '191';
+  const bookingRate = document.getElementById('receptionistBookingRate') || document.getElementById('bookingRate');
+  if (bookingRate) bookingRate.textContent = '74%';
+}
+
+function fillDemoCRM() {
+  const tbody = document.querySelector('#tab-crm table tbody') || document.querySelector('#crmTable tbody') || document.getElementById('crmBody');
+  if (tbody) {
+    tbody.innerHTML = DEMO_CRM.map(c => `
+      <tr>
+        <td style="padding:10px 12px;font-weight:600">${c.name}</td>
+        <td style="padding:10px 12px;font-size:0.85em;color:var(--dim)">${c.biz}</td>
+        <td style="padding:10px 12px;font-size:0.85em">${c.phone}</td>
+        <td style="padding:10px 12px;font-size:0.85em;color:var(--dim)">${c.email}</td>
+        <td style="padding:10px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:0.78em;font-weight:700;background:${c.status==='Client'?'#14532d':c.status==='Prospect'?'#1a1a3d':'#1f1f1f'};color:${c.status==='Client'?'var(--green)':c.status==='Prospect'?'#818cf8':'var(--dim)'}">${c.status}</span></td>
+        <td style="padding:10px 12px;font-size:0.85em;color:var(--gold);font-weight:600">${c.value}</td>
+        <td style="padding:10px 12px;font-size:0.82em;color:var(--dim)">${c.last}</td>
+        <td style="padding:10px 12px"><button style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.8em;cursor:pointer">View</button></td>
+      </tr>`).join('');
+  }
+  // CRM stats
+  const crmClients = document.getElementById('crmStatClients'); if (crmClients) crmClients.textContent = '5';
+  const crmLeads = document.getElementById('crmStatLeads'); if (crmLeads) crmLeads.textContent = '3';
+  const crmMRR = document.getElementById('crmStatMRR'); if (crmMRR) crmMRR.textContent = '$5,000';
+}
+
+function fillDemoAnalytics() {
+  // Key metrics
+  const metrics = {
+    'analyticsCallsTotal': '191', 'analyticsTotalCalls': '191',
+    'analyticsBookings': '54', 'analyticsTotalBookings': '54',
+    'analyticsBookingRate': '74%', 'analyticsConvRate': '74%',
+    'analyticsRevenue': '$5,000/mo', 'analyticsMRR': '$5,000',
+    'analyticsClients': '5', 'analyticsActiveClients': '5',
+    'analyticsAvgCall': '1m 32s', 'analyticsCallDuration': '1m 32s',
+    'analyticsMissed': '0', 'analyticsMissedCalls': '0',
+  };
+  Object.entries(metrics).forEach(([id, val]) => { const el = document.getElementById(id); if (el) el.textContent = val; });
+
+  // Try to draw sparkline charts via canvas if present
+  document.querySelectorAll('canvas[id*="analytics"], canvas[id*="chart"], canvas[id*="Chart"]').forEach(canvas => {
+    try {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width || 300, h = canvas.height || 80;
+      ctx.clearRect(0, 0, w, h);
+      const data = [28,34,41,37,52,48,63,57,71,68,82,79,85,88,92,87,95,91,98,97,103,109,115,118,122,127,131,138,143,148,154,160,165,168,172,178,183,187,191].slice(-14);
+      const max = Math.max(...data), min = Math.min(...data);
+      ctx.strokeStyle = '#f7c948';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      data.forEach((v, i) => {
+        const x = (i / (data.length-1)) * w;
+        const y = h - ((v - min) / (max - min + 1)) * (h * 0.8) - h * 0.1;
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+      // fill under
+      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+      ctx.fillStyle = 'rgba(247,201,72,0.08)';
+      ctx.fill();
+    } catch(e) {}
+  });
+}
+
+function fillDemoBilling() {
+  const tbody = document.querySelector('#tab-billing table tbody') || document.querySelector('#billingTable tbody') || document.getElementById('ordersTableBody');
+  if (tbody) {
+    const orders = [
+      { id:'ORD-001', plan:'Agency', client:'Luxe Hair Studio', date:'Apr 1, 2026', amount:'$197', status:'Active' },
+      { id:'ORD-002', plan:'Agency', client:'PeakFit Gym', date:'Mar 28, 2026', amount:'$197', status:'Active' },
+      { id:'ORD-003', plan:'Starter', client:'Bright Smiles Dental', date:'Mar 22, 2026', amount:'$97', status:'Active' },
+      { id:'ORD-004', plan:'Agency', client:'Zen Balance Spa', date:'Mar 15, 2026', amount:'$197', status:'Active' },
+      { id:'ORD-005', plan:'Starter', client:'AutoPro Detail', date:'Mar 10, 2026', amount:'$97', status:'Active' },
+    ];
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td style="padding:10px 12px;font-size:0.82em;color:var(--dim)">${o.id}</td>
+        <td style="padding:10px 12px;font-weight:600">${o.client}</td>
+        <td style="padding:10px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:0.78em;background:#1a1a3d;color:#818cf8">${o.plan}</span></td>
+        <td style="padding:10px 12px;font-size:0.85em;color:var(--dim)">${o.date}</td>
+        <td style="padding:10px 12px;font-weight:700;color:var(--gold)">${o.amount}</td>
+        <td style="padding:10px 12px"><span style="padding:3px 10px;border-radius:20px;font-size:0.78em;font-weight:700;background:#14532d;color:var(--green)">${o.status}</span></td>
+      </tr>`).join('');
+  }
+  // MRR display
+  const mrrEl = document.getElementById('billingMRR') || document.getElementById('totalMRR');
+  if (mrrEl) mrrEl.textContent = '$785';
+  const arrEl = document.getElementById('billingARR') || document.getElementById('totalARR');
+  if (arrEl) arrEl.textContent = '$9,420';
+}
+
+// ═══════════════════════════════════════════════
+//  QUOTE GENERATOR — generate shareable client proposals
+// ═══════════════════════════════════════════════
+function openQuoteGenerator() {
+  const modal = document.createElement('div');
+  modal.id = 'quoteGenModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#000a;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 32px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px #000c">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div style="font-size:1.15em;font-weight:800">📄 Generate Client Proposal</div>
+        <button onclick="document.getElementById('quoteGenModal').remove()" style="background:none;border:none;color:var(--dim);font-size:1.3em;cursor:pointer">✕</button>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div>
+          <label style="font-size:0.82em;color:var(--dim);display:block;margin-bottom:5px">Client / Business Name</label>
+          <input id="qgName" placeholder="e.g. Luxe Hair Studio" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+        </div>
+        <div>
+          <label style="font-size:0.82em;color:var(--dim);display:block;margin-bottom:5px">Business Type</label>
+          <select id="qgType" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+            <option>Hair Salon</option><option>Barbershop</option><option>Dental Office</option>
+            <option>Medical Clinic</option><option>Fitness Studio</option><option>Spa & Wellness</option>
+            <option>Auto Detailing</option><option>Real Estate Agency</option><option>Law Firm</option>
+            <option>Restaurant</option><option>Tutoring / Education</option><option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.82em;color:var(--dim);display:block;margin-bottom:5px">Monthly Calls Estimate</label>
+          <input id="qgCalls" type="number" placeholder="e.g. 120" value="150" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+        </div>
+        <div>
+          <label style="font-size:0.82em;color:var(--dim);display:block;margin-bottom:5px">Plan to Sell</label>
+          <select id="qgPlan" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+            <option value="97">Starter — $97/mo</option>
+            <option value="197" selected>Agency — $197/mo</option>
+            <option value="397">Enterprise — $397/mo</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.82em;color:var(--dim);display:block;margin-bottom:5px">Services to Include</label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${['AI Receptionist','Smart Scheduler','CRM & Leads','Analytics','Co-Pilot','Multi-Location'].map(s=>`
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.85em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 12px">
+              <input type="checkbox" value="${s}" ${['AI Receptionist','Smart Scheduler','CRM & Leads'].includes(s)?'checked':''} style="accent-color:var(--gold)"> ${s}
+            </label>`).join('')}
+          </div>
+        </div>
+        <button onclick="generateQuotePreview()" style="width:100%;padding:12px;border-radius:10px;border:none;background:var(--gold);color:#000;font-weight:800;font-size:0.95em;cursor:pointer;margin-top:4px">✨ Generate Proposal</button>
+      </div>
+      <div id="quotePreview" style="display:none;margin-top:20px"></div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function generateQuotePreview() {
+  const name = document.getElementById('qgName').value || 'Your Business';
+  const type = document.getElementById('qgType').value;
+  const calls = parseInt(document.getElementById('qgCalls').value) || 150;
+  const plan = parseInt(document.getElementById('qgPlan').value);
+  const planName = plan===97?'Starter':plan===197?'Agency':'Enterprise';
+  const services = [...document.querySelectorAll('#quoteGenModal input[type=checkbox]:checked')].map(c=>c.value);
+  const bookedRate = 0.72;
+  const apptValue = 45;
+  const monthlyBookings = Math.round(calls * bookedRate);
+  const monthlyRevAdded = monthlyBookings * apptValue;
+  const roi = Math.round(((monthlyRevAdded - plan) / plan) * 100);
+  const preview = document.getElementById('quotePreview');
+  preview.style.display = 'block';
+  preview.innerHTML = `
+    <div style="background:linear-gradient(135deg,#0a1628,#0f2010);border:1px solid var(--border);border-radius:14px;padding:24px;font-family:sans-serif">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:1.5em;font-weight:900;background:linear-gradient(135deg,var(--gold),#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent">JANOVUM</div>
+        <div style="font-size:0.78em;color:var(--dim);letter-spacing:0.1em;text-transform:uppercase">AI Automation Proposal</div>
+      </div>
+      <div style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:14px">
+        <div style="font-size:1.1em;font-weight:700">${name}</div>
+        <div style="font-size:0.85em;color:var(--dim)">${type} · ${planName} Plan</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+        <div style="background:#ffffff08;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.4em;font-weight:800;color:var(--green)">+${monthlyBookings}</div>
+          <div style="font-size:0.75em;color:var(--dim)">Bookings/mo (est.)</div>
+        </div>
+        <div style="background:#ffffff08;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.4em;font-weight:800;color:var(--gold)">+${roi}%</div>
+          <div style="font-size:0.75em;color:var(--dim)">ROI First Month</div>
+        </div>
+        <div style="background:#ffffff08;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.4em;font-weight:800;color:#a855f7">$${monthlyRevAdded.toLocaleString()}</div>
+          <div style="font-size:0.75em;color:var(--dim)">Revenue Added/mo</div>
+        </div>
+        <div style="background:#ffffff08;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:1.4em;font-weight:800;color:var(--fg)">24/7</div>
+          <div style="font-size:0.75em;color:var(--dim)">Always Answering</div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">
+        <div style="font-size:0.8em;color:var(--dim);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Included Services</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${services.map(s=>`<span style="background:var(--gold)20;border:1px solid var(--gold)44;border-radius:20px;padding:4px 12px;font-size:0.8em;color:var(--gold)">${s}</span>`).join('')}</div>
+      </div>
+      <div style="background:#ffffff06;border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:0.88em"><span style="color:var(--dim)">Setup Fee (one-time)</span><span style="font-weight:700">$1,000</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.88em"><span style="color:var(--dim)">Monthly (${planName})</span><span style="font-weight:700;color:var(--gold)">$${plan}/mo</span></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="copyQuoteText('${name}','${type}','${planName}',${plan},${monthlyBookings},${monthlyRevAdded},${roi})" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.85em;cursor:pointer">📋 Copy as Text</button>
+        <button onclick="printQuote()" style="flex:1;padding:10px;border-radius:8px;border:none;background:var(--gold);color:#000;font-weight:700;font-size:0.85em;cursor:pointer">🖨️ Print / Save PDF</button>
+      </div>
+    </div>`;
+}
+
+function copyQuoteText(name, type, plan, price, bookings, revenue, roi) {
+  const text = `JANOVUM AI AUTOMATION — PROPOSAL FOR ${name.toUpperCase()}\n\n` +
+    `Business: ${name} (${type})\nPlan: ${plan} ($${price}/mo)\n\n` +
+    `PROJECTED RESULTS:\n` +
+    `• +${bookings} bookings/month\n` +
+    `• +$${revenue.toLocaleString()} additional revenue/month\n` +
+    `• ${roi}% ROI in the first month\n` +
+    `• 24/7 AI receptionist — never miss a call again\n\n` +
+    `INVESTMENT:\n• Setup Fee: $1,000 (one-time)\n• Monthly: $${price}/mo\n\n` +
+    `Book a demo: janovum.com | janovumllc@gmail.com`;
+  navigator.clipboard.writeText(text).then(() => toast('Proposal copied to clipboard!', 'success')).catch(() => toast('Copy failed — try print instead', 'error'));
+}
+
+function printQuote() {
+  const preview = document.getElementById('quotePreview');
+  if (!preview) return;
+  const w = window.open('', '_blank');
+  w.document.write('<html><head><title>Janovum Proposal</title></head><body style="background:#0a0a0a;color:#fff;font-family:sans-serif;padding:40px">' + preview.innerHTML + '</body></html>');
+  w.document.close();
+  setTimeout(() => w.print(), 500);
+}
+
+function showDeploySuccessModal(bizName, clientId, twilioPhone, port) {
+  const webhookUrl = `https://janovum.com/incoming`;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:#000c;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--green)55;border-radius:18px;max-width:580px;width:100%;padding:0;box-shadow:0 24px 80px #000e">
+      <div style="padding:28px;border-bottom:1px solid var(--border);text-align:center">
+        <div style="font-size:3em;margin-bottom:10px">🎉</div>
+        <div style="font-size:1.2em;font-weight:900;color:var(--green)">${esc(bizName)} is LIVE!</div>
+        <div style="font-size:0.82em;color:var(--dim);margin-top:6px">Client deployed on Janovum's server. One last step to route calls.</div>
+      </div>
+      <div style="padding:24px 28px">
+        <div style="background:#0a1a0a;border:1px solid var(--green)33;border-radius:12px;padding:16px;margin-bottom:16px">
+          <div style="font-size:0.78em;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Last Step — Set Twilio Webhook</div>
+          <div style="font-size:0.82em;color:var(--dim);margin-bottom:10px;line-height:1.6">In your <strong style="color:var(--text)">Twilio Console</strong>, go to the phone number <strong style="color:var(--gold)">${esc(twilioPhone)}</strong>, and set the <em>Voice webhook</em> to:</div>
+          <div style="display:flex;align-items:center;gap:8px;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px 14px">
+            <code style="font-size:0.82em;color:var(--gold);flex:1;word-break:break-all">${webhookUrl}</code>
+            <button onclick="navigator.clipboard.writeText('${webhookUrl}').then(()=>toast('Copied!','success'))" style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.78em;cursor:pointer;white-space:nowrap">Copy</button>
+          </div>
+          <div style="font-size:0.75em;color:var(--dim);margin-top:8px">Method: HTTP POST · That's it. Takes 30 seconds.</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:0.72em;color:var(--dim);margin-bottom:4px">Client ID</div>
+            <div style="font-size:0.82em;font-weight:700;font-family:monospace;color:var(--gold)">${esc(clientId||'pending')}</div>
+          </div>
+          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:0.72em;color:var(--dim);margin-bottom:4px">Status</div>
+            <div style="font-size:0.82em;font-weight:700;color:var(--green)">✓ Deployed</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button onclick="this.closest('div[style*=fixed]').remove();switchTab('dashboard')" style="flex:1;padding:11px;border-radius:8px;border:none;background:var(--green);color:#000;font-weight:800;cursor:pointer">Go to Dashboard →</button>
+          <button onclick="this.closest('div[style*=fixed]').remove();switchTab('clients')" style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">View All Clients</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CUSTOM TOOL BUILDER
+// ═══════════════════════════════════════════════════════════════
+let tbStep = 1;
+let tbData = {};
+
+function openToolBuilder(prefill) {
+  tbStep = 1; tbData = prefill || {};
+  const m = document.getElementById('toolBuilderModal');
+  m.style.display = 'flex';
+  tbRender();
+}
+function closeToolBuilder() {
+  document.getElementById('toolBuilderModal').style.display = 'none';
+}
+function tbUpdateProgress() {
+  for (let i = 1; i <= 4; i++) {
+    const bar = document.querySelector(`#tbStep${i}Ind div`);
+    const lbl = document.querySelector(`#tbStep${i}Ind div:last-child`);
+    if (bar) bar.style.background = i <= tbStep ? 'var(--blue)' : '#222';
+    if (lbl) lbl.style.color = i <= tbStep ? 'var(--blue)' : 'var(--dim)';
+    if (lbl && i === tbStep) lbl.style.fontWeight = '700';
+  }
+}
+function tbRender() {
+  tbUpdateProgress();
+  const body = document.getElementById('tbBody');
+  if (tbStep === 1) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Name & Identity</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:18px">Give your tool a name, icon, and description.</p>
+      <div style="display:grid;gap:12px">
+        <div style="display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:end">
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Icon</label>
+            <input id="tbIcon" value="${tbData.icon||'🔧'}" style="width:64px;text-align:center;font-size:1.6em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--fg);cursor:pointer" onclick="this.select()">
+          </div>
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Tool Name *</label>
+            <input id="tbName" value="${tbData.name||''}" placeholder="e.g. Lead Scorer, Invoice Generator, Email Drip Bot" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Short Description *</label>
+          <input id="tbDesc" value="${tbData.desc||''}" placeholder="What does this tool do in one sentence?" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Category</label>
+          <select id="tbCat" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.85em">
+            ${['Automation','Sales & Marketing','Analytics','Customer Service','Finance','Content & Writing','Data & Scraping','Email & Outreach','CRM','E-Commerce','Social Media','Developer Tools','Custom'].map(c=>`<option ${(tbData.category||''===c)?'selected':''}>${c}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Tags (comma-separated)</label>
+          <input id="tbTags" value="${tbData.tags||''}" placeholder="e.g. email, outreach, ai" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.85em">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:20px">
+        <button onclick="tbNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+  } else if (tbStep === 2) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Pipeline Type</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:18px">How does this tool work under the hood?</p>
+      <div style="display:grid;gap:10px">
+        ${[
+          {id:'ai_prompt', icon:'🤖', label:'AI Prompt Tool', desc:'Sends a prompt to an LLM and returns the response. Best for writing, analysis, summarization, generation.'},
+          {id:'api_call', icon:'🔗', label:'API Integration', desc:'Calls an external API (REST/webhook). Best for fetching data, sending messages, triggering actions.'},
+          {id:'workflow', icon:'⚙️', label:'Multi-Step Workflow', desc:'Chain multiple steps: AI prompt → API call → another AI step → output. Fully custom pipeline.'},
+          {id:'script', icon:'📜', label:'Custom Script', desc:'Define exact logic with a Python-style pseudocode. For advanced custom automations.'},
+          {id:'hybrid', icon:'⚡', label:'Hybrid (AI + API)', desc:'Combine AI reasoning with real API data. AI decides what to do, then executes it via API.'},
+        ].map(p=>`
+          <div onclick="tbData.pipeline='${p.id}';this.parentElement.querySelectorAll('.tb-pipeline-opt').forEach(x=>x.style.borderColor='var(--border)');this.style.borderColor='var(--blue)'" class="tb-pipeline-opt" style="background:var(--card2);border:2px solid ${(tbData.pipeline===p.id)?'var(--blue)':'var(--border)'};border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;gap:14px;align-items:flex-start;transition:border-color 0.15s">
+            <div style="font-size:1.8em;margin-top:2px">${p.icon}</div>
+            <div>
+              <div style="font-weight:700;font-size:0.9em;margin-bottom:3px">${p.label}</div>
+              <div style="font-size:0.78em;color:var(--dim);line-height:1.5">${p.desc}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div id="tbPipelineConfig" style="margin-top:16px"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px">
+        <button onclick="tbStep--;tbRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="tbNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+    // Show config panel for selected pipeline
+    setTimeout(()=>{
+      document.querySelectorAll('.tb-pipeline-opt').forEach(el=>{
+        el.addEventListener('click', ()=>{
+          const id = el.querySelector('[onclick]')?.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+          tbShowPipelineConfig(tbData.pipeline);
+        });
+        el.onclick = function() {
+          const match = this.getAttribute('onclick')?.match(/'([^']+)'/);
+          if (match) { tbData.pipeline = match[1]; tbShowPipelineConfig(tbData.pipeline); }
+        };
+      });
+      if (tbData.pipeline) tbShowPipelineConfig(tbData.pipeline);
+    },50);
+  } else if (tbStep === 3) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Inputs & Outputs</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:18px">What data does this tool need, and what does it return?</p>
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <label style="font-size:0.82em;color:var(--dim);font-weight:600">Input Parameters</label>
+          <button onclick="tbAddInput()" style="padding:4px 12px;border-radius:6px;border:1px solid var(--blue);color:var(--blue);background:none;font-size:0.78em;cursor:pointer">+ Add Input</button>
+        </div>
+        <div id="tbInputsList">${(tbData.inputs||[]).map((inp,i)=>tbInputRow(inp,i)).join('')}</div>
+        ${!(tbData.inputs||[]).length ? `<div style="font-size:0.8em;color:var(--dim);padding:12px;background:var(--card2);border-radius:8px;text-align:center">No inputs yet — or leave empty if this tool runs with no input.</div>` : ''}
+      </div>
+      <div>
+        <label style="font-size:0.82em;color:var(--dim);font-weight:600;display:block;margin-bottom:8px">Output Format</label>
+        <select id="tbOutputFmt" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.85em">
+          <option value="text" ${tbData.outputFmt==='text'?'selected':''}>Text / String</option>
+          <option value="json" ${tbData.outputFmt==='json'?'selected':''}>JSON Object</option>
+          <option value="list" ${tbData.outputFmt==='list'?'selected':''}>List / Array</option>
+          <option value="bool" ${tbData.outputFmt==='bool'?'selected':''}>Boolean (yes/no)</option>
+          <option value="file" ${tbData.outputFmt==='file'?'selected':''}>File / Download</option>
+          <option value="email" ${tbData.outputFmt==='email'?'selected':''}>Sends Email</option>
+          <option value="action" ${tbData.outputFmt==='action'?'selected':''}>Triggers Action (no direct output)</option>
+        </select>
+      </div>
+      <div style="margin-top:14px">
+        <label style="font-size:0.82em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">Trigger</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          ${['Manual','Scheduled','On New Lead','On Missed Call','On Appointment Booked','Webhook','AI-Triggered'].map(t=>`
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 12px">
+            <input type="checkbox" value="${t}" ${(tbData.triggers||[]).includes(t)?'checked':''} style="accent-color:var(--blue)"> ${t}
+          </label>`).join('')}
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px">
+        <button onclick="tbStep--;tbRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="tbNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+  } else if (tbStep === 4) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Deploy & Share</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:18px">Review your tool and choose how to deploy it.</p>
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:12px">
+          <div style="font-size:2em">${tbData.icon||'🔧'}</div>
+          <div>
+            <div style="font-weight:800;font-size:1em">${esc(tbData.name||'Unnamed Tool')}</div>
+            <div style="font-size:0.78em;color:var(--dim)">${esc(tbData.category||'Custom')} · ${esc(tbData.pipeline||'custom')} pipeline</div>
+          </div>
+        </div>
+        <div style="font-size:0.85em;color:var(--dim);margin-bottom:10px">${esc(tbData.desc||'')}</div>
+        ${(tbData.inputs||[]).length ? `<div style="font-size:0.78em;color:var(--blue)">${tbData.inputs.length} inputs defined</div>` : ''}
+        ${(tbData.tags||'') ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">${(tbData.tags||'').split(',').filter(t=>t.trim()).map(t=>`<span style="background:var(--blue)20;border:1px solid var(--blue)44;border-radius:12px;padding:2px 8px;font-size:0.72em;color:var(--blue)">${t.trim()}</span>`).join('')}</div>` : ''}
+      </div>
+      <div style="display:grid;gap:10px;margin-bottom:18px">
+        <label style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer">
+          <input type="radio" name="tbDeploy" value="private" checked style="accent-color:var(--blue)">
+          <div><div style="font-weight:600;font-size:0.9em">🔒 Save to My Toolkit (Private)</div><div style="font-size:0.75em;color:var(--dim)">Only you can use this tool. Available in your Tools tab.</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer">
+          <input type="radio" name="tbDeploy" value="community" style="accent-color:var(--blue)">
+          <div><div style="font-weight:600;font-size:0.9em">🌍 Save + Publish to Community</div><div style="font-size:0.75em;color:var(--dim)">Share with all Janovum users. They can install it with one click. Earn creator credits.</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer">
+          <input type="radio" name="tbDeploy" value="employee" style="accent-color:var(--blue)">
+          <div><div style="font-weight:600;font-size:0.9em">🤖 Attach to an AI Employee</div><div style="font-size:0.75em;color:var(--dim)">Give this tool to a specific AI employee so they can run it autonomously.</div></div>
+        </label>
+      </div>
+      <div id="tbEmployeeAttach" style="display:none;margin-bottom:14px">
+        <label style="font-size:0.8em;color:var(--dim);display:block;margin-bottom:6px">Choose Employee</label>
+        <select id="tbAttachEmp" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.85em">
+          <option value="">-- Select Employee --</option>
+        </select>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <button onclick="tbStep--;tbRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="tbSave()" style="padding:10px 32px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;font-weight:800;cursor:pointer">✓ Deploy Tool</button>
+      </div>`;
+    // Show/hide employee attach based on radio
+    setTimeout(()=>{
+      document.querySelectorAll('[name=tbDeploy]').forEach(r=>r.addEventListener('change',()=>{
+        document.getElementById('tbEmployeeAttach').style.display = r.value==='employee'&&r.checked?'block':'none';
+      }));
+      // Populate employee select
+      const empSel = document.getElementById('tbAttachEmp');
+      const myEmps = JSON.parse(localStorage.getItem('janovum_custom_employees')||'[]');
+      const deployed = JSON.parse(localStorage.getItem('janovum_employees')||'[]');
+      [...myEmps,...deployed].forEach(e=>{
+        const o = document.createElement('option'); o.value=e.id||e.name; o.textContent=e.name||e.role;
+        empSel.appendChild(o);
+      });
+    },50);
+  }
+}
+
+function tbInputRow(inp, i) {
+  return `<div style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:6px;align-items:center">
+    <input value="${esc(inp.name||'')}" placeholder="param_name" onchange="if(!tbData.inputs)tbData.inputs=[];tbData.inputs[${i}]={...tbData.inputs[${i}],name:this.value}" style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--fg);font-size:0.82em;font-family:monospace">
+    <select onchange="if(!tbData.inputs)tbData.inputs=[];tbData.inputs[${i}]={...tbData.inputs[${i}],type:this.value}" style="background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;color:var(--fg);font-size:0.82em">
+      <option ${inp.type==='text'?'selected':''}>text</option>
+      <option ${inp.type==='number'?'selected':''}>number</option>
+      <option ${inp.type==='email'?'selected':''}>email</option>
+      <option ${inp.type==='url'?'selected':''}>url</option>
+      <option ${inp.type==='select'?'selected':''}>select</option>
+      <option ${inp.type==='boolean'?'selected':''}>boolean</option>
+    </select>
+    <button onclick="tbData.inputs.splice(${i},1);tbRender()" style="background:#ef444430;border:1px solid #ef444460;color:#ef4444;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:0.8em">✕</button>
+  </div>`;
+}
+
+function tbAddInput() {
+  if (!tbData.inputs) tbData.inputs = [];
+  tbData.inputs.push({name:'', type:'text'});
+  const list = document.getElementById('tbInputsList');
+  if (list) list.innerHTML = tbData.inputs.map((inp,i)=>tbInputRow(inp,i)).join('');
+}
+
+function tbShowPipelineConfig(type) {
+  const c = document.getElementById('tbPipelineConfig');
+  if (!c) return;
+  const configs = {
+    ai_prompt: `<div style="margin-top:12px;background:var(--card2);border:1px solid #3b82f633;border-radius:10px;padding:14px">
+      <label style="font-size:0.78em;color:var(--blue);font-weight:700;display:block;margin-bottom:6px">System Prompt</label>
+      <textarea id="tbPrompt" rows="4" placeholder="You are a helpful AI that... When given {input}, you should..." style="width:100%;box-sizing:border-box;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--fg);font-size:0.82em;resize:vertical;font-family:monospace">${tbData.prompt||''}</textarea>
+      <label style="font-size:0.78em;color:var(--blue);font-weight:700;display:block;margin-top:10px;margin-bottom:6px">Model</label>
+      <select id="tbModel" style="width:100%;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--fg);font-size:0.82em">
+        <option value="claude-sonnet-4-6" ${tbData.model==='claude-sonnet-4-6'?'selected':''}>Claude Sonnet 4.6 (Best balance)</option>
+        <option value="claude-opus-4-6" ${tbData.model==='claude-opus-4-6'?'selected':''}>Claude Opus 4.6 (Most powerful)</option>
+        <option value="claude-haiku-4-5" ${tbData.model==='claude-haiku-4-5'?'selected':''}>Claude Haiku 4.5 (Fastest/cheapest)</option>
+        <option value="groq-llama" ${tbData.model==='groq-llama'?'selected':''}>Groq Llama (Free tier)</option>
+        <option value="openai-gpt4o" ${tbData.model==='openai-gpt4o'?'selected':''}>GPT-4o</option>
+      </select>
+    </div>`,
+    api_call: `<div style="margin-top:12px;background:var(--card2);border:1px solid #3b82f633;border-radius:10px;padding:14px">
+      <label style="font-size:0.78em;color:var(--blue);font-weight:700;display:block;margin-bottom:6px">API Endpoint URL</label>
+      <input id="tbApiUrl" value="${tbData.apiUrl||''}" placeholder="https://api.example.com/endpoint" style="width:100%;box-sizing:border-box;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--fg);font-size:0.82em;font-family:monospace">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+        <div>
+          <label style="font-size:0.72em;color:var(--dim);display:block;margin-bottom:4px">Method</label>
+          <select id="tbApiMethod" style="width:100%;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--fg);font-size:0.82em">
+            <option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option><option>PATCH</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:0.72em;color:var(--dim);display:block;margin-bottom:4px">Auth Type</label>
+          <select id="tbApiAuth" style="width:100%;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--fg);font-size:0.82em">
+            <option>None</option><option>Bearer Token</option><option>API Key Header</option><option>Basic Auth</option>
+          </select>
+        </div>
+      </div>
+      <label style="font-size:0.72em;color:var(--dim);display:block;margin-top:8px;margin-bottom:4px">Headers / Body Template (JSON)</label>
+      <textarea id="tbApiBody" rows="3" placeholder='{"key": "{input_param}"}' style="width:100%;box-sizing:border-box;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--fg);font-size:0.78em;font-family:monospace;resize:vertical">${tbData.apiBody||''}</textarea>
+    </div>`,
+    workflow: `<div style="margin-top:12px;background:var(--card2);border:1px solid #3b82f633;border-radius:10px;padding:14px">
+      <div style="font-size:0.8em;color:var(--blue);font-weight:700;margin-bottom:10px">Pipeline Steps</div>
+      <div id="tbWorkflowSteps" style="display:flex;flex-direction:column;gap:8px">
+        ${(tbData.workflowSteps||[{type:'ai_prompt',desc:''}]).map((s,i)=>`
+        <div style="display:flex;gap:8px;align-items:center;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+          <div style="width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:0.7em;font-weight:800;display:flex;align-items:center;justify-content:center">${i+1}</div>
+          <select style="background:transparent;border:none;color:var(--blue);font-size:0.82em;font-weight:600;cursor:pointer">
+            <option ${s.type==='ai_prompt'?'selected':''}>AI Prompt</option>
+            <option ${s.type==='api_call'?'selected':''}>API Call</option>
+            <option ${s.type==='transform'?'selected':''}>Transform Data</option>
+            <option ${s.type==='condition'?'selected':''}>Condition / Branch</option>
+            <option ${s.type==='send_email'?'selected':''}>Send Email</option>
+            <option ${s.type==='update_crm'?'selected':''}>Update CRM</option>
+          </select>
+          <input value="${s.desc||''}" placeholder="Describe this step..." style="flex:1;background:transparent;border:none;color:var(--fg);font-size:0.82em;outline:none">
+          <span style="color:var(--dim)">→</span>
+        </div>`).join('')}
+      </div>
+      <button onclick="tbData.workflowSteps=tbData.workflowSteps||[{}];tbData.workflowSteps.push({type:'ai_prompt',desc:''});tbShowPipelineConfig('workflow')" style="margin-top:8px;padding:6px 14px;border-radius:6px;border:1px solid var(--blue);color:var(--blue);background:none;font-size:0.78em;cursor:pointer">+ Add Step</button>
+    </div>`,
+    hybrid: `<div style="margin-top:12px;background:var(--card2);border:1px solid #3b82f633;border-radius:10px;padding:14px">
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:10px">AI decides what API to call based on input, then executes it.</p>
+      <label style="font-size:0.78em;color:var(--blue);font-weight:700;display:block;margin-bottom:6px">AI Decision Prompt</label>
+      <textarea rows="3" placeholder="Given {input}, decide which action to take: call_api_a, call_api_b, or respond_directly. Reply with JSON: {action, params}" style="width:100%;box-sizing:border-box;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:9px;color:var(--fg);font-size:0.8em;font-family:monospace;resize:vertical">${tbData.hybridPrompt||''}</textarea>
+      <label style="font-size:0.78em;color:var(--blue);font-weight:700;display:block;margin-top:10px;margin-bottom:6px">Available APIs (comma-separated endpoints)</label>
+      <input id="tbHybridApis" value="${tbData.hybridApis||''}" placeholder="https://api1.com/do, https://api2.com/action" style="width:100%;box-sizing:border-box;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--fg);font-size:0.82em">
+    </div>`,
+    script: `<div style="margin-top:12px;background:var(--card2);border:1px solid #3b82f633;border-radius:10px;padding:14px">
+      <label style="font-size:0.78em;color:var(--blue);font-weight:700;display:block;margin-bottom:6px">Script (pseudocode)</label>
+      <textarea id="tbScript" rows="8" placeholder="# Define what this tool does step by step\ninput = get_input('name')\nresult = ai_generate(f'Process: {input}')\nsend_email(to=input.email, body=result)\nreturn result" style="width:100%;box-sizing:border-box;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--fg);font-size:0.8em;font-family:monospace;resize:vertical">${tbData.script||''}</textarea>
+    </div>`,
+  };
+  c.innerHTML = configs[type] || '';
+}
+
+function tbNext() {
+  // Save current step data
+  if (tbStep === 1) {
+    const name = document.getElementById('tbName')?.value?.trim();
+    if (!name) { toast('Tool name is required', 'error'); return; }
+    tbData.name = name;
+    tbData.icon = document.getElementById('tbIcon')?.value || '🔧';
+    tbData.desc = document.getElementById('tbDesc')?.value?.trim() || '';
+    tbData.category = document.getElementById('tbCat')?.value || 'Custom';
+    tbData.tags = document.getElementById('tbTags')?.value?.trim() || '';
+  } else if (tbStep === 2) {
+    if (!tbData.pipeline) { toast('Select a pipeline type', 'error'); return; }
+    if (tbData.pipeline === 'ai_prompt') {
+      tbData.prompt = document.getElementById('tbPrompt')?.value || '';
+      tbData.model = document.getElementById('tbModel')?.value || 'claude-sonnet-4-6';
+    } else if (tbData.pipeline === 'api_call') {
+      tbData.apiUrl = document.getElementById('tbApiUrl')?.value || '';
+      tbData.apiBody = document.getElementById('tbApiBody')?.value || '';
+    }
+  } else if (tbStep === 3) {
+    tbData.outputFmt = document.getElementById('tbOutputFmt')?.value || 'text';
+    tbData.triggers = [...document.querySelectorAll('#tbBody input[type=checkbox]:checked')].map(c=>c.value);
+  }
+  tbStep++;
+  if (tbStep > 4) tbStep = 4;
+  tbRender();
+}
+
+function tbSave() {
+  if (!tbData.name) { toast('Tool needs a name', 'error'); return; }
+  const deployMode = document.querySelector('[name=tbDeploy]:checked')?.value || 'private';
+  const tool = {
+    id: 'ctool_' + Date.now(),
+    name: tbData.name,
+    icon: tbData.icon || '🔧',
+    desc: tbData.desc,
+    category: tbData.category,
+    tags: tbData.tags,
+    pipeline: tbData.pipeline,
+    prompt: tbData.prompt,
+    model: tbData.model,
+    apiUrl: tbData.apiUrl,
+    inputs: tbData.inputs || [],
+    outputFmt: tbData.outputFmt,
+    triggers: tbData.triggers || [],
+    createdAt: new Date().toISOString(),
+    isPublic: deployMode === 'community',
+    installs: 0,
+  };
+  // Save to localStorage
+  const existing = JSON.parse(localStorage.getItem('janovum_custom_tools') || '[]');
+  existing.unshift(tool);
+  localStorage.setItem('janovum_custom_tools', JSON.stringify(existing));
+
+  if (deployMode === 'community') {
+    publishCreationToCommunity(tool, 'tool');
+  }
+  if (deployMode === 'employee') {
+    const empId = document.getElementById('tbAttachEmp')?.value;
+    if (empId) toast(`Tool attached to employee "${empId}"`, 'success');
+  }
+  closeToolBuilder();
+  renderMyCustomTools();
+  toast(`🔧 "${tool.name}" deployed to your toolkit!`, 'success');
+  // Switch to tools tab to show it
+  if (document.getElementById('tab-tools')?.classList.contains('active')) {
+    renderMyCustomTools();
+  }
+}
+
+function renderMyCustomTools() {
+  const tools = JSON.parse(localStorage.getItem('janovum_custom_tools') || '[]');
+  const panel = document.getElementById('customToolsPanel');
+  const grid = document.getElementById('myCustomToolsGrid');
+  if (!panel || !grid) return;
+  panel.style.display = tools.length ? 'block' : 'none';
+  grid.innerHTML = tools.map(t => `
+    <div style="background:var(--card2);border:1px solid #3b82f633;border-radius:12px;padding:16px;position:relative">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:1.8em">${t.icon||'🔧'}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:0.9em">${esc(t.name)}</div>
+          <div style="font-size:0.72em;color:var(--blue)">${t.pipeline||'custom'} · ${t.category||'Custom'}</div>
+        </div>
+        ${t.isPublic ? '<span style="font-size:0.65em;background:#14532d;color:var(--green);padding:2px 7px;border-radius:10px;font-weight:700">PUBLIC</span>' : ''}
+      </div>
+      <div style="font-size:0.78em;color:var(--dim);margin-bottom:10px;line-height:1.5">${esc(t.desc||'No description')}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px">
+        ${(t.tags||'').split(',').filter(x=>x.trim()).map(tag=>`<span style="background:var(--blue)15;color:var(--blue);font-size:0.68em;padding:2px 7px;border-radius:8px">${tag.trim()}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="testCustomTool('${t.id}')" style="flex:1;padding:6px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.78em;cursor:pointer">▶ Run</button>
+        <button onclick="editCustomTool('${t.id}')" style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.78em;cursor:pointer">✏️</button>
+        ${!t.isPublic ? `<button onclick="publishCreationToCommunity(JSON.parse(localStorage.getItem('janovum_custom_tools')||'[]').find(x=>x.id==='${t.id}'),'tool');this.textContent='✓ Shared';this.disabled=true" style="padding:6px 10px;border-radius:7px;border:1px solid var(--green)55;background:none;color:var(--green);font-size:0.78em;cursor:pointer">🌍</button>` : ''}
+        <button onclick="deleteCustomTool('${t.id}')" style="padding:6px 10px;border-radius:7px;border:1px solid #ef444433;background:none;color:#ef4444;font-size:0.78em;cursor:pointer">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function testCustomTool(id) {
+  const tools = JSON.parse(localStorage.getItem('janovum_custom_tools')||'[]');
+  const t = tools.find(x=>x.id===id);
+  if (!t) return;
+  toast(`Running "${t.name}"...`, 'info');
+  // If it's an AI prompt tool and server is live, try to run it
+  if (t.pipeline === 'ai_prompt' && t.prompt) {
+    const input = prompt(`Input for "${t.name}":`);
+    if (input === null) return;
+    const fullPrompt = (t.prompt + '\n\nUser input: ' + input).trim();
+    fetch(API + '/api/ai/chat', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: fullPrompt, model: t.model})
+    }).then(r=>r.json()).then(d=>{
+      const result = d.response || d.content || d.result || JSON.stringify(d);
+      alert(`Result from "${t.name}":\n\n${result.substring(0,1000)}`);
+    }).catch(()=>toast(`Simulated run of "${t.name}" — connect server to execute for real`, 'info'));
+  } else if (t.pipeline === 'api_call' && t.apiUrl) {
+    toast(`Would call: ${t.apiUrl}`, 'info');
+  } else {
+    toast(`Tool "${t.name}" is ready. Connect to server to run it.`, 'info');
+  }
+}
+
+function editCustomTool(id) {
+  const tools = JSON.parse(localStorage.getItem('janovum_custom_tools')||'[]');
+  const t = tools.find(x=>x.id===id);
+  if (t) openToolBuilder(t);
+}
+
+function deleteCustomTool(id) {
+  if (!confirm('Delete this custom tool?')) return;
+  const tools = JSON.parse(localStorage.getItem('janovum_custom_tools')||'[]').filter(t=>t.id!==id);
+  localStorage.setItem('janovum_custom_tools', JSON.stringify(tools));
+  renderMyCustomTools();
+  toast('Tool deleted', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CUSTOM AI EMPLOYEE BUILDER
+// ═══════════════════════════════════════════════════════════════
+let cebStep = 1;
+let cebData = {};
+
+function openCustomEmployeeBuilder(prefill) {
+  cebStep = 1; cebData = prefill || {};
+  const m = document.getElementById('customEmployeeModal');
+  m.style.display = 'flex';
+  cebRender();
+}
+function closeCustomEmployeeModal() {
+  document.getElementById('customEmployeeModal').style.display = 'none';
+}
+function cebUpdateProgress() {
+  for (let i=1;i<=5;i++) {
+    const bar = document.getElementById(`cebBar${i}`);
+    const lbl = document.getElementById(`cebLbl${i}`);
+    if (bar) bar.style.background = i<=cebStep ? 'var(--purple)' : '#222';
+    if (lbl) { lbl.style.color = i<=cebStep ? 'var(--purple)' : 'var(--dim)'; lbl.style.fontWeight = i===cebStep?'700':'400'; }
+  }
+}
+function cebRender() {
+  cebUpdateProgress();
+  const body = document.getElementById('cebBody');
+  if (cebStep === 1) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Employee Identity</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:18px">Name your AI employee and define their role.</p>
+      <div style="display:grid;gap:12px">
+        <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:12px;align-items:end">
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Avatar</label>
+            <input id="cebAvatar" value="${cebData.avatar||'🤖'}" style="width:60px;text-align:center;font-size:1.8em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px;color:var(--fg)" onclick="this.select()">
+          </div>
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Name *</label>
+            <input id="cebName" value="${cebData.name||''}" placeholder="e.g. Nova, Aria, Max" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+          </div>
+          <div>
+            <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Job Title *</label>
+            <input id="cebRole" value="${cebData.role||''}" placeholder="e.g. Lead Closer, Data Analyst" style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.9em">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">What is their main job? (one sentence)</label>
+          <input id="cebJob" value="${cebData.job||''}" placeholder="e.g. Automatically qualifies new leads from the CRM and sends personalized follow-up emails." style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.88em">
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);display:block;margin-bottom:5px">Personality / Tone</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${['Professional','Friendly','Concise','Enthusiastic','Analytical','Empathetic','Direct','Formal'].map(p=>`
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:0.78em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px">
+              <input type="checkbox" value="${p}" ${(cebData.personality||[]).includes(p)?'checked':''} style="accent-color:var(--purple)"> ${p}
+            </label>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:20px">
+        <button onclick="cebNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--purple);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+  } else if (cebStep === 2) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">AI Pipeline</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:16px">How does this employee think and make decisions?</p>
+      <div style="display:grid;gap:12px">
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">AI Model</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${[
+              {id:'claude-sonnet-4-6',label:'Claude Sonnet 4.6',sub:'Best balance — smart & fast',col:'var(--orange)'},
+              {id:'claude-opus-4-6',label:'Claude Opus 4.6',sub:'Most powerful — complex tasks',col:'#ff6b9d'},
+              {id:'claude-haiku-4-5',label:'Claude Haiku 4.5',sub:'Fastest — simple tasks',col:'var(--blue)'},
+              {id:'groq-llama',label:'Groq Llama',sub:'Free tier — high speed',col:'var(--green)'},
+            ].map(m=>`
+            <label onclick="cebData.model='${m.id}'" style="display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--card2);border:2px solid ${(cebData.model||'claude-sonnet-4-6')===m.id?m.col:'var(--border)'};border-radius:10px;padding:10px 12px;transition:border-color 0.15s">
+              <input type="radio" name="cebModel" value="${m.id}" ${(cebData.model||'claude-sonnet-4-6')===m.id?'checked':''} style="accent-color:${m.col}">
+              <div><div style="font-size:0.82em;font-weight:700">${m.label}</div><div style="font-size:0.7em;color:var(--dim)">${m.sub}</div></div>
+            </label>`).join('')}
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">System Prompt (How they think)</label>
+          <textarea id="cebSystemPrompt" rows="5" placeholder="You are ${cebData.name||'an AI employee'} working for {business_name}. Your job is to {job}. Always be {tone}. When you receive a task, you should: 1) ..." style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.82em;font-family:monospace;resize:vertical">${cebData.systemPrompt||''}</textarea>
+          <div style="font-size:0.72em;color:var(--dim);margin-top:4px">Use {business_name}, {client_name}, {date}, {input} as dynamic variables.</div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">Tools This Employee Can Use</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${['Send Email','Send SMS','Update CRM','Book Appointment','Search Web','Read Calendar','Write to Spreadsheet','Call API','Generate Image','Run Custom Tool','Escalate to Human'].map(tool=>`
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:0.78em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px">
+              <input type="checkbox" value="${tool}" ${(cebData.tools||[]).includes(tool)?'checked':''} style="accent-color:var(--purple)"> ${tool}
+            </label>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px">
+        <button onclick="cebStep--;cebRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="cebNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--purple);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+  } else if (cebStep === 3) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Channels & Triggers</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:16px">Where does this employee work, and what kicks them into action?</p>
+      <div style="display:grid;gap:14px">
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:8px">Work Channels</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            ${[
+              {id:'email',icon:'📧',label:'Email'},
+              {id:'sms',icon:'💬',label:'SMS'},
+              {id:'phone',icon:'📞',label:'Phone Calls'},
+              {id:'chat',icon:'🌐',label:'Live Chat / Website'},
+              {id:'telegram',icon:'✈️',label:'Telegram'},
+              {id:'slack',icon:'💼',label:'Slack'},
+              {id:'whatsapp',icon:'📱',label:'WhatsApp'},
+              {id:'api',icon:'🔗',label:'API / Webhook'},
+            ].map(ch=>`
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+              <input type="checkbox" value="${ch.id}" ${(cebData.channels||[]).includes(ch.id)?'checked':''} style="accent-color:var(--purple)">
+              <span style="font-size:1em">${ch.icon}</span>
+              <span style="font-size:0.82em">${ch.label}</span>
+            </label>`).join('')}
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:8px">Triggers (what starts this employee working)</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${['New Lead in CRM','Missed Call','Appointment Booked','Appointment Cancelled','New Email Received','Daily at 9 AM','Every Hour','Manual Only','Webhook Received','New Form Submission'].map(tr=>`
+            <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:0.78em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:6px 10px">
+              <input type="checkbox" value="${tr}" ${(cebData.empTriggers||[]).includes(tr)?'checked':''} style="accent-color:var(--purple)"> ${tr}
+            </label>`).join('')}
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">Work Schedule</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            ${['24/7 Always On','Business Hours Only','Custom Schedule','On-Demand Only'].map(s=>`
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:0.82em;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:8px 14px">
+              <input type="radio" name="cebSchedule" value="${s}" ${(cebData.schedule||'24/7 Always On')===s?'checked':''} style="accent-color:var(--purple)"> ${s}
+            </label>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px">
+        <button onclick="cebStep--;cebRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="cebNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--purple);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+  } else if (cebStep === 4) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Knowledge & Context</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:16px">What does this employee know by default?</p>
+      <div style="display:grid;gap:12px">
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">Default Knowledge (what they always know)</label>
+          <textarea id="cebKnowledge" rows="5" placeholder="Company name: {business_name}\nServices: ...\nPricing: ...\nFAQs:\n- Q: How do I book? A: ..." style="width:100%;box-sizing:border-box;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.82em;resize:vertical">${cebData.knowledge||''}</textarea>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">Memory Mode</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${[
+              {id:'none',label:'No Memory',sub:'Each conversation starts fresh'},
+              {id:'session',label:'Session Memory',sub:'Remembers within one conversation'},
+              {id:'persistent',label:'Persistent Memory',sub:'Remembers everything across all interactions'},
+              {id:'client',label:'Per-Client Memory',sub:'Separate memory per client/contact'},
+            ].map(m=>`
+            <label style="cursor:pointer;background:var(--card2);border:1px solid ${(cebData.memory||'session')===m.id?'var(--purple)':'var(--border)'};border-radius:8px;padding:8px 12px;flex:1;min-width:160px;transition:border-color 0.15s">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+                <input type="radio" name="cebMemory" value="${m.id}" ${(cebData.memory||'session')===m.id?'checked':''} style="accent-color:var(--purple)">
+                <span style="font-size:0.82em;font-weight:600">${m.label}</span>
+              </div>
+              <div style="font-size:0.72em;color:var(--dim);padding-left:18px">${m.sub}</div>
+            </label>`).join('')}
+          </div>
+        </div>
+        <div>
+          <label style="font-size:0.78em;color:var(--dim);font-weight:600;display:block;margin-bottom:6px">Escalation Rule</label>
+          <select id="cebEscalation" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--fg);font-size:0.85em">
+            <option value="never" ${cebData.escalation==='never'?'selected':''}>Never — always handle autonomously</option>
+            <option value="ask" ${cebData.escalation==='ask'?'selected':''}>Ask me first before taking important actions</option>
+            <option value="high_value" ${(cebData.escalation||'high_value')==='high_value'?'selected':''}>Escalate when value > $500 or complex</option>
+            <option value="always" ${cebData.escalation==='always'?'selected':''}>Always notify me — I approve every action</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:20px">
+        <button onclick="cebStep--;cebRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="cebNext()" style="padding:10px 28px;border-radius:8px;border:none;background:var(--purple);color:#fff;font-weight:700;cursor:pointer">Next →</button>
+      </div>`;
+  } else if (cebStep === 5) {
+    body.innerHTML = `
+      <h3 style="margin-bottom:4px;font-size:1em">Deploy & Share</h3>
+      <p style="font-size:0.8em;color:var(--dim);margin-bottom:16px">Review your AI employee and deploy them.</p>
+      <div style="background:linear-gradient(135deg,#1a0a2e,#0a0a1a);border:1px solid var(--purple)44;border-radius:14px;padding:20px;margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#ec4899);display:flex;align-items:center;justify-content:center;font-size:1.8em">${cebData.avatar||'🤖'}</div>
+          <div>
+            <div style="font-weight:800;font-size:1.05em">${esc(cebData.name||'Unnamed')}</div>
+            <div style="font-size:0.78em;color:var(--purple)">${esc(cebData.role||'Custom Employee')}</div>
+          </div>
+        </div>
+        <div style="font-size:0.82em;color:var(--dim);margin-bottom:8px">${esc(cebData.job||'')}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:0.72em">
+          ${(cebData.channels||[]).map(c=>`<span style="background:var(--purple)20;border:1px solid var(--purple)44;border-radius:8px;padding:2px 8px;color:var(--purple)">${c}</span>`).join('')}
+          ${(cebData.empTriggers||[]).slice(0,2).map(t=>`<span style="background:#1a2a1a;border:1px solid var(--green)44;border-radius:8px;padding:2px 8px;color:var(--green)">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div style="display:grid;gap:8px;margin-bottom:18px">
+        <label style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <input type="radio" name="cebDeploy" value="private" checked style="accent-color:var(--purple)">
+          <div><div style="font-weight:600;font-size:0.88em">🔒 Deploy Privately</div><div style="font-size:0.75em;color:var(--dim)">Only in your team. Available in AI Employees tab.</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px">
+          <input type="radio" name="cebDeploy" value="community" style="accent-color:var(--purple)">
+          <div><div style="font-weight:600;font-size:0.88em">🌍 Deploy + Publish to Community</div><div style="font-size:0.75em;color:var(--dim)">Other Janovum users can install your employee. Earn creator credits.</div></div>
+        </label>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <button onclick="cebStep--;cebRender()" style="padding:10px 20px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">← Back</button>
+        <button onclick="cebSave()" style="padding:11px 32px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--purple),#ec4899);color:#fff;font-weight:800;cursor:pointer">🚀 Deploy Employee</button>
+      </div>`;
+  }
+}
+
+function cebNext() {
+  if (cebStep === 1) {
+    const name = document.getElementById('cebName')?.value?.trim();
+    const role = document.getElementById('cebRole')?.value?.trim();
+    if (!name || !role) { toast('Name and job title are required', 'error'); return; }
+    cebData.name = name;
+    cebData.role = role;
+    cebData.avatar = document.getElementById('cebAvatar')?.value || '🤖';
+    cebData.job = document.getElementById('cebJob')?.value?.trim() || '';
+    cebData.personality = [...document.querySelectorAll('#cebBody input[type=checkbox]:checked')].map(c=>c.value);
+  } else if (cebStep === 2) {
+    cebData.model = document.querySelector('[name=cebModel]:checked')?.value || 'claude-sonnet-4-6';
+    cebData.systemPrompt = document.getElementById('cebSystemPrompt')?.value || '';
+    cebData.tools = [...document.querySelectorAll('#cebBody input[type=checkbox]:checked')].map(c=>c.value);
+  } else if (cebStep === 3) {
+    cebData.channels = [...document.querySelectorAll('#cebBody input[type=checkbox]:checked')].map(c=>c.value);
+    cebData.empTriggers = [...document.querySelectorAll('#cebBody input[type=checkbox]:checked')].map(c=>c.value);
+    cebData.schedule = document.querySelector('[name=cebSchedule]:checked')?.value || '24/7 Always On';
+  } else if (cebStep === 4) {
+    cebData.knowledge = document.getElementById('cebKnowledge')?.value || '';
+    cebData.memory = document.querySelector('[name=cebMemory]:checked')?.value || 'session';
+    cebData.escalation = document.getElementById('cebEscalation')?.value || 'high_value';
+  }
+  cebStep++;
+  if (cebStep > 5) cebStep = 5;
+  cebRender();
+}
+
+function cebSave() {
+  if (!cebData.name) { toast('Employee needs a name', 'error'); return; }
+  const deployMode = document.querySelector('[name=cebDeploy]:checked')?.value || 'private';
+  const employee = {
+    id: 'cemp_' + Date.now(),
+    name: cebData.name,
+    role: cebData.role,
+    avatar: cebData.avatar || '🤖',
+    job: cebData.job,
+    model: cebData.model || 'claude-sonnet-4-6',
+    systemPrompt: cebData.systemPrompt,
+    tools: cebData.tools || [],
+    channels: cebData.channels || [],
+    triggers: cebData.empTriggers || [],
+    schedule: cebData.schedule,
+    knowledge: cebData.knowledge,
+    memory: cebData.memory || 'session',
+    escalation: cebData.escalation,
+    personality: cebData.personality || [],
+    status: 'active',
+    createdAt: new Date().toISOString(),
+    isPublic: deployMode === 'community',
+    installs: 0,
+    messagesHandled: 0,
+  };
+  const existing = JSON.parse(localStorage.getItem('janovum_custom_employees') || '[]');
+  existing.unshift(employee);
+  localStorage.setItem('janovum_custom_employees', JSON.stringify(existing));
+  if (deployMode === 'community') publishCreationToCommunity(employee, 'employee');
+  closeCustomEmployeeModal();
+  renderMyCustomEmployees();
+  toast(`🤖 ${employee.name} is now deployed and working!`, 'success');
+}
+
+function renderMyCustomEmployees() {
+  const employees = JSON.parse(localStorage.getItem('janovum_custom_employees') || '[]');
+  const panel = document.getElementById('myCustomEmployeesPanel');
+  const grid = document.getElementById('myCustomEmployeesGrid');
+  if (!panel || !grid) return;
+  panel.style.display = employees.length ? 'block' : 'none';
+  grid.innerHTML = employees.map(e => `
+    <div style="background:linear-gradient(135deg,#1a0a2e88,#0a0a1a88);border:1px solid var(--purple)44;border-radius:12px;padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#ec4899);display:flex;align-items:center;justify-content:center;font-size:1.3em">${e.avatar||'🤖'}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:0.9em">${esc(e.name)}</div>
+          <div style="font-size:0.72em;color:var(--purple)">${esc(e.role)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:0.72em;color:var(--green)"><div style="width:6px;height:6px;border-radius:50%;background:var(--green)"></div>Active</div>
+      </div>
+      <div style="font-size:0.78em;color:var(--dim);margin-bottom:8px;line-height:1.5">${esc(e.job||'Custom employee')}</div>
+      <div style="font-size:0.72em;color:var(--dim);margin-bottom:10px">${(e.channels||[]).join(', ')||'No channels set'} · ${e.model||'default model'}</div>
+      <div style="display:flex;gap:6px">
+        <button onclick="chatWithEmployee('${e.id}')" style="flex:1;padding:6px;border-radius:7px;border:none;background:var(--purple);color:#fff;font-size:0.78em;cursor:pointer;font-weight:600">💬 Chat</button>
+        <button onclick="editCustomEmployee('${e.id}')" style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.78em;cursor:pointer">✏️</button>
+        ${!e.isPublic ? `<button onclick="publishCreationToCommunity(JSON.parse(localStorage.getItem('janovum_custom_employees')||'[]').find(x=>x.id==='${e.id}'),'employee');this.textContent='✓';this.disabled=true" style="padding:6px 10px;border-radius:7px;border:1px solid var(--green)55;background:none;color:var(--green);font-size:0.78em;cursor:pointer">🌍</button>` : '<span style="font-size:0.65em;color:var(--green);padding:4px 8px">✓ Public</span>'}
+        <button onclick="deleteCustomEmployee('${e.id}')" style="padding:6px 10px;border-radius:7px;border:1px solid #ef444433;background:none;color:#ef4444;font-size:0.78em;cursor:pointer">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function chatWithEmployee(id) {
+  const employees = JSON.parse(localStorage.getItem('janovum_custom_employees')||'[]');
+  const e = employees.find(x=>x.id===id);
+  if (!e) return;
+  const msg = prompt(`Chat with ${e.name} (${e.role}):\nYou: `);
+  if (msg === null) return;
+  const systemPrompt = e.systemPrompt || `You are ${e.name}, a ${e.role}. ${e.job||''}`;
+  fetch(API + '/api/ai/chat', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({message: msg, system: systemPrompt, model: e.model})
+  }).then(r=>r.json()).then(d=>{
+    const resp = d.response || d.content || d.result || 'No response';
+    alert(`${e.name}:\n\n${resp.substring(0,1000)}`);
+  }).catch(()=>alert(`${e.name}: I'm ready to help! (Connect server to run me for real.)`));
+}
+
+function editCustomEmployee(id) {
+  const employees = JSON.parse(localStorage.getItem('janovum_custom_employees')||'[]');
+  const e = employees.find(x=>x.id===id);
+  if (e) openCustomEmployeeBuilder(e);
+}
+
+function deleteCustomEmployee(id) {
+  if (!confirm('Delete this employee?')) return;
+  const employees = JSON.parse(localStorage.getItem('janovum_custom_employees')||'[]').filter(e=>e.id!==id);
+  localStorage.setItem('janovum_custom_employees', JSON.stringify(employees));
+  renderMyCustomEmployees();
+  toast('Employee removed', 'info');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  COMMUNITY PUBLISHING
+// ═══════════════════════════════════════════════════════════════
+function publishCreationToCommunity(item, type) {
+  if (!item) return;
+  const community = JSON.parse(localStorage.getItem('janovum_my_publications') || '[]');
+  const existing = community.find(x => x.id === item.id);
+  if (existing) { toast('Already published to community', 'info'); return; }
+  community.unshift({...item, type, publishedAt: new Date().toISOString(), installs: 0, likes: 0});
+  localStorage.setItem('janovum_my_publications', JSON.stringify(community));
+  // Mark as public in the source list
+  if (type === 'tool') {
+    const tools = JSON.parse(localStorage.getItem('janovum_custom_tools')||'[]').map(t=>t.id===item.id?{...t,isPublic:true}:t);
+    localStorage.setItem('janovum_custom_tools', JSON.stringify(tools));
+    renderMyCustomTools();
+  } else if (type === 'employee') {
+    const emps = JSON.parse(localStorage.getItem('janovum_custom_employees')||'[]').map(e=>e.id===item.id?{...e,isPublic:true}:e);
+    localStorage.setItem('janovum_custom_employees', JSON.stringify(emps));
+    renderMyCustomEmployees();
+  }
+  renderCommunityMyCreations();
+  toast(`🌍 "${item.name}" published to the community!`, 'success');
+}
+
+function renderCommunityMyCreations() {
+  const grid = document.getElementById('comMyCreations');
+  if (!grid) return;
+  const pubs = JSON.parse(localStorage.getItem('janovum_my_publications') || '[]');
+  if (!pubs.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--dim);font-size:0.85em">
+      <div style="font-size:2em;margin-bottom:8px">🛠️</div>
+      <div style="font-weight:600;margin-bottom:4px">No creations yet</div>
+      <div style="font-size:0.88em">Build a custom tool or employee and publish it to share with the community.</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:14px">
+        <button class="btn-sm" onclick="openToolBuilder()">Build a Tool</button>
+        <button class="btn-sm btn-outline" onclick="openCustomEmployeeBuilder()">Build an Employee</button>
+      </div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = pubs.map(p => `
+    <div style="background:var(--card2);border:1px solid ${p.type==='tool'?'var(--blue)':'var(--purple)'}33;border-radius:12px;padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-size:1.8em">${p.icon||p.avatar||'🔧'}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:0.88em">${esc(p.name)}</div>
+          <div style="font-size:0.7em;color:${p.type==='tool'?'var(--blue)':'var(--purple)'};">${p.type==='tool'?'Custom Tool':'AI Employee'} · ${p.category||p.role||'Custom'}</div>
+        </div>
+        <span style="font-size:0.65em;background:#14532d;color:var(--green);padding:2px 7px;border-radius:10px;font-weight:700">LIVE</span>
+      </div>
+      <div style="font-size:0.78em;color:var(--dim);margin-bottom:10px;line-height:1.5">${esc(p.desc||p.job||'')}</div>
+      <div style="display:flex;gap:10px;font-size:0.75em;color:var(--dim)">
+        <span>📥 ${p.installs||0} installs</span>
+        <span>❤️ ${p.likes||0} likes</span>
+        <span style="margin-left:auto">${p.publishedAt ? new Date(p.publishedAt).toLocaleDateString() : ''}</span>
+      </div>
+    </div>`).join('');
+}
+
+// Hook into tab loads to render custom tools/employees/community
+const _origLoadToolsTab = loadToolsTab;
+loadToolsTab = async function() {
+  await _origLoadToolsTab();
+  renderMyCustomTools();
+};
+
+const _origLoadEmployees = typeof loadEmployeesTab === 'function' ? loadEmployeesTab : null;
+if (_origLoadEmployees) {
+  loadEmployeesTab = async function() {
+    await _origLoadEmployees();
+    renderMyCustomEmployees();
+  };
+} else {
+  // Fallback: render on employees tab switch
+  document.addEventListener('DOMContentLoaded', () => {
+    renderMyCustomEmployees();
+  });
+}
+
+// Also render community my creations when community tab loads
+const _origLoadCommunity = typeof loadCommunityTab === 'function' ? loadCommunityTab : null;
+if (_origLoadCommunity) {
+  loadCommunityTab = async function() {
+    await _origLoadCommunity();
+    renderCommunityMyCreations();
+  };
+}
+
+// Initial render on page load
+window.addEventListener('load', () => {
+  renderMyCustomTools();
+  renderMyCustomEmployees();
+  renderCommunityMyCreations();
+});
 
 </script>
 </body>

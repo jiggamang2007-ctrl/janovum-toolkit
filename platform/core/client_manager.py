@@ -305,6 +305,10 @@ def add_client(data):
             "farewell": data.get("farewell", "Thanks so much for calling! Have a great day."),
             "tone": data.get("tone", "warm and professional"),
         },
+        "cartesia": {
+            "api_key": data.get("cartesia_api_key", ""),
+            "voice_id": data.get("cartesia_voice_id", "f786b574-daa5-4673-aa0c-cbe3e8534c02"),
+        },
         "notification_email": data.get("notification_email", ""),
         "daily_spend_cap": float(data.get("daily_spend_cap", 5.00)),
         "daily_call_limit": int(data.get("daily_call_limit", 50)),
@@ -347,10 +351,17 @@ def update_client(client_id, data):
         "business_name", "business_type", "twilio_phone_number", "timezone",
         "business_hours", "services", "staff", "personality",
         "notification_email", "daily_spend_cap", "daily_call_limit",
+        "cartesia",
     ]
     for key in updatable:
         if key in data:
-            config[key] = data[key]
+            # Merge cartesia dict so API key isn't wiped when only voice_id changes
+            if key == "cartesia" and isinstance(data[key], dict):
+                existing_cartesia = config.get("cartesia", {})
+                existing_cartesia.update(data[key])
+                config[key] = existing_cartesia
+            else:
+                config[key] = data[key]
 
     config["updated_at"] = datetime.now().isoformat()
 
@@ -525,13 +536,12 @@ def get_all_stats():
         appts = get_client_appointments(c["client_id"])
         c["appointment_count"] = len(appts)
         total_appointments += len(appts)
+        start = time.time()
         is_running = _is_port_alive(c["port"])
         c["running"] = is_running
         if is_running:
             running_count += 1
-            # Quick health ping for response time
-            health = check_client_health(c["client_id"])
-            c["response_time_ms"] = health.get("response_time_ms")
+            c["response_time_ms"] = round((time.time() - start) * 1000, 1)
         else:
             c["response_time_ms"] = None
 

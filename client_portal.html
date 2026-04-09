@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="{{BIZ_NAME}}">
+<meta name="theme-color" content="{{COLOR}}">
+<title>{{BIZ_NAME}} Portal</title>
+<link rel="manifest" href="/portal/{{CLIENT_ID}}/manifest.json">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--gold:{{COLOR}};--bg:#0a0a0a;--card:#111;--border:#1e1e1e;--text:#e8e8e8;--muted:#888;--green:#00c853;--red:#ff3d57}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;max-width:480px;margin:0 auto}
+.header{background:linear-gradient(135deg,#0f0f0f,#161616);padding:env(safe-area-inset-top,20px) 20px 20px;border-bottom:2px solid var(--gold)22}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.biz-name{font-size:1.3em;font-weight:800;color:var(--gold)}
+.status-label{font-size:0.75em;color:var(--muted);display:flex;align-items:center;gap:5px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
+.status-dot.online{background:var(--green);box-shadow:0 0 8px var(--green)66}
+.portal-msg{font-size:0.85em;color:var(--muted);margin-top:8px;line-height:1.5}
+.section{padding:16px 20px}
+.section-title{font-size:0.68em;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-bottom:12px}
+.appt-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:10px;border-left:3px solid var(--gold)}
+.appt-name{font-weight:700;font-size:0.95em}
+.appt-meta{font-size:0.78em;color:var(--muted);margin-top:6px;display:flex;flex-direction:column;gap:5px}
+.appt-meta span{display:flex;align-items:center;gap:6px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.63em;font-weight:700;text-transform:uppercase}
+.badge-confirmed{background:rgba(0,200,83,0.12);color:var(--green);border:1px solid rgba(0,200,83,0.25)}
+.badge-pending{background:rgba(212,175,55,0.12);color:var(--gold);border:1px solid rgba(212,175,55,0.25)}
+.btn-call{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--gold);color:#000;font-weight:800;font-size:1em;padding:16px;border-radius:14px;text-decoration:none;cursor:pointer;width:100%}
+.service-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.service-name{font-size:0.88em;font-weight:600}
+.service-price{font-size:0.78em;color:var(--gold);font-weight:700}
+.hours-row{font-size:0.78em;display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.hours-row:last-child{border-bottom:none}
+.hours-day{text-transform:capitalize;font-weight:600}
+.hours-val{color:var(--muted)}
+.hours-val.closed{color:var(--red)}
+.empty{text-align:center;padding:30px;color:var(--muted);font-size:0.85em;line-height:1.6}
+.loader{text-align:center;padding:50px;color:var(--muted)}
+.install-bar{background:#111;border:1px solid var(--gold)33;border-radius:14px;margin:16px 20px 0;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer}
+.install-icon{font-size:1.6em}
+.install-text{flex:1}
+.install-title{font-size:0.82em;font-weight:700;color:var(--gold)}
+.install-sub{font-size:0.7em;color:var(--muted);margin-top:2px}
+.powered{text-align:center;padding:24px 20px env(safe-area-inset-bottom,20px);font-size:0.7em;color:#2a2a2a}
+.powered a{color:#333;text-decoration:none}
+.meeting-link{color:var(--gold);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="biz-name" id="bizName">{{BIZ_NAME}}</div>
+    <div class="status-label"><span class="status-dot" id="aiDot"></span><span id="aiLabel">...</span></div>
+  </div>
+  <div class="portal-msg" id="portalMsg"></div>
+</div>
+
+<div id="mainContent"><div class="loader">Loading your portal...</div></div>
+
+<div class="powered">Powered by <a href="https://janovum.com">Janovum AI</a></div>
+
+<script>
+var CLIENT_ID = '{{CLIENT_ID}}';
+
+var deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  deferredPrompt = e;
+});
+
+function installApp() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function() { deferredPrompt = null; });
+  } else {
+    alert('To install on iPhone: tap Share then "Add to Home Screen".\nOn Android: tap the menu then "Add to Home screen".');
+  }
+}
+
+function fmtPhone(p) {
+  if (!p) return '';
+  var d = p.replace(/\D/g,'');
+  if (d.length === 11) return '('+d.slice(1,4)+') '+d.slice(4,7)+'-'+d.slice(7);
+  if (d.length === 10) return '('+d.slice(0,3)+') '+d.slice(3,6)+'-'+d.slice(6);
+  return p;
+}
+
+function fmtHours(hours) {
+  var days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  return days.map(function(d) {
+    var h = hours[d];
+    var isClosed = !h || h === 'closed';
+    var val = isClosed ? 'Closed' : (h.open + ' - ' + h.close);
+    var cls = isClosed ? 'hours-val closed' : 'hours-val';
+    return '<div class="hours-row"><span class="hours-day">'+d+'</span><span class="'+cls+'">'+val+'</span></div>';
+  }).join('');
+}
+
+function esc(s) {
+  if (!s) return '';
+  var d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
+}
+
+async function loadPortal() {
+  try {
+    var res = await fetch('/portal/' + CLIENT_ID + '/api/data');
+    if (!res.ok) throw new Error('not found');
+    var d = await res.json();
+
+    document.getElementById('bizName').textContent = d.business_name;
+    document.getElementById('portalMsg').textContent = d.portal_message || '';
+
+    var dot = document.getElementById('aiDot');
+    var lbl = document.getElementById('aiLabel');
+    if (d.ai_running) { dot.classList.add('online'); lbl.textContent = 'AI Online'; }
+    else { lbl.textContent = 'AI Offline'; }
+
+    var appts = (d.appointments || []).slice().sort(function(a,b) {
+      return new Date(b.booked_at||0) - new Date(a.booked_at||0);
+    });
+
+    var html = '';
+    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+
+    if (!isStandalone) {
+      html += '<div class="install-bar" onclick="installApp()"><div class="install-icon">&#128242;</div><div class="install-text"><div class="install-title">Add to Home Screen</div><div class="install-sub">Install this portal as an app</div></div><div style="color:var(--muted);font-size:1.3em">&#8250;</div></div>';
+    }
+
+    if (d.phone) {
+      var phoneDigits = d.phone.replace(/\D/g,'');
+      html += '<div style="padding:16px 20px 0"><a class="btn-call" href="tel:+'+phoneDigits+'">&#128222; Call '+esc(d.business_name)+'</a></div>';
+    }
+
+    html += '<div class="section"><div class="section-title">&#128197; Your Appointments</div>';
+    if (appts.length === 0) {
+      html += '<div class="empty">No appointments yet.<br>Give us a call to book one!</div>';
+    } else {
+      appts.forEach(function(a) {
+        var badgeCls = a.status === 'confirmed' ? 'badge-confirmed' : 'badge-pending';
+        html += '<div class="appt-card">';
+        html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div class="appt-name">'+esc(a.name||'Guest')+'</div><span class="badge '+badgeCls+'">'+esc(a.status||'pending')+'</span></div>';
+        html += '<div class="appt-meta">';
+        if (a.service) html += '<span>&#127919; '+esc(a.service)+'</span>';
+        if (a.date) html += '<span>&#128197; '+esc(a.date)+(a.time?' at '+esc(a.time):'')+'</span>';
+        if (a.meeting_link) html += '<span>&#128279; <a class="meeting-link" href="'+esc(a.meeting_link)+'" target="_blank">Join Meeting</a></span>';
+        if (a.notes) html += '<span>&#128221; '+esc(a.notes.slice(0,80))+'</span>';
+        html += '</div></div>';
+      });
+    }
+    html += '</div>';
+
+    if (d.services && d.services.length) {
+      html += '<div class="section"><div class="section-title">&#9889; Our Services</div>';
+      d.services.forEach(function(s) {
+        html += '<div class="service-card"><span class="service-name">'+esc(s.name)+'</span><span class="service-price">'+esc(s.price||'Contact us')+'</span></div>';
+      });
+      html += '</div>';
+    }
+
+    if (d.business_hours && Object.keys(d.business_hours).length) {
+      html += '<div class="section"><div class="section-title">&#128336; Business Hours</div><div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 16px">'+fmtHours(d.business_hours)+'</div></div>';
+    }
+
+    document.getElementById('mainContent').innerHTML = html;
+  } catch(e) {
+    document.getElementById('mainContent').innerHTML = '<div class="empty">Could not load portal.<br>Please try again later.</div>';
+  }
+}
+
+loadPortal();
+</script>
+</body>
+</html>

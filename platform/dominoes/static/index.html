@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Cuban Dominoes - Janovum</title>
+<style>
+/* ─── Reset & Base ─── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap');
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #0a1628;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    user-select: none;
+}
+
+/* ─── Background ─── */
+.bg-pattern {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 48, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #0a1628 0%, #1a1a3e 50%, #0d1f3c 100%);
+    z-index: 0;
+}
+
+/* ─── Menu Screen ─── */
+#menu-screen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    background: linear-gradient(135deg, #0a1628 0%, #1a1a3e 50%, #0d1f3c 100%);
+}
+.menu-logo {
+    font-size: 3.5rem; font-weight: 900;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 5px; letter-spacing: 2px;
+    text-shadow: 0 0 40px rgba(255,215,0,0.3);
+}
+.menu-subtitle {
+    font-size: 1rem; color: #8892b0; margin-bottom: 40px;
+    letter-spacing: 3px; text-transform: uppercase;
+}
+.menu-domino-art {
+    display: flex; gap: 8px; margin-bottom: 40px;
+}
+.menu-domino-art .mini-tile {
+    width: 35px; height: 60px;
+    background: linear-gradient(135deg, #f0e6d3, #e8dcc8);
+    border-radius: 6px; border: 2px solid #c4b5a0;
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: space-around; padding: 4px 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    animation: floatTile 3s ease-in-out infinite;
+}
+.menu-domino-art .mini-tile:nth-child(2) { animation-delay: 0.3s; }
+.menu-domino-art .mini-tile:nth-child(3) { animation-delay: 0.6s; }
+.menu-domino-art .mini-tile:nth-child(4) { animation-delay: 0.9s; }
+.menu-domino-art .mini-tile:nth-child(5) { animation-delay: 1.2s; }
+.mini-tile .dot-section {
+    display: flex; flex-wrap: wrap; width: 20px; height: 20px;
+    align-items: center; justify-content: center; gap: 2px;
+}
+.mini-tile .dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: #2d2d2d;
+}
+.mini-tile .divider {
+    width: 80%; height: 1.5px; background: #b0a48e;
+}
+@keyframes floatTile {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-8px) rotate(2deg); }
+}
+.menu-input {
+    width: 300px; padding: 14px 20px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px; color: #fff;
+    font-size: 1.05rem; font-family: 'Poppins';
+    text-align: center; margin-bottom: 12px;
+    outline: none; transition: all 0.3s;
+}
+.menu-input:focus {
+    border-color: #ffd700;
+    background: rgba(255,215,0,0.08);
+    box-shadow: 0 0 20px rgba(255,215,0,0.15);
+}
+.menu-input::placeholder { color: #5a6785; }
+.menu-btn {
+    width: 300px; padding: 14px;
+    border: none; border-radius: 12px;
+    font-size: 1.1rem; font-weight: 700;
+    font-family: 'Poppins'; cursor: pointer;
+    transition: all 0.3s; margin-bottom: 10px;
+    letter-spacing: 1px; text-transform: uppercase;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a1a2e; box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(255,215,0,0.4); }
+.btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: #ccd6f6; border: 2px solid rgba(255,255,255,0.15);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.15); border-color: #ffd700; }
+.menu-or { color: #5a6785; margin: 8px 0; font-size: 0.85rem; letter-spacing: 2px; }
+.menu-footer { position: absolute; bottom: 20px; color: #3d4f6f; font-size: 0.75rem; letter-spacing: 1px; }
+.error-msg { color: #ff4757; font-size: 0.85rem; margin-top: 5px; min-height: 20px; }
+
+/* ─── Lobby ─── */
+#lobby-screen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 90;
+    background: linear-gradient(135deg, #0a1628 0%, #1a1a3e 50%, #0d1f3c 100%);
+}
+.lobby-code {
+    font-size: 3rem; font-weight: 900;
+    letter-spacing: 12px; color: #ffd700;
+    background: rgba(255,215,0,0.08);
+    padding: 10px 30px; border-radius: 12px;
+    border: 2px solid rgba(255,215,0,0.2);
+    margin-bottom: 5px;
+}
+.lobby-code-label { color: #8892b0; font-size: 0.85rem; margin-bottom: 30px; letter-spacing: 2px; }
+.lobby-seats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 15px; margin-bottom: 30px;
+}
+.lobby-seat {
+    width: 200px; padding: 18px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 12px; text-align: center;
+}
+.lobby-seat.filled { border-color: #ffd700; background: rgba(255,215,0,0.08); }
+.lobby-seat .seat-label { font-size: 0.75rem; color: #5a6785; text-transform: uppercase; letter-spacing: 2px; }
+.lobby-seat .seat-name { font-size: 1.1rem; font-weight: 700; margin-top: 5px; }
+.lobby-seat .team-tag {
+    display: inline-block; padding: 2px 10px;
+    border-radius: 20px; font-size: 0.7rem;
+    font-weight: 600; margin-top: 5px;
+}
+.team-0 { background: rgba(99,179,237,0.2); color: #63b3ed; }
+.team-1 { background: rgba(252,129,74,0.2); color: #fc814a; }
+
+/* ─── Game Screen ─── */
+#game-screen {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; z-index: 80;
+}
+
+/* ─── Table (center) ─── */
+.table-area {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70vw; height: 55vh;
+    background: radial-gradient(ellipse at center, #1a5c3a 0%, #0f3d25 60%, #0a2a1a 100%);
+    border-radius: 30px;
+    border: 8px solid #2a1a0a;
+    box-shadow:
+        inset 0 0 80px rgba(0,0,0,0.4),
+        0 0 60px rgba(0,0,0,0.6),
+        0 10px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+.table-felt {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        radial-gradient(circle at 30% 40%, rgba(255,255,255,0.02) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(255,255,255,0.02) 0%, transparent 50%);
+}
+.table-border-inner {
+    position: absolute; top: 12px; left: 12px; right: 12px; bottom: 12px;
+    border: 2px solid rgba(255,215,0,0.08);
+    border-radius: 22px;
+}
+
+/* ─── Board / Play Area ─── */
+#board-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    transition: all 0.3s;
+}
+.board-tile {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 0 1px;
+    transition: all 0.3s;
+    animation: tilePlace 0.3s ease-out;
+}
+.board-tile.vertical {
+    flex-direction: column;
+}
+@keyframes tilePlace {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Domino Tile ─── */
+.domino {
+    position: relative;
+    background: linear-gradient(135deg, #f5edd6 0%, #e8dcc0 100%);
+    border-radius: 5px;
+    border: 1.5px solid #b8a88a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.domino:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+.domino.small { width: 28px; height: 52px; }
+.domino.medium { width: 32px; height: 58px; }
+.domino.hand-tile { width: 44px; height: 80px; }
+.domino.table-tile { width: 38px; height: 68px; }
+.domino.board-piece { width: 24px; height: 44px; }
+.domino.horizontal { width: 52px; height: 28px; }
+.domino.horizontal.board-piece { width: 44px; height: 24px; }
+
+.domino .half {
+    display: flex; flex-wrap: wrap;
+    align-items: center; justify-content: center;
+    position: relative;
+}
+.domino:not(.horizontal) .half {
+    width: 100%; height: 50%; padding: 3px;
+}
+.domino.horizontal .half {
+    width: 50%; height: 100%; padding: 3px;
+    display: inline-flex;
+}
+.domino .divider-line {
+    position: absolute;
+}
+.domino:not(.horizontal) .divider-line {
+    top: 50%; left: 15%; right: 15%;
+    height: 1.5px; background: #a89878;
+}
+.domino.horizontal .divider-line {
+    left: 50%; top: 15%; bottom: 15%;
+    width: 1.5px; background: #a89878;
+}
+.pip {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #3d3d3d, #1a1a1a);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+    position: absolute;
+}
+.domino.hand-tile .pip { width: 7px; height: 7px; }
+.domino.board-piece .pip { width: 4px; height: 4px; }
+.domino.table-tile .pip { width: 5px; height: 5px; }
+
+/* Pip positions for vertical half */
+.half { position: relative; }
+
+/* ─── Face-down tile ─── */
+.domino.facedown {
+    background: linear-gradient(135deg, #2c3e6d 0%, #1a2744 100%);
+    border-color: #4a5f8a;
+}
+.domino.facedown .pattern {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+        repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.05) 3px, rgba(255,255,255,0.05) 4px),
+        repeating-linear-gradient(-45deg, transparent, transparent 3px, rgba(255,255,255,0.05) 3px, rgba(255,255,255,0.05) 4px);
+    border-radius: 4px;
+}
+
+/* ─── Player Positions ─── */
+.player-area {
+    position: absolute;
+    display: flex; flex-direction: column;
+    align-items: center;
+    z-index: 10;
+}
+.player-area.bottom {
+    bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    flex-direction: column;
+}
+.player-area.top {
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+}
+.player-area.left {
+    left: 0; top: 50%;
+    transform: translateY(-50%);
+}
+.player-area.right {
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+}
+
+.player-info {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 16px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 20px;
+    border: 2px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+}
+.player-info.active-turn {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255,215,0,0.3);
+    animation: pulseGlow 1.5s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.3); }
+    50% { box-shadow: 0 0 35px rgba(255,215,0,0.5); }
+}
+.player-info .name { font-weight: 700; font-size: 0.85rem; }
+.player-info .tiles-count {
+    font-size: 0.7rem; color: #8892b0;
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px; border-radius: 10px;
+}
+.player-info .team-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+}
+.player-info .team-dot.t0 { background: #63b3ed; }
+.player-info .team-dot.t1 { background: #fc814a; }
+.player-info .passed-label {
+    font-size: 0.7rem; color: #ff4757;
+    font-weight: 600;
+}
+
+/* ─── My Hand ─── */
+#my-hand {
+    position: fixed;
+    bottom: 10px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 5px;
+    align-items: flex-end;
+    z-index: 50;
+    padding: 8px 20px;
+    background: rgba(0,0,0,0.4);
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    max-width: 95vw;
+    overflow-x: auto;
+}
+#my-hand .domino.playable {
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255,215,0,0.4);
+    cursor: pointer;
+}
+#my-hand .domino.playable:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 8px 25px rgba(255,215,0,0.5);
+}
+#my-hand .domino:not(.playable) {
+    opacity: 0.5;
+    cursor: default;
+}
+#my-hand .domino:not(.playable):hover {
+    transform: none;
+}
+
+/* ─── Other Players' Hands ─── */
+.opponent-hand {
+    display: flex; gap: 2px;
+}
+.opponent-hand.horizontal { flex-direction: column; }
+
+/* ─── Selection Phase ─── */
+#selection-area {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 60;
+    display: none;
+}
+.selection-tiles {
+    display: flex; flex-wrap: wrap;
+    gap: 6px; justify-content: center;
+    max-width: 85vw;
+    padding: 20px;
+}
+.selection-tiles .domino {
+    transition: all 0.3s;
+}
+.selection-tiles .domino:hover:not(.taken) {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(255,215,0,0.4);
+    border-color: #ffd700;
+}
+.selection-tiles .domino.taken {
+    opacity: 0; pointer-events: none;
+    transform: scale(0.5);
+}
+.selection-info {
+    text-align: center; margin-bottom: 15px;
+    font-size: 1rem; color: #ccd6f6;
+}
+.selection-info .pick-label {
+    font-size: 1.3rem; font-weight: 700;
+    color: #ffd700; margin-bottom: 5px;
+}
+.selection-count {
+    font-size: 0.85rem; color: #8892b0;
+}
+
+/* ─── Shuffle Animation ─── */
+#shuffle-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10,22,40,0.9);
+    z-index: 200; display: none;
+    align-items: center; justify-content: center;
+    flex-direction: column;
+}
+.shuffle-text {
+    font-size: 2rem; font-weight: 900; color: #ffd700;
+    margin-bottom: 30px; letter-spacing: 3px;
+}
+.shuffle-tiles-area {
+    position: relative; width: 400px; height: 300px;
+}
+.shuffle-tile {
+    position: absolute;
+    width: 30px; height: 52px;
+    background: linear-gradient(135deg, #2c3e6d, #1a2744);
+    border-radius: 5px; border: 1.5px solid #4a5f8a;
+    transition: all 0.1s;
+}
+
+/* ─── Scoreboard ─── */
+#scoreboard {
+    position: fixed; top: 15px; left: 50%;
+    transform: translateX(-50%);
+    display: none; align-items: center; gap: 20px;
+    z-index: 70;
+    background: rgba(0,0,0,0.6);
+    padding: 8px 25px;
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+}
+.score-team {
+    display: flex; align-items: center; gap: 8px;
+}
+.score-team .team-name { font-size: 0.8rem; color: #8892b0; font-weight: 600; }
+.score-team .score-val {
+    font-size: 1.5rem; font-weight: 900;
+}
+.score-team.t0 .score-val { color: #63b3ed; }
+.score-team.t1 .score-val { color: #fc814a; }
+.score-divider {
+    width: 2px; height: 30px;
+    background: rgba(255,255,255,0.15);
+}
+.score-target { font-size: 0.7rem; color: #5a6785; }
+
+/* ─── Side Choice Modal ─── */
+#side-choice {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; align-items: center; justify-content: center;
+    z-index: 300;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(5px);
+}
+.side-choice-box {
+    background: linear-gradient(135deg, #1a2744, #0d1f3c);
+    border: 2px solid rgba(255,215,0,0.2);
+    border-radius: 16px; padding: 30px;
+    text-align: center;
+}
+.side-choice-box h3 { color: #ffd700; margin-bottom: 15px; font-size: 1.2rem; }
+.side-btns { display: flex; gap: 15px; justify-content: center; }
+.side-btn {
+    padding: 12px 30px;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.08);
+    color: #fff; border-radius: 12px;
+    font-size: 1rem; font-weight: 700;
+    font-family: 'Poppins'; cursor: pointer;
+    transition: all 0.3s;
+}
+.side-btn:hover {
+    background: rgba(255,215,0,0.15);
+    border-color: #ffd700;
+}
+
+/* ─── Pass Button ─── */
+#pass-btn {
+    position: fixed;
+    bottom: 110px; left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    padding: 10px 30px;
+    background: rgba(255,71,87,0.2);
+    border: 2px solid #ff4757;
+    color: #ff4757;
+    border-radius: 12px;
+    font-size: 1rem; font-weight: 700;
+    font-family: 'Poppins'; cursor: pointer;
+    z-index: 55;
+    transition: all 0.3s;
+}
+#pass-btn:hover { background: rgba(255,71,87,0.4); }
+
+/* ─── Round Result Modal ─── */
+#result-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; align-items: center; justify-content: center;
+    z-index: 250;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+}
+.result-box {
+    background: linear-gradient(135deg, #1a2744, #0d1f3c);
+    border: 2px solid rgba(255,215,0,0.3);
+    border-radius: 20px; padding: 40px;
+    text-align: center; min-width: 350px;
+    animation: modalIn 0.4s ease-out;
+}
+@keyframes modalIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+.result-box .result-title {
+    font-size: 2rem; font-weight: 900;
+    margin-bottom: 5px;
+}
+.result-box .result-title.win { color: #ffd700; }
+.result-box .result-title.lose { color: #ff4757; }
+.result-box .result-detail { color: #8892b0; font-size: 0.95rem; margin-bottom: 20px; }
+.result-scores {
+    display: flex; justify-content: center; gap: 30px; margin-bottom: 25px;
+}
+.result-scores .rs-team { text-align: center; }
+.result-scores .rs-label { font-size: 0.8rem; color: #5a6785; }
+.result-scores .rs-score { font-size: 2.5rem; font-weight: 900; }
+.result-continue {
+    padding: 12px 40px;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a1a2e; border: none;
+    border-radius: 12px; font-size: 1.1rem;
+    font-weight: 700; font-family: 'Poppins';
+    cursor: pointer; transition: all 0.3s;
+}
+.result-continue:hover { transform: translateY(-2px); }
+
+/* ─── Turn Indicator ─── */
+#turn-indicator {
+    position: fixed;
+    bottom: 150px; left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    padding: 8px 24px;
+    background: rgba(255,215,0,0.15);
+    border: 2px solid rgba(255,215,0,0.3);
+    border-radius: 12px;
+    color: #ffd700; font-weight: 700;
+    font-size: 1rem; z-index: 55;
+    animation: pulseGlow 1.5s ease-in-out infinite;
+}
+
+/* ─── Notification Toast ─── */
+.toast {
+    position: fixed; top: 80px; left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 25px;
+    background: rgba(0,0,0,0.8);
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    color: #ccd6f6; font-weight: 600;
+    z-index: 400;
+    animation: toastIn 0.3s ease-out, toastOut 0.3s ease-in 2.7s forwards;
+}
+@keyframes toastIn { from { transform: translateX(-50%) translateY(-20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+@keyframes toastOut { from { opacity: 1; } to { opacity: 0; } }
+
+/* Add Bot Button */
+.lobby-add-bot {
+    padding: 10px 24px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.15);
+    color: #8892b0; border-radius: 12px;
+    font-size: 0.9rem; font-weight: 600;
+    font-family: 'Poppins'; cursor: pointer;
+    transition: all 0.3s;
+}
+.lobby-add-bot:hover { border-color: #ffd700; color: #ffd700; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table-area { width: 92vw; height: 45vh; border-radius: 20px; border-width: 5px; }
+    .menu-logo { font-size: 2.2rem; }
+    .menu-btn, .menu-input { width: 260px; }
+    .domino.hand-tile { width: 36px; height: 65px; }
+    .domino.hand-tile .pip { width: 5px; height: 5px; }
+    #my-hand { padding: 6px 12px; gap: 3px; }
+    .lobby-seats { grid-template-columns: 1fr; }
+    .lobby-seat { width: 250px; }
+    .domino.board-piece { width: 20px; height: 38px; }
+    .domino.board-piece .pip { width: 3px; height: 3px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-pattern"></div>
+
+<!-- ═══ MENU SCREEN ═══ -->
+<div id="menu-screen">
+    <div class="menu-domino-art">
+        <div class="mini-tile"><div class="dot-section"><div class="dot"></div></div><div class="divider"></div><div class="dot-section"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        <div class="mini-tile"><div class="dot-section"><div class="dot"></div><div class="dot"></div></div><div class="divider"></div><div class="dot-section"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        <div class="mini-tile"><div class="dot-section"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="divider"></div><div class="dot-section"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+        <div class="mini-tile"><div class="dot-section"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="divider"></div><div class="dot-section"><div class="dot"></div><div class="dot"></div></div></div>
+        <div class="mini-tile"><div class="dot-section"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div><div class="divider"></div><div class="dot-section"><div class="dot"></div></div></div>
+    </div>
+    <div class="menu-logo">CUBAN DOMINOES</div>
+    <div class="menu-subtitle">Double Nine &bull; 2v2 Teams</div>
+    <input class="menu-input" id="player-name" placeholder="Your name" maxlength="15" value="">
+    <button class="menu-btn btn-primary" onclick="createRoom()">CREATE GAME</button>
+    <div class="menu-or">— OR JOIN —</div>
+    <input class="menu-input" id="room-code-input" placeholder="Room code" maxlength="5" style="text-transform:uppercase">
+    <button class="menu-btn btn-secondary" onclick="joinRoom()">JOIN GAME</button>
+    <div class="error-msg" id="menu-error"></div>
+    <div class="menu-footer">JANOVUM &bull; janovum.com</div>
+</div>
+
+<!-- ═══ LOBBY SCREEN ═══ -->
+<div id="lobby-screen">
+    <div class="lobby-code" id="lobby-code">-----</div>
+    <div class="lobby-code-label">SHARE THIS CODE TO INVITE PLAYERS</div>
+    <div class="lobby-seats" id="lobby-seats"></div>
+    <button class="lobby-add-bot" onclick="addBot()">+ ADD BOT</button>
+</div>
+
+<!-- ═══ GAME SCREEN ═══ -->
+<div id="game-screen">
+    <!-- Scoreboard -->
+    <div id="scoreboard">
+        <div class="score-team t0">
+            <span class="team-name">TEAM 1</span>
+            <span class="score-val" id="score-0">0</span>
+        </div>
+        <div class="score-divider"></div>
+        <div class="score-target">FIRST TO <span id="target-score">200</span></div>
+        <div class="score-divider"></div>
+        <div class="score-team t1">
+            <span class="team-name">TEAM 2</span>
+            <span class="score-val" id="score-1">0</span>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-area">
+        <div class="table-felt"></div>
+        <div class="table-border-inner"></div>
+        <div id="board-container"></div>
+    </div>
+
+    <!-- Player areas -->
+    <div class="player-area bottom" id="player-bottom">
+        <div class="player-info" id="info-bottom"></div>
+    </div>
+    <div class="player-area top" id="player-top">
+        <div class="player-info" id="info-top"></div>
+        <div class="opponent-hand" id="hand-top"></div>
+    </div>
+    <div class="player-area left" id="player-left">
+        <div class="player-info" id="info-left"></div>
+        <div class="opponent-hand horizontal" id="hand-left"></div>
+    </div>
+    <div class="player-area right" id="player-right">
+        <div class="player-info" id="info-right"></div>
+        <div class="opponent-hand horizontal" id="hand-right"></div>
+    </div>
+
+    <!-- My hand -->
+    <div id="my-hand"></div>
+
+    <!-- Turn indicator -->
+    <div id="turn-indicator">YOUR TURN</div>
+
+    <!-- Pass button -->
+    <button id="pass-btn" onclick="passTurn()">PASS</button>
+
+    <!-- Selection overlay -->
+    <div id="selection-area">
+        <div class="selection-info">
+            <div class="pick-label" id="selection-label">Pick your tiles!</div>
+            <div class="selection-count" id="selection-count">0 / 10</div>
+        </div>
+        <div class="selection-tiles" id="selection-tiles"></div>
+    </div>
+</div>
+
+<!-- ═══ SHUFFLE OVERLAY ═══ -->
+<div id="shuffle-overlay">
+    <div class="shuffle-text">SHUFFLING...</div>
+    <div class="shuffle-tiles-area" id="shuffle-area"></div>
+</div>
+
+<!-- ═══ SIDE CHOICE MODAL ═══ -->
+<div id="side-choice">
+    <div class="side-choice-box">
+        <h3>Play on which end?</h3>
+        <div style="display:flex;justify-content:center;margin-bottom:15px" id="side-choice-tile"></div>
+        <div class="side-btns">
+            <button class="side-btn" id="btn-left" onclick="chooseSide('left')">← LEFT</button>
+            <button class="side-btn" id="btn-right" onclick="chooseSide('right')">RIGHT →</button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ RESULT MODAL ═══ -->
+<div id="result-modal">
+    <div class="result-box" id="result-content"></div>
+</div>
+
+<script>
+// ─── Pip layouts for 0-9 ───
+const PIP_LAYOUTS = {
+    0: [],
+    1: [[50,50]],
+    2: [[25,25],[75,75]],
+    3: [[25,25],[50,50],[75,75]],
+    4: [[25,25],[75,25],[25,75],[75,75]],
+    5: [[25,25],[75,25],[50,50],[25,75],[75,75]],
+    6: [[25,20],[75,20],[25,50],[75,50],[25,80],[75,80]],
+    7: [[25,20],[75,20],[25,50],[50,50],[75,50],[25,80],[75,80]],
+    8: [[25,15],[75,15],[25,38],[75,38],[25,62],[75,62],[25,85],[75,85]],
+    9: [[20,15],[50,15],[80,15],[20,50],[50,50],[80,50],[20,85],[50,85],[80,85]]
+};
+
+function createDominoHTML(a, b, classes = '', horizontal = false) {
+    const hClass = horizontal ? ' horizontal' : '';
+    let html = `<div class="domino ${classes}${hClass}">`;
+    html += `<div class="half">`;
+    PIP_LAYOUTS[a].forEach(([x, y]) => {
+        html += `<div class="pip" style="left:${x}%;top:${y}%;transform:translate(-50%,-50%)"></div>`;
+    });
+    html += `</div>`;
+    html += `<div class="divider-line"></div>`;
+    html += `<div class="half">`;
+    PIP_LAYOUTS[b].forEach(([x, y]) => {
+        html += `<div class="pip" style="left:${x}%;top:${y}%;transform:translate(-50%,-50%)"></div>`;
+    });
+    html += `</div></div>`;
+    return html;
+}
+
+function createFacedownHTML(classes = '') {
+    return `<div class="domino facedown ${classes}"><div class="pattern"></div></div>`;
+}
+
+// ─── WebSocket & State ───
+let ws = null;
+let myName = '';
+let mySeat = -1;
+let gameState = null;
+let pendingTile = null;
+
+function getWsUrl() {
+    const loc = window.location;
+    const proto = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+    // In production, WebSocket goes through /domino-ws/ proxy
+    if (loc.hostname !== 'localhost' && loc.hostname !== '127.0.0.1') {
+        return `${proto}//${loc.host}/domino-ws/`;
+    }
+    return `${proto}//${loc.hostname}:5053`;
+}
+
+function connect() {
+    ws = new WebSocket(getWsUrl());
+    ws.onopen = () => console.log('Connected');
+    ws.onmessage = (e) => handleServerMessage(JSON.parse(e.data));
+    ws.onclose = () => {
+        console.log('Disconnected, reconnecting...');
+        setTimeout(connect, 2000);
+    };
+    ws.onerror = (e) => console.error('WS error', e);
+}
+
+function send(data) {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(data));
+    }
+}
+
+// ─── Ping to keep alive ───
+setInterval(() => send({action: 'ping'}), 30000);
+
+// ─── Message Handler ───
+function handleServerMessage(data) {
+    console.log('MSG:', data.type, data);
+    switch(data.type) {
+        case 'room_created':
+            mySeat = data.seat;
+            showLobby(data);
+            break;
+        case 'joined':
+            mySeat = data.seat;
+            showLobby(data);
+            break;
+        case 'reconnected':
+            mySeat = data.seat;
+            gameState = data;
+            showGame();
+            renderGame();
+            break;
+        case 'state':
+            gameState = data;
+            if (data.state === 'lobby') {
+                showLobby(data);
+            } else if (data.state === 'selecting') {
+                showGame();
+                showSelection();
+            } else if (data.state === 'playing') {
+                showGame();
+                hideSelection();
+                renderGame();
+            } else if (data.state === 'round_over' || data.state === 'game_over') {
+                showGame();
+                renderGame();
+            }
+            break;
+        case 'round_result':
+            showRoundResult(data);
+            break;
+        case 'error':
+            showError(data.message);
+            break;
+        case 'pong':
+            break;
+    }
+}
+
+// ─── Menu Actions ───
+function createRoom() {
+    myName = document.getElementById('player-name').value.trim() || 'Player';
+    send({action: 'create_room', name: myName});
+}
+
+function joinRoom() {
+    myName = document.getElementById('player-name').value.trim() || 'Player';
+    const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+    if (!code) { showError('Enter a room code'); return; }
+    send({action: 'join_room', room: code, name: myName});
+}
+
+function addBot() {
+    send({action: 'add_bot'});
+}
+
+function showError(msg) {
+    const el = document.getElementById('menu-error');
+    if (el) { el.textContent = msg; setTimeout(() => el.textContent = '', 3000); }
+    showToast(msg);
+}
+
+// ─── Screen Management ───
+function showMenu() {
+    document.getElementById('menu-screen').style.display = 'flex';
+    document.getElementById('lobby-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'none';
+}
+function showLobby(data) {
+    document.getElementById('menu-screen').style.display = 'none';
+    document.getElementById('lobby-screen').style.display = 'flex';
+    document.getElementById('game-screen').style.display = 'none';
+    document.getElementById('lobby-code').textContent = data.room;
+    renderLobbySeats(data.players);
+}
+function showGame() {
+    document.getElementById('menu-screen').style.display = 'none';
+    document.getElementById('lobby-screen').style.display = 'none';
+    document.getElementById('game-screen').style.display = 'block';
+    document.getElementById('scoreboard').style.display = 'flex';
+}
+
+function renderLobbySeats(players) {
+    const el = document.getElementById('lobby-seats');
+    const seatLabels = ['Seat 1 (You?)', 'Seat 2', 'Seat 3 (Partner)', 'Seat 4'];
+    let html = '';
+    for (let i = 0; i < 4; i++) {
+        const p = players ? players[i] : null;
+        const filled = p && p.name;
+        const teamClass = i % 2 === 0 ? 'team-0' : 'team-1';
+        const teamLabel = i % 2 === 0 ? 'Team 1' : 'Team 2';
+        const isMe = i === mySeat;
+        html += `<div class="lobby-seat ${filled ? 'filled' : ''}">
+            <div class="seat-label">SEAT ${i+1}${i === 0 || i === 2 ? ' (Team 1)' : ' (Team 2)'}${isMe ? ' — YOU' : ''}</div>
+            <div class="seat-name">${filled ? p.name : 'Waiting...'}</div>
+            <span class="team-tag ${teamClass}">${teamLabel}</span>
+        </div>`;
+    }
+    el.innerHTML = html;
+}
+
+// ─── Selection Phase ───
+let hasShuffled = false;
+function showSelection() {
+    if (!gameState) return;
+    if (!hasShuffled) {
+        hasShuffled = true;
+        showShuffle(() => {
+            document.getElementById('selection-area').style.display = 'block';
+            renderSelection();
+        });
+    } else {
+        document.getElementById('selection-area').style.display = 'block';
+        renderSelection();
+    }
+}
+
+function hideSelection() {
+    document.getElementById('selection-area').style.display = 'none';
+}
+
+function renderSelection() {
+    if (!gameState || gameState.state !== 'selecting') return;
+    const totalTiles = gameState.table_tiles_count || 55;
+    const takenSet = new Set(gameState.table_tiles_taken || []);
+    const myCount = gameState.my_hand ? gameState.my_hand.length : 0;
+    const canPick = myCount < 10;
+
+    document.getElementById('selection-label').textContent =
+        canPick ? 'Pick your dominoes!' : 'Waiting for others to finish picking...';
+    document.getElementById('selection-count').textContent = `${myCount} / 10`;
+
+    const container = document.getElementById('selection-tiles');
+    let html = '';
+    for (let idx = 0; idx < totalTiles; idx++) {
+        if (takenSet.has(idx)) {
+            html += `<div class="domino table-tile taken" style="visibility:hidden"></div>`;
+        } else {
+            html += `<div onclick="${canPick ? `selectTile(${idx})` : ''}" style="cursor:${canPick ? 'pointer' : 'default'}">`;
+            html += createFacedownHTML('table-tile');
+            html += `</div>`;
+        }
+    }
+    container.innerHTML = html;
+}
+
+function selectTile(idx) {
+    send({action: 'select_tile', tile_index: idx});
+}
+
+// ─── Shuffle Animation ───
+function showShuffle(callback) {
+    const overlay = document.getElementById('shuffle-overlay');
+    overlay.style.display = 'flex';
+    const area = document.getElementById('shuffle-area');
+    area.innerHTML = '';
+
+    // Create tiles
+    const numTiles = 40;
+    const tileEls = [];
+    for (let i = 0; i < numTiles; i++) {
+        const tile = document.createElement('div');
+        tile.className = 'shuffle-tile';
+        tile.style.left = (150 + Math.random() * 100) + 'px';
+        tile.style.top = (100 + Math.random() * 100) + 'px';
+        area.appendChild(tile);
+        tileEls.push(tile);
+    }
+
+    // Animate shuffling — spin and scatter
+    let frame = 0;
+    const totalFrames = 60;
+    const centerX = 185, centerY = 135;
+
+    function animate() {
+        frame++;
+        const progress = frame / totalFrames;
+        tileEls.forEach((tile, i) => {
+            const angle = (progress * 720 + i * (360/numTiles)) * Math.PI / 180;
+            const radius = 40 + Math.sin(progress * Math.PI) * 80;
+            const x = centerX + Math.cos(angle) * radius + Math.sin(frame * 0.1 + i) * 20;
+            const y = centerY + Math.sin(angle) * radius * 0.6 + Math.cos(frame * 0.15 + i) * 15;
+            const rot = progress * 720 + i * 30;
+            tile.style.left = x + 'px';
+            tile.style.top = y + 'px';
+            tile.style.transform = `rotate(${rot}deg)`;
+        });
+        if (frame < totalFrames) {
+            requestAnimationFrame(animate);
+        } else {
+            // Spread out
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                callback();
+            }, 400);
+        }
+    }
+    requestAnimationFrame(animate);
+}
+
+// ─── Game Rendering ───
+function renderGame() {
+    if (!gameState) return;
+
+    // Scores
+    document.getElementById('score-0').textContent = gameState.scores[0];
+    document.getElementById('score-1').textContent = gameState.scores[1];
+    document.getElementById('target-score').textContent = gameState.target_score;
+
+    // Board
+    renderBoard();
+
+    // Players
+    renderPlayers();
+
+    // My hand
+    renderMyHand();
+
+    // Turn indicator
+    const turnEl = document.getElementById('turn-indicator');
+    const passEl = document.getElementById('pass-btn');
+    if (gameState.state === 'playing' && gameState.current_turn === mySeat) {
+        turnEl.style.display = 'block';
+        // Check if I can play
+        if (gameState.playable.length === 0) {
+            passEl.style.display = 'block';
+            turnEl.textContent = 'NO MOVES — PASS';
+        } else {
+            passEl.style.display = 'none';
+            turnEl.textContent = 'YOUR TURN';
+        }
+    } else {
+        turnEl.style.display = 'none';
+        passEl.style.display = 'none';
+    }
+
+    // Selection
+    if (gameState.state === 'selecting') {
+        renderSelection();
+    }
+}
+
+function renderBoard() {
+    const container = document.getElementById('board-container');
+    if (!gameState || !gameState.board || gameState.board.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+    gameState.board.forEach((entry, idx) => {
+        const [a, b] = entry.tile;
+        const isDouble = a === b;
+
+        if (isDouble) {
+            // Doubles are vertical (perpendicular)
+            html += `<div class="board-tile vertical">${createDominoHTML(a, b, 'board-piece')}</div>`;
+        } else {
+            // Regular tiles horizontal
+            if (entry.side === 'left' && idx > 0) {
+                // Played on left — may need to flip
+                if (b === gameState.board[0]?.tile?.[0] || b === gameState.left_end) {
+                    html = `<div class="board-tile">${createDominoHTML(a, b, 'board-piece horizontal')}</div>` + html;
+                } else {
+                    html = `<div class="board-tile">${createDominoHTML(b, a, 'board-piece horizontal')}</div>` + html;
+                }
+            } else {
+                html += `<div class="board-tile">${createDominoHTML(a, b, 'board-piece horizontal')}</div>`;
+            }
+        }
+    });
+    container.innerHTML = html;
+
+    // Auto-scale if board is too wide
+    const containerWidth = container.scrollWidth;
+    const tableWidth = document.querySelector('.table-area').offsetWidth - 40;
+    if (containerWidth > tableWidth) {
+        const scale = tableWidth / containerWidth;
+        container.style.transform = `translate(-50%, -50%) scale(${Math.max(scale, 0.3)})`;
+    } else {
+        container.style.transform = 'translate(-50%, -50%)';
+    }
+}
+
+function renderPlayers() {
+    if (!gameState) return;
+    // Map seats to positions relative to my seat
+    // Bottom = me, Top = my partner (seat+2), Left = seat+1, Right = seat+3
+    // Counter-clockwise: me(bottom), right(seat-1), top(seat-2=partner), left(seat-3)
+    const positions = ['bottom', 'right', 'top', 'left'];
+    const seatOrder = [
+        mySeat,
+        (mySeat + 3) % 4,  // right
+        (mySeat + 2) % 4,  // top (partner)
+        (mySeat + 1) % 4   // left
+    ];
+
+    seatOrder.forEach((seat, posIdx) => {
+        const pos = positions[posIdx];
+        const player = gameState.players[seat];
+        const infoEl = document.getElementById(`info-${pos}`);
+        if (!player || !player.name) {
+            infoEl.innerHTML = '<span class="name">Empty</span>';
+            return;
+        }
+
+        const isActive = gameState.current_turn === seat && gameState.state === 'playing';
+        infoEl.className = `player-info ${isActive ? 'active-turn' : ''}`;
+
+        let html = `<span class="team-dot t${player.team}"></span>`;
+        html += `<span class="name">${player.name}</span>`;
+        if (pos !== 'bottom') {
+            html += `<span class="tiles-count">${player.tile_count} tiles</span>`;
+        }
+        infoEl.innerHTML = html;
+
+        // Render face-down tiles for opponents
+        if (pos !== 'bottom') {
+            const handEl = document.getElementById(`hand-${pos}`);
+            if (handEl) {
+                let tilesHtml = '';
+                for (let i = 0; i < player.tile_count; i++) {
+                    tilesHtml += createFacedownHTML('small');
+                }
+                handEl.innerHTML = tilesHtml;
+            }
+        }
+    });
+}
+
+function renderMyHand() {
+    const container = document.getElementById('my-hand');
+    if (!gameState || !gameState.my_hand) { container.innerHTML = ''; return; }
+
+    const isMyTurn = gameState.state === 'playing' && gameState.current_turn === mySeat;
+    const playableIndices = new Set(gameState.playable.map(p => p.index));
+
+    let html = '';
+    gameState.my_hand.forEach((tile, idx) => {
+        const isPlayable = isMyTurn && playableIndices.has(idx);
+        const cls = isPlayable ? 'hand-tile playable' : 'hand-tile';
+        html += `<div onclick="${isPlayable ? `clickTile(${idx})` : ''}">${createDominoHTML(tile[0], tile[1], cls)}</div>`;
+    });
+    container.innerHTML = html;
+}
+
+// ─── Tile Click / Play ───
+function clickTile(idx) {
+    if (!gameState || gameState.current_turn !== mySeat) return;
+    const playable = gameState.playable.find(p => p.index === idx);
+    if (!playable) return;
+
+    const tile = gameState.my_hand[idx];
+
+    if (gameState.board.length === 0) {
+        // First tile, no side choice needed
+        send({action: 'play_tile', tile: tile, side: 'left'});
+        return;
+    }
+
+    if (playable.sides.length === 1) {
+        send({action: 'play_tile', tile: tile, side: playable.sides[0]});
+    } else {
+        // Both sides — ask player
+        pendingTile = tile;
+        showSideChoice(tile);
+    }
+}
+
+function showSideChoice(tile) {
+    const modal = document.getElementById('side-choice');
+    modal.style.display = 'flex';
+    document.getElementById('side-choice-tile').innerHTML = createDominoHTML(tile[0], tile[1], 'hand-tile');
+
+    // Show what each end is
+    document.getElementById('btn-left').textContent = `← LEFT (${gameState.left_end})`;
+    document.getElementById('btn-right').textContent = `RIGHT (${gameState.right_end}) →`;
+}
+
+function chooseSide(side) {
+    document.getElementById('side-choice').style.display = 'none';
+    if (pendingTile) {
+        send({action: 'play_tile', tile: pendingTile, side: side});
+        pendingTile = null;
+    }
+}
+
+function passTurn() {
+    send({action: 'pass'});
+}
+
+// ─── Round Result ───
+function showRoundResult(data) {
+    const modal = document.getElementById('result-modal');
+    const content = document.getElementById('result-content');
+
+    const myTeam = mySeat % 2 === 0 ? 0 : 1;
+    const iWon = data.winner_team === myTeam;
+    const isGameOver = data.game_over;
+    const isDraw = data.winner_team === null;
+
+    let title, detail;
+    if (isDraw) {
+        title = 'DRAW';
+        detail = 'Both teams tied — no points scored!';
+    } else if (isGameOver) {
+        title = iWon ? '🏆 GAME WON!' : 'GAME OVER';
+        detail = iWon ? `Your team wins the match!` : `The other team won the match.`;
+    } else {
+        title = iWon ? 'ROUND WON!' : 'ROUND LOST';
+        detail = data.reason === 'domino'
+            ? (iWon ? 'Your team went out!' : 'Other team went out.')
+            : 'Game was blocked — lowest pips wins.';
+        detail += ` +${data.points} points`;
+    }
+
+    content.innerHTML = `
+        <div class="result-title ${iWon || isDraw ? 'win' : 'lose'}">${title}</div>
+        <div class="result-detail">${detail}</div>
+        <div class="result-scores">
+            <div class="rs-team">
+                <div class="rs-label" style="color:#63b3ed">TEAM 1</div>
+                <div class="rs-score" style="color:#63b3ed">${data.scores ? data.scores[0] : gameState.scores[0]}</div>
+            </div>
+            <div class="rs-team">
+                <div class="rs-label" style="color:#fc814a">TEAM 2</div>
+                <div class="rs-score" style="color:#fc814a">${data.scores ? data.scores[1] : gameState.scores[1]}</div>
+            </div>
+        </div>
+        <button class="result-continue" onclick="continueGame(${isGameOver})">${isGameOver ? 'NEW GAME' : 'NEXT ROUND'}</button>
+    `;
+    modal.style.display = 'flex';
+}
+
+function continueGame(isGameOver) {
+    document.getElementById('result-modal').style.display = 'none';
+    hasShuffled = false;
+    send({action: isGameOver ? 'new_game' : 'new_round'});
+}
+
+// ─── Helpers ───
+function getPlayerName(seat) {
+    if (!gameState || !gameState.players) return 'Player';
+    const p = gameState.players[seat];
+    return p ? p.name || 'Player' : 'Player';
+}
+
+function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+// ─── Enter key support ───
+document.getElementById('player-name').addEventListener('keydown', e => { if(e.key === 'Enter') createRoom(); });
+document.getElementById('room-code-input').addEventListener('keydown', e => { if(e.key === 'Enter') joinRoom(); });
+
+// ─── Init ───
+connect();
+</script>
+</body>
+</html>

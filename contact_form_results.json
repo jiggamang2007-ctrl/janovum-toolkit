@@ -1,0 +1,316 @@
+{
+  "submitted": [
+    {
+      "biz": "AestheteMed",
+      "url": "https://aesthetemed.com",
+      "type": "med spa",
+      "fields": 2,
+      "time": "2026-04-01T18:07:04.124198"
+    },
+    {
+      "biz": "Prestige Plastic Surgery",
+      "url": "https://prestigeplasticsurgery.com/contact",
+      "type": "plastic surgery",
+      "fields": 3,
+      "time": "2026-04-01T18:07:16.868569"
+    },
+    {
+      "biz": "Emergency AC Corp",
+      "url": "https://emergencyaccorp.com/contact",
+      "type": "HVAC",
+      "fields": 5,
+      "time": "2026-04-01T18:10:59.212148"
+    },
+    {
+      "biz": "Doral Elite Collision",
+      "url": "https://doralelite.com/contact",
+      "type": "auto body",
+      "fields": 4,
+      "time": "2026-04-01T18:13:33.567643"
+    },
+    {
+      "biz": "Auto Body Lab",
+      "url": "https://autobodylab.com",
+      "type": "auto body",
+      "fields": 5,
+      "time": "2026-04-01T18:14:02.425851"
+    },
+    {
+      "biz": "Ivy Accounting",
+      "url": "https://ivy-cpa.com/contact",
+      "type": "accounting",
+      "fields": 4,
+      "time": "2026-04-01T18:15:00.210400"
+    },
+    {
+      "biz": "Libre Aerial Fitness",
+      "url": "https://libreaf.com/contact",
+      "type": "fitness",
+      "fields": 4,
+      "time": "2026-04-01T18:16:13.982093"
+    },
+    {
+      "biz": "Core Fitness Miami",
+      "url": "https://corefitnessmiami.com/contact",
+      "type": "fitness",
+      "fields": 4,
+      "time": "2026-04-01T18:16:27.182338"
+    },
+    {
+      "biz": "IPT Miami",
+      "url": "https://iptmiami.com/contact-us",
+      "type": "physical therapy",
+      "fields": 4,
+      "time": "2026-04-01T18:17:25.197928"
+    }
+  ],
+  "no_form": [
+    {
+      "biz": "Miami Beach Dental Solutions",
+      "url": "https://miamibeachds.com"
+    },
+    {
+      "biz": "West Kendall Animal Hospital",
+      "url": "https://westkendallvet.com"
+    },
+    {
+      "biz": "The Dog From Ipanema",
+      "url": "https://thedogfromipanema.com"
+    },
+    {
+      "biz": "Coral Gables Plumbing",
+      "url": "https://coralgablesplumbing.com"
+    },
+    {
+      "biz": "The Miami Movers",
+      "url": "https://themiamimovers.com"
+    },
+    {
+      "biz": "Hialeah Auto Care",
+      "url": "https://hialeahautocare.com"
+    },
+    {
+      "biz": "Butler Buckley & Deets Insurance",
+      "url": "https://bbdins.com"
+    },
+    {
+      "biz": "Mamey Miami",
+      "url": "https://mameymiami.com"
+    },
+    {
+      "biz": "Advance Therapy Center",
+      "url": "https://advancetherapycenter.com"
+    },
+    {
+      "biz": "Family Medical Group",
+      "url": "https://thefamilymedgroup.com"
+    }
+  ],
+  "failed": [],
+  "phone_numbers": [
+    {
+      "biz": "Dr. G Dental Studio",
+      "phone": "305-217-6453",
+      "type": "dentist",
+      "url": "https://drgdentalstudio.com"
+    },
+    {
+      "biz": "SONRIE Dental Studio",
+      "phone": "3054451515",
+      "type": "dentist",
+      "url": "https://sonriedentalstudio.com"
+    },
+    {
+      "biz": "Gables Dental Care",
+      "phone": "8578538130",
+      "type": "dentist",
+      "url": "https://gablesdentalcare.com"
+    },
+    {
+      "biz": "Florida Dental Group",
+      "phone": "1775081100",
+      "type": "dentist",
+      "url": "https://floridadentalgroup.com"
+    },
+    {
+      "biz": "Florida Dental Group",
+      "phone": "1775081104",
+      "type": "dentist",
+      "url": "https://floridadentalgroup.com"
+    },
+    {
+      "biz": "Florida Dental Group",
+      "phone": "1775081107",
+      "type": "dentist",
+      "url": "https://floridadentalgroup.com"
+    },
+    {
+      "biz": "Florida Dental Group",
+      "phone": "1775081110",
+      "type": "dentist",
+      "url": "https://floridadentalgroup.com"
+    },
+    {
+      "biz": "Florida Dental Group",
+      "phone": "+13057352888",
+      "type": "dentist",
+      "url": "https://floridadentalgroup.com"
+    },
+    {
+      "biz": "Dental Total",
+      "phone": "7868820198",
+      "type": "dentist",
+      "url": "https://dentaltotal.com"
+    },
+    {
+      "biz": "Garcia Mayoral Dentistry",
+      "phone": "+13054444300",
+      "type": "dentist",
+      "url": "https://garciamayoraldentistry.com"
+    },
+    {
+      "biz": "Lux MedSpa Brickell",
+      "phone": "+13059889388",
+      "type": "med spa",
+      "url": "https://luxmedspabrickell.com"
+    },
+    {
+      "biz": "Lux MedSpa Brickell",
+      "phone": "13059889388",
+      "type": "med spa",
+      "url": "https://luxmedspabrickell.com"
+    },
+    {
+      "biz": "Lux MedSpa Brickell",
+      "phone": "+13059889388",
+      "type": "med spa",
+      "url": "https://luxmedspabrickell.com"
+    },
+    {
+      "biz": "AestheteMed",
+      "phone": "+17869667878",
+      "type": "med spa",
+      "url": "https://aesthetemed.com"
+    },
+    {
+      "biz": "Cosmetic Laser Professionals",
+      "phone": "3054561170",
+      "type": "med spa",
+      "url": "https://clpmedspa.com"
+    },
+    {
+      "biz": "Sabal Chase Animal Clinic",
+      "phone": "3057011942&quot;}}",
+      "type": "vet",
+      "url": "https://scacvet.com"
+    },
+    {
+      "biz": "Gold Star Roofing",
+      "phone": "786-496-9355",
+      "type": "roofing",
+      "url": "https://goldstarroofing.us"
+    },
+    {
+      "biz": "Elekron Electric",
+      "phone": "7864235230",
+      "type": "electrician",
+      "url": "https://elekronelectric.com"
+    },
+    {
+      "biz": "Miami Power Company",
+      "phone": "3057785045",
+      "type": "electrician",
+      "url": "https://miamipowercompany.com"
+    },
+    {
+      "biz": "Emergency AC Corp",
+      "phone": "8557832080",
+      "type": "HVAC",
+      "url": "https://emergencyaccorp.com"
+    },
+    {
+      "biz": "Miami Movers for Less",
+      "phone": "+13059153881",
+      "type": "moving",
+      "url": "https://miamimoversforless.com"
+    },
+    {
+      "biz": "Royal Movers Inc",
+      "phone": "7865310361",
+      "type": "moving",
+      "url": "https://royalmoversinc.com"
+    },
+    {
+      "biz": "JMK Property Management",
+      "phone": "+1-305-930-1160",
+      "type": "property mgmt",
+      "url": "https://jmkpropertymanagement.com"
+    },
+    {
+      "biz": "Rovira Property Management",
+      "phone": "+1-+1-888-669-0096",
+      "type": "property mgmt",
+      "url": "https://rovirapm.com"
+    },
+    {
+      "biz": "Florida Management Group",
+      "phone": "+19547520547",
+      "type": "property mgmt",
+      "url": "https://floridamanagement.net"
+    },
+    {
+      "biz": "Doral Elite Collision",
+      "phone": "1764317118",
+      "type": "auto body",
+      "url": "https://doralelite.com"
+    },
+    {
+      "biz": "Auto Body Lab",
+      "phone": "+13055011015",
+      "type": "auto body",
+      "url": "https://autobodylab.com"
+    },
+    {
+      "biz": "Ivy Accounting",
+      "phone": "786-227-6928",
+      "type": "accounting",
+      "url": "https://ivy-cpa.com"
+    },
+    {
+      "biz": "La Mesa Miami",
+      "phone": "+13059083841",
+      "type": "restaurant",
+      "url": "https://lamesamiami.com"
+    },
+    {
+      "biz": "MIKA Restaurant",
+      "phone": "1435458248",
+      "type": "restaurant",
+      "url": "https://mikacoralgables.com"
+    },
+    {
+      "biz": "Libre Aerial Fitness",
+      "phone": "+17868480732",
+      "type": "fitness",
+      "url": "https://libreaf.com"
+    },
+    {
+      "biz": "Core Fitness Miami",
+      "phone": "305-614-2502",
+      "type": "fitness",
+      "url": "https://corefitnessmiami.com"
+    },
+    {
+      "biz": "Miami Dermatology & Laser",
+      "phone": "+13052796060",
+      "type": "dermatology",
+      "url": "https://miamidermlaser.com"
+    },
+    {
+      "biz": "IPT Miami",
+      "phone": "305.967.8976",
+      "type": "physical therapy",
+      "url": "https://iptmiami.com"
+    }
+  ]
+}

@@ -10387,11 +10387,16 @@ async function saveSetup() {
 let clAllClients = [];
 let clSelectedClient = null;
 let clWizardStep = 0;
-const CL_TOTAL_STEPS = 7;
 let clWizardData = {};
+
+// Steps differ by service: receptionist gets full flow, others get a shorter flow
+function clTotalSteps() {
+  return clWizardData.service === 'receptionist' ? 8 : 3;
+}
 
 function clResetWizardData() {
   clWizardData = {
+    service: '', // chosen on step 0
     phone_provider: 'twilio', twilio_phone_number: '', business_name: '', business_type: '',
     services: [{ name: '', duration_minutes: 30, price: '' }],
     hours: {
@@ -10401,6 +10406,7 @@ function clResetWizardData() {
     },
     staff: [], greeting: '', tone: 'warm and professional',
     cartesia_voice_id: 'f786b574-daa5-4673-aa0c-cbe3e8534c02',
+    notes: '',
   };
 }
 clResetWizardData();
@@ -10701,18 +10707,70 @@ function clOpenWizard() {
 function clCloseWizard() { document.getElementById('clWizardModal').style.display = 'none'; }
 
 function clRenderWizard() {
+  const totalSteps = clTotalSteps();
   let dots = '';
-  for (let i = 0; i < CL_TOTAL_STEPS; i++) {
+  for (let i = 0; i < totalSteps; i++) {
     dots += `<div style="flex:1;height:4px;border-radius:2px;background:${i < clWizardStep ? 'var(--green)' : i === clWizardStep ? 'var(--gold)' : '#222'};transition:background 0.3s"></div>`;
   }
   document.getElementById('clWizardProgress').innerHTML = dots;
   document.getElementById('clWizardBack').style.display = clWizardStep > 0 ? '' : 'none';
-  document.getElementById('clWizardNext').textContent = clWizardStep === CL_TOTAL_STEPS - 1 ? 'Create Client' : 'Next \u2192';
+  document.getElementById('clWizardNext').textContent = clWizardStep === totalSteps - 1 ? 'Create Client' : 'Next \u2192';
 
   const el = document.getElementById('clWizardContent');
   const d = clWizardData;
 
+  // ── STEP 0: Service / Employee Selector ──
   if (clWizardStep === 0) {
+    const services = [
+      { id: 'receptionist', icon: '📞', label: 'AI Receptionist', desc: 'Answers calls, books appointments 24/7', color: 'var(--green)' },
+      { id: 'social', icon: '📱', label: 'Social Media Manager', desc: 'Posts, schedules & grows all platforms', color: 'var(--blue)' },
+      { id: 'sales', icon: '💼', label: 'Sales & Email Campaigns', desc: 'Follow-ups, cold outreach, pipeline CRM', color: 'var(--gold)' },
+      { id: 'content', icon: '✍️', label: 'Content & Copywriting', desc: 'Blogs, ads, landing pages, SEO copy', color: 'var(--purple)' },
+      { id: 'support', icon: '🎧', label: 'Customer Support Bot', desc: 'Handles FAQs, tickets, refunds via chat', color: '#00C08B' },
+      { id: 'analytics', icon: '📊', label: 'Analytics & Reports', desc: 'ROI dashboards, weekly performance reports', color: '#FF6B35' },
+      { id: 'custom', icon: '⚡', label: 'Custom AI Employee', desc: 'Tell us what they need — we build it', color: 'var(--muted)' },
+    ];
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">What does this client need?</div>
+      <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Pick the primary service — you can always add more later.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        ${services.map(s => `
+          <div onclick="clWizardData.service='${s.id}';clRenderWizard()" style="cursor:pointer;padding:12px 14px;border-radius:10px;border:2px solid ${d.service===s.id ? s.color : '#222'};background:${d.service===s.id ? s.color+'18' : '#0a0a0a'};transition:all 0.2s;display:flex;align-items:center;gap:10px">
+            <div style="font-size:1.5em;line-height:1">${s.icon}</div>
+            <div>
+              <div style="font-size:0.84em;font-weight:700;color:${d.service===s.id ? s.color : 'var(--text)'}">${s.label}</div>
+              <div style="font-size:0.68em;color:var(--dim);margin-top:2px">${s.desc}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    return;
+  }
+
+  // ── NON-RECEPTIONIST SHORT FLOW ──
+  if (d.service !== 'receptionist') {
+    if (clWizardStep === 1) {
+      el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Business Information</div>
+        <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Basic info about the client.</div>
+        <div class="form-group"><label class="form-label">Business Name *</label><input class="form-input" id="wName" placeholder="Bob's Barbershop" value="${d.business_name}"></div>
+        <div class="form-group"><label class="form-label">Business Type</label><input class="form-input" id="wType" placeholder="Barbershop, Dental, Auto Shop..." value="${d.business_type}"></div>
+        <div class="form-group"><label class="form-label">Notes / Requirements</label><textarea class="form-input" id="wNotes" placeholder="What specifically do they need? Any goals, platforms, or details..." style="min-height:90px;resize:vertical">${d.notes||''}</textarea></div>`;
+    } else if (clWizardStep === 2) {
+      const svcLabels = { social:'Social Media Manager', sales:'Sales & Email Campaigns', content:'Content & Copywriting', support:'Customer Support Bot', analytics:'Analytics & Reports', custom:'Custom AI Employee' };
+      el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Review & Create</div>
+        <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Looks good? Hit Create Client and we'll get them set up.</div>
+        <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;padding:16px;margin-bottom:12px">
+          <div style="font-size:0.72em;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Client</div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Name</span><span style="font-weight:600">${d.business_name||'—'}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Type</span><span style="font-weight:600">${d.business_type||'—'}</span></div>
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:0.84em"><span style="color:var(--muted)">Service</span><span style="font-weight:600">${svcLabels[d.service]||d.service}</span></div>
+          ${d.notes ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #1a1a1a;font-size:0.8em;color:var(--muted)">${d.notes}</div>` : ''}
+        </div>`;
+    }
+    return;
+  }
+
+  // ── RECEPTIONIST FULL FLOW (steps 1-7) ──
+  const recStep = clWizardStep - 1; // offset by 1 since step 0 is now service picker
+  if (recStep === 0) {
     const providerInfo = {
       twilio: { name: 'Twilio', color: '#F22F46', console: 'https://console.twilio.com/us1/develop/phone-numbers/manage/search', price: '$1.15/mo', steps: ['Log into console.twilio.com', 'Phone Numbers &rarr; Buy a Number', 'Search by the client\'s area code', 'Buy a LOCAL number &mdash; $1.15/mo', 'Copy the full number with +country code'] },
       telnyx: { name: 'Telnyx', color: '#00C08B', console: 'https://portal.telnyx.com/#/app/numbers/search-numbers', price: '$1.00/mo', steps: ['Log into portal.telnyx.com', 'Numbers &rarr; Search &amp; Buy', 'Search by area code or city', 'Buy a number &mdash; $1.00/mo', 'Copy the full number with +country code'] },
@@ -10722,8 +10780,8 @@ function clRenderWizard() {
     };
     const prov = d.phone_provider || 'twilio';
     const info = providerInfo[prov];
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 1: Choose Phone Provider & Number</div>
-      <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Pick which phone carrier to use for this client's AI line.</div>
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Phone Provider & Number</div>
+      <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Pick which phone carrier to use for this client's AI receptionist line.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
         ${Object.entries(providerInfo).map(([key, p]) => `<div onclick="clWizardData.phone_provider='${key}';clRenderWizard()" style="cursor:pointer;padding:10px 16px;border-radius:8px;border:2px solid ${prov===key ? p.color : '#222'};background:${prov===key ? p.color+'15' : '#0a0a0a'};transition:all 0.2s;text-align:center;min-width:90px">
           <div style="font-size:0.88em;font-weight:700;color:${prov===key ? p.color : '#888'}">${p.name}</div>
@@ -10736,19 +10794,19 @@ function clRenderWizard() {
       </div>
       <a href="${info.console}" target="_blank" style="display:inline-block;font-size:0.8em;color:var(--blue);text-decoration:none;padding:6px 14px;border:1px solid rgba(66,165,245,0.3);border-radius:6px;margin-bottom:16px">&#8599; Open ${info.name} Console</a>
       <div class="form-group"><label class="form-label">${info.name} Phone Number</label><input class="form-input" id="wPhone" placeholder="+1234567890" value="${d.twilio_phone_number}"><div style="font-size:0.7em;color:var(--dim);margin-top:4px">Include the + and country code</div></div>`;
-  } else if (clWizardStep === 1) {
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 2: Business Information</div>
+  } else if (recStep === 1) {
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Business Information</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Basic info about the client's business.</div>
       <div class="form-group"><label class="form-label">Business Name *</label><input class="form-input" id="wName" placeholder="Bob's Barbershop" value="${d.business_name}"></div>
       <div class="form-group"><label class="form-label">Business Type</label><input class="form-input" id="wType" placeholder="Barbershop, Dental, Auto Shop..." value="${d.business_type}"></div>`;
-  } else if (clWizardStep === 2) {
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 3: Services Offered</div>
+  } else if (recStep === 2) {
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Services Offered</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">What can people book?</div>
       <div id="wSvcList">${d.services.map((s, i) => `<div style="display:flex;gap:8px;margin-bottom:8px"><input class="form-input" placeholder="Service name" value="${s.name}" onchange="clWizardData.services[${i}].name=this.value" style="flex:1"><input class="form-input" placeholder="Min" type="number" value="${s.duration_minutes}" onchange="clWizardData.services[${i}].duration_minutes=parseInt(this.value)||30" style="max-width:70px"><input class="form-input" placeholder="Price" value="${s.price}" onchange="clWizardData.services[${i}].price=this.value" style="max-width:90px">${i > 0 ? `<button onclick="clWizardData.services.splice(${i},1);clRenderWizard()" style="background:none;border:1px solid #333;color:var(--red);width:36px;height:36px;border-radius:6px;cursor:pointer;font-size:1em">&times;</button>` : '<div style="width:36px"></div>'}</div>`).join('')}</div>
       <button onclick="clWizardData.services.push({name:'',duration_minutes:30,price:''});clRenderWizard()" style="color:var(--gold);font-size:0.8em;font-weight:600;cursor:pointer;background:none;border:none">+ Add service</button>`;
-  } else if (clWizardStep === 3) {
+  } else if (recStep === 3) {
     const dayList = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 4: Business Hours</div>
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Business Hours</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Uncheck days they're closed.</div>
       ${dayList.map(dy => {
         const h = d.hours[dy]; const isOpen = h !== 'closed';
@@ -10760,13 +10818,13 @@ function clRenderWizard() {
           <input class="form-input" id="wc_${dy}" type="time" value="${isOpen?h.close:'17:00'}" ${!isOpen?'disabled':''} onchange="clUpdateHrs('${dy}')" style="max-width:100px;font-size:0.82em">
         </div>`;
       }).join('')}`;
-  } else if (clWizardStep === 4) {
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 5: Staff (Optional)</div>
+  } else if (recStep === 4) {
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Staff (Optional)</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Who works there? Skip if you want.</div>
       <div id="wStaffList">${d.staff.length === 0 ? `<div style="display:flex;gap:8px;margin-bottom:8px"><input class="form-input" placeholder="Name" id="wSN" style="flex:1"><input class="form-input" placeholder="Role" id="wSR" style="flex:1"><div style="width:36px"></div></div>` : d.staff.map((s, i) => `<div style="display:flex;gap:8px;margin-bottom:8px"><input class="form-input" placeholder="Name" value="${s.name}" onchange="clWizardData.staff[${i}].name=this.value" style="flex:1"><input class="form-input" placeholder="Role" value="${s.role}" onchange="clWizardData.staff[${i}].role=this.value" style="flex:1"><button onclick="clWizardData.staff.splice(${i},1);clRenderWizard()" style="background:none;border:1px solid #333;color:var(--red);width:36px;height:36px;border-radius:6px;cursor:pointer">&times;</button></div>`).join('')}</div>
       <button onclick="clAddStaff()" style="color:var(--gold);font-size:0.8em;font-weight:600;cursor:pointer;background:none;border:none">+ Add staff</button>`;
-  } else if (clWizardStep === 5) {
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 6: Voice & Personality</div>
+  } else if (recStep === 5) {
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Voice & Personality</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">How should the AI sound?</div>
       <div class="form-group"><label class="form-label">Tone</label><select class="form-input" id="wTone">
         <option ${d.tone==='warm and professional'?'selected':''}>warm and professional</option>
@@ -10779,23 +10837,17 @@ function clRenderWizard() {
         <div id="wVoiceDesc" style="font-size:0.7em;color:var(--dim);margin-top:4px">Select a voice for the receptionist</div>
       </div>
       <div class="form-group"><label class="form-label">Greeting</label><input class="form-input" id="wGreet" placeholder="Hi! Thanks for calling [Business]..." value="${d.greeting}"><div style="font-size:0.7em;color:var(--dim);margin-top:4px">Leave blank for auto-generated</div></div>`;
-    // Load voices into wizard dropdown
     clFetchCartesiaVoices().then(voices => {
       const sel = document.getElementById('wVoice');
       if (!sel || !voices.length) return;
       sel.innerHTML = voices.map(v => '<option value="' + v.id + '"' + (v.id === (d.cartesia_voice_id || 'f786b574-daa5-4673-aa0c-cbe3e8534c02') ? ' selected' : '') + '>' + v.name + ' (' + v.gender + ')</option>').join('');
-      sel.onchange = function() {
-        const v = voices.find(x => x.id === this.value);
-        const desc = document.getElementById('wVoiceDesc');
-        if (desc && v) desc.textContent = v.description;
-      };
-      // Show initial desc
+      sel.onchange = function() { const v = voices.find(x => x.id === this.value); const desc = document.getElementById('wVoiceDesc'); if (desc && v) desc.textContent = v.description; };
       const cur = voices.find(v => v.id === sel.value);
       if (cur) document.getElementById('wVoiceDesc').textContent = cur.description;
     });
-  } else if (clWizardStep === 6) {
+  } else if (recStep === 6) {
     const openDays = Object.entries(d.hours).filter(([dy,h]) => h !== 'closed');
-    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Step 7: Review & Create</div>
+    el.innerHTML = `<div style="font-size:1em;font-weight:700;margin-bottom:4px">Review & Create</div>
       <div style="font-size:0.82em;color:var(--muted);margin-bottom:16px">Make sure everything looks right.</div>
       <div style="background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;padding:16px;margin-bottom:12px">
         <div style="font-size:0.72em;color:var(--gold);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:10px">Business</div>
@@ -10820,17 +10872,22 @@ function clRenderWizard() {
 
 function clSaveStep() {
   const d = clWizardData;
-  if (clWizardStep === 0) { const e = document.getElementById('wPhone'); if (e) d.twilio_phone_number = e.value.trim(); }
-  if (clWizardStep === 1) { const n = document.getElementById('wName'); const t = document.getElementById('wType'); if (n) d.business_name = n.value.trim(); if (t) d.business_type = t.value.trim(); }
-  if (clWizardStep === 4) { const sn = document.getElementById('wSN'); const sr = document.getElementById('wSR'); if (sn && sn.value.trim() && d.staff.length === 0) d.staff.push({name:sn.value.trim(), role:sr?sr.value.trim():''}); }
-  if (clWizardStep === 5) { const t = document.getElementById('wTone'); const g = document.getElementById('wGreet'); const wv = document.getElementById('wVoice'); if (t) d.tone = t.value; if (g) d.greeting = g.value.trim(); if (wv && wv.value) d.cartesia_voice_id = wv.value; }
+  const recStep = d.service === 'receptionist' ? clWizardStep - 1 : -1;
+  if (recStep === 0) { const e = document.getElementById('wPhone'); if (e) d.twilio_phone_number = e.value.trim(); }
+  if (recStep === 1 || clWizardStep === 1) { const n = document.getElementById('wName'); const t = document.getElementById('wType'); if (n) d.business_name = n.value.trim(); if (t) d.business_type = t.value.trim(); }
+  if (clWizardStep === 1 && d.service !== 'receptionist') { const notes = document.getElementById('wNotes'); if (notes) d.notes = notes.value.trim(); }
+  if (recStep === 4) { const sn = document.getElementById('wSN'); const sr = document.getElementById('wSR'); if (sn && sn.value.trim() && d.staff.length === 0) d.staff.push({name:sn.value.trim(), role:sr?sr.value.trim():''}); }
+  if (recStep === 5) { const t = document.getElementById('wTone'); const g = document.getElementById('wGreet'); const wv = document.getElementById('wVoice'); if (t) d.tone = t.value; if (g) d.greeting = g.value.trim(); if (wv && wv.value) d.cartesia_voice_id = wv.value; }
 }
 
 function clWizardNext() {
   clSaveStep();
-  if (clWizardStep === 0 && !clWizardData.twilio_phone_number) { toast('Enter the phone number', 'error'); return; }
-  if (clWizardStep === 1 && !clWizardData.business_name) { toast('Enter the business name', 'error'); return; }
-  if (clWizardStep === CL_TOTAL_STEPS - 1) { clCreateClient(); return; }
+  const d = clWizardData;
+  if (clWizardStep === 0 && !d.service) { toast('Pick a service first', 'error'); return; }
+  if (d.service === 'receptionist' && clWizardStep === 1 && !d.twilio_phone_number) { toast('Enter the phone number', 'error'); return; }
+  if (d.service !== 'receptionist' && clWizardStep === 1 && !d.business_name) { toast('Enter the business name', 'error'); return; }
+  if (d.service === 'receptionist' && clWizardStep === 2 && !d.business_name) { toast('Enter the business name', 'error'); return; }
+  if (clWizardStep === clTotalSteps() - 1) { clCreateClient(); return; }
   clWizardStep++; clRenderWizard();
 }
 function clWizardPrev() { clSaveStep(); if (clWizardStep > 0) { clWizardStep--; clRenderWizard(); } }
@@ -10839,6 +10896,20 @@ async function clCreateClient() {
   const d = clWizardData;
   d.services = d.services.filter(s => s.name.trim());
   d.staff = d.staff.filter(s => s.name.trim());
+
+  // Non-receptionist clients: save to localStorage and show confirmation
+  if (d.service !== 'receptionist') {
+    const svcLabels = { social:'Social Media Manager', sales:'Sales & Email Campaigns', content:'Content & Copywriting', support:'Customer Support Bot', analytics:'Analytics & Reports', custom:'Custom AI Employee' };
+    const existing = JSON.parse(localStorage.getItem('janovum_gen_clients') || '[]');
+    existing.push({ id: Date.now(), service: d.service, serviceLabel: svcLabels[d.service]||d.service, business_name: d.business_name, business_type: d.business_type, notes: d.notes, created_at: new Date().toISOString() });
+    localStorage.setItem('janovum_gen_clients', JSON.stringify(existing));
+    toast(d.business_name + ' added — ' + (svcLabels[d.service]||d.service) + ' ready to configure', 'success');
+    clCloseWizard();
+    clLoadClients();
+    return;
+  }
+
+  // Receptionist clients: deploy to server
   try {
     const res = await fetch(API + '/api/receptionist/clients/add', {
       method: 'POST', headers: {'Content-Type':'application/json'},

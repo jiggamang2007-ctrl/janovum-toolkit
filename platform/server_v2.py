@@ -213,53 +213,60 @@ def add_cors(response):
 # SERVE HTML / STATIC FILES
 # ══════════════════════════════════════════
 
+def _no_cache_html(resp):
+    """Add no-cache headers to any HTML response so browsers never serve stale versions."""
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
+
 @app.route("/")
 def index():
-    return send_from_directory(PARENT_DIR, "Janovum_Landing.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Landing.html"))
 
 @app.route("/toolkit")
 def toolkit():
-    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "toolkit_select.html")
+    return _no_cache_html(send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "toolkit_select.html"))
 
 @app.route("/toolkit/admin")
 def toolkit_admin():
-    return send_from_directory(PARENT_DIR, "Janovum_Platform_v2.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Platform_v2.html"))
 
 @app.route("/toolkit/v1")
 def toolkit_v1():
-    return send_from_directory(PARENT_DIR, "Janovum_Platform.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Platform.html"))
 
 @app.route("/crm")
 def crm():
-    return send_from_directory(PARENT_DIR, "Janovum_CRM.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_CRM.html"))
 
 @app.route("/hub")
 def hub():
-    return send_from_directory(PARENT_DIR, "Janovum_Hub.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Hub.html"))
 
 @app.route("/drive")
 def drive():
-    return send_from_directory(PARENT_DIR, "Janovum_Drive.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Drive.html"))
 
 @app.route("/sales-deck")
 def sales_deck():
-    return send_from_directory(PARENT_DIR, "Janovum_Sales_Deck.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Sales_Deck.html"))
 
 @app.route("/consultation")
 def consultation():
-    return send_from_directory(PARENT_DIR, "Janovum_Consultation_Deck.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Consultation_Deck.html"))
 
 @app.route("/faq")
 def faq():
-    return send_from_directory(PARENT_DIR, "faq.html")
+    return _no_cache_html(send_from_directory(PARENT_DIR, "faq.html"))
 
 @app.route("/outreach")
 def outreach_crm():
-    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "outreach_crm.html")
+    return _no_cache_html(send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "outreach_crm.html"))
 
 @app.route("/hire")
 def hire_page():
-    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "hire_jaden.html")
+    return _no_cache_html(send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "hire_jaden.html"))
 
 @app.route("/api/demo-request", methods=["POST"])
 def demo_request():
@@ -381,7 +388,12 @@ def serve_file(filename):
     if filename.startswith("api/"):
         return "Not found", 404
     if filename.endswith((".html", ".css", ".js", ".json", ".png", ".jpg", ".ico", ".wav", ".mp3")):
-        return send_from_directory(PARENT_DIR, filename)
+        resp = send_from_directory(PARENT_DIR, filename)
+        if filename.endswith(".html"):
+            resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            resp.headers["Pragma"] = "no-cache"
+            resp.headers["Expires"] = "0"
+        return resp
     return "Not found", 404
 
 
@@ -4608,13 +4620,17 @@ def toolkit_guest():
 """
 
     html = html.replace("<head>", "<head>" + guest_script, 1)
-    return Response(html, mimetype="text/html")
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 @app.route("/toolkit/use/login")
 def toolkit_use_login():
     """Serve the login/signup page."""
-    return send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "toolkit_login.html")
+    return _no_cache_html(send_from_directory(os.path.join(PLATFORM_DIR, "templates"), "toolkit_login.html"))
 
 
 @app.route("/toolkit/use")
@@ -4678,7 +4694,11 @@ window.addEventListener('DOMContentLoaded', function() {
 """
 
     html = html.replace("<head>", "<head>" + inject_script, 1)
-    return Response(html, mimetype="text/html")
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 
 # ══════════════════════════════════════════

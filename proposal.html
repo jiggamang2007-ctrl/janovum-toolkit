@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposal — Janovum AI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0a; color: #e8e8e8; font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+  .page { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  .header { text-align: center; padding: 48px 0 40px; border-bottom: 1px solid #1e1e1e; margin-bottom: 40px; }
+  .logo { font-size: 1.5em; font-weight: 900; letter-spacing: -0.5px; color: #D4AF37; margin-bottom: 8px; }
+  .logo span { color: #fff; }
+  .tagline { font-size: 0.82em; color: #666; letter-spacing: 2px; text-transform: uppercase; }
+  h1 { font-size: 1.9em; font-weight: 800; margin-bottom: 8px; line-height: 1.2; }
+  .subtitle { color: #888; font-size: 0.9em; }
+  .section { margin-bottom: 32px; }
+  .section-title { font-size: 0.72em; text-transform: uppercase; letter-spacing: 2px; color: #D4AF37; font-weight: 700; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #1e1e1e; }
+  .card { background: #111; border: 1px solid #1e1e1e; border-radius: 14px; padding: 24px; margin-bottom: 16px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .info-item label { font-size: 0.68em; text-transform: uppercase; letter-spacing: 1px; color: #666; display: block; margin-bottom: 4px; }
+  .info-item span { font-size: 0.9em; color: #e8e8e8; }
+  .service-tag { display: inline-block; background: #1a1200; border: 1px solid #D4AF3744; color: #D4AF37; border-radius: 20px; padding: 5px 14px; font-size: 0.78em; margin: 4px; }
+  .pricing-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid #1a1a1a; }
+  .pricing-row:last-child { border-bottom: none; }
+  .pricing-label { font-size: 0.88em; color: #aaa; }
+  .pricing-value { font-size: 1em; font-weight: 700; color: #e8e8e8; }
+  .pricing-total { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; background: linear-gradient(135deg, #1a1200, #0d0d0d); border: 1px solid #D4AF3744; border-radius: 12px; margin-top: 8px; }
+  .pricing-total .label { font-size: 0.82em; color: #D4AF37; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+  .pricing-total .value { font-size: 1.5em; font-weight: 900; color: #D4AF37; }
+  .notes-box { background: #0d0d0d; border-left: 3px solid #D4AF37; border-radius: 0 8px 8px 0; padding: 16px 20px; font-size: 0.88em; color: #aaa; line-height: 1.7; }
+  .validity { text-align: center; padding: 16px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 10px; font-size: 0.8em; color: #666; margin-bottom: 32px; }
+  .validity strong { color: #D4AF37; }
+
+  /* Signature section */
+  .sig-section { background: #111; border: 1px solid #1e1e1e; border-radius: 14px; padding: 32px; }
+  .sig-section h2 { font-size: 1.1em; margin-bottom: 8px; }
+  .sig-section p { font-size: 0.82em; color: #888; margin-bottom: 24px; }
+  .sig-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .form-group label { display: block; font-size: 0.72em; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 8px; }
+  .form-group input { width: 100%; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; padding: 12px 14px; color: #e8e8e8; font-size: 0.88em; outline: none; transition: border-color 0.2s; }
+  .form-group input:focus { border-color: #D4AF37; }
+  .canvas-wrap { position: relative; margin-bottom: 16px; }
+  .canvas-wrap label { display: block; font-size: 0.72em; text-transform: uppercase; letter-spacing: 1px; color: #666; margin-bottom: 8px; }
+  canvas#sigCanvas { width: 100%; height: 140px; background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 8px; display: block; cursor: crosshair; touch-action: none; }
+  .canvas-wrap canvas.active { border-color: #D4AF37; }
+  .sig-actions { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 20px; }
+  .btn-clear { background: none; border: 1px solid #333; color: #888; border-radius: 8px; padding: 8px 16px; font-size: 0.78em; cursor: pointer; }
+  .btn-clear:hover { border-color: #555; color: #aaa; }
+  .btn-sign { width: 100%; background: linear-gradient(135deg, #D4AF37, #b8962e); border: none; color: #000; border-radius: 10px; padding: 16px; font-size: 1em; font-weight: 800; cursor: pointer; letter-spacing: 0.5px; transition: opacity 0.2s; }
+  .btn-sign:hover { opacity: 0.9; }
+  .btn-sign:disabled { opacity: 0.4; cursor: not-allowed; }
+  .agreement-text { font-size: 0.75em; color: #555; text-align: center; margin-top: 12px; line-height: 1.5; }
+
+  /* Status states */
+  .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 0.72em; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .status-draft { background: #1a1a1a; color: #888; }
+  .status-viewed { background: #0d1a2a; color: #42a5f5; }
+  .status-signed { background: #0d1a0d; color: #00c853; }
+  .signed-banner { background: linear-gradient(135deg, #0d1a0d, #0a0a0a); border: 1px solid #00c85344; border-radius: 14px; padding: 32px; text-align: center; margin-bottom: 32px; }
+  .signed-banner .check { font-size: 2.5em; margin-bottom: 12px; }
+  .signed-banner h2 { color: #00c853; margin-bottom: 8px; }
+  .signed-banner p { color: #888; font-size: 0.85em; }
+
+  @media (max-width: 600px) {
+    .info-grid { grid-template-columns: 1fr; }
+    .sig-fields { grid-template-columns: 1fr; }
+    h1 { font-size: 1.5em; }
+    .page { padding: 20px 16px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">Janovum<span>.ai</span></div>
+    <div class="tagline">AI Automation Proposal</div>
+  </div>
+
+  <div id="loadingState" style="text-align:center;padding:60px;color:#666">Loading proposal...</div>
+  <div id="mainContent" style="display:none"></div>
+
+</div>
+
+<script>
+const PID = '{{PROPOSAL_ID}}';
+let proposalData = null;
+
+async function loadProposal() {
+  try {
+    const r = await fetch('/api/proposals/' + PID);
+    const p = await r.json();
+    if (p.error) { showError(); return; }
+    proposalData = p;
+    renderProposal(p);
+  } catch(e) { showError(); }
+}
+
+function showError() {
+  document.getElementById('loadingState').innerHTML = '<h2 style="color:#888">Proposal not found or expired.</h2>';
+}
+
+function fmt(d) {
+  if (!d) return '—';
+  return new Date(d + 'Z').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+function renderProposal(p) {
+  document.getElementById('loadingState').style.display = 'none';
+  const el = document.getElementById('mainContent');
+  el.style.display = 'block';
+
+  const isSigned = p.status === 'signed';
+  const expiryDate = new Date(p.created_at + 'Z');
+  expiryDate.setDate(expiryDate.getDate() + (p.valid_days || 30));
+  const isExpired = new Date() > expiryDate && !isSigned;
+
+  let html = '';
+
+  // Title row
+  html += '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;flex-wrap:wrap;gap:12px">';
+  html += '<div><h1>AI Automation Proposal</h1>';
+  html += '<div class="subtitle">Prepared for ' + esc(p.business_name) + ' &mdash; ' + fmt(p.created_at) + '</div></div>';
+  const statusClass = isSigned ? 'status-signed' : (p.status === 'viewed' ? 'status-viewed' : 'status-draft');
+  html += '<div class="status-badge ' + statusClass + '">' + p.status + '</div>';
+  html += '</div>';
+
+  // Signed banner
+  if (isSigned) {
+    html += '<div class="signed-banner">';
+    html += '<div class="check">&#10003;</div>';
+    html += '<h2>Proposal Signed</h2>';
+    html += '<p>Signed by <strong>' + esc(p.signed_by) + '</strong> on ' + fmt(p.signed_at) + '</p>';
+    html += '</div>';
+  }
+
+  // Business info
+  html += '<div class="section"><div class="section-title">Business Information</div>';
+  html += '<div class="card"><div class="info-grid">';
+  html += '<div class="info-item"><label>Business</label><span>' + esc(p.business_name) + '</span></div>';
+  html += '<div class="info-item"><label>Industry</label><span>' + esc(p.business_type || '—') + '</span></div>';
+  html += '<div class="info-item"><label>Contact</label><span>' + esc(p.client_name || '—') + '</span></div>';
+  html += '<div class="info-item"><label>Email</label><span>' + esc(p.contact_email || '—') + '</span></div>';
+  if (p.contact_phone) html += '<div class="info-item"><label>Phone</label><span>' + esc(p.contact_phone) + '</span></div>';
+  html += '</div></div></div>';
+
+  // Services
+  html += '<div class="section"><div class="section-title">Included Services</div>';
+  html += '<div class="card">';
+  html += '<p style="font-size:0.85em;color:#888;margin-bottom:16px;line-height:1.7">Your AI automation package includes the following services, managed and maintained by Janovum on an ongoing basis:</p>';
+  (p.services || []).forEach(s => { html += '<span class="service-tag">&#10003; ' + esc(s) + '</span>'; });
+  html += '<div style="margin-top:20px;padding-top:20px;border-top:1px solid #1e1e1e">';
+  html += '<p style="font-size:0.8em;color:#666;line-height:1.7">All services include 24/7 uptime monitoring, monthly performance reports, and dedicated support. No technical knowledge required — we handle everything.</p>';
+  html += '</div></div></div>';
+
+  // Investment
+  html += '<div class="section"><div class="section-title">Investment</div>';
+  html += '<div class="card">';
+  html += '<div class="pricing-row"><span class="pricing-label">One-Time Setup Fee</span><span class="pricing-value">$' + (p.setup_fee||0).toLocaleString() + '</span></div>';
+  html += '<div class="pricing-row"><span class="pricing-label">Monthly Management</span><span class="pricing-value">$' + (p.monthly_fee||0).toLocaleString() + '/mo</span></div>';
+  html += '</div>';
+  html += '<div class="pricing-total"><span class="label">First Month Total</span><span class="value">$' + (p.total||0).toLocaleString() + '</span></div>';
+  html += '</div>';
+
+  // Notes
+  if (p.notes) {
+    html += '<div class="section"><div class="section-title">Additional Notes</div>';
+    html += '<div class="notes-box">' + esc(p.notes).replace(/\n/g, '<br>') + '</div></div>';
+  }
+
+  // Validity
+  if (!isSigned) {
+    html += '<div class="validity">This proposal is valid for <strong>' + (p.valid_days||30) + ' days</strong> from ' + fmt(p.created_at) + (isExpired ? ' — <span style="color:#ef5350">EXPIRED</span>' : ' — expires ' + fmt(expiryDate.toISOString())) + '</div>';
+  }
+
+  // Signature section
+  if (!isSigned && !isExpired) {
+    html += '<div class="sig-section">';
+    html += '<h2>Accept & Sign</h2>';
+    html += '<p>Review the proposal above and sign below to get started. We\'ll reach out within 24 hours to begin onboarding.</p>';
+    html += '<div class="sig-fields">';
+    html += '<div class="form-group"><label>Full Name *</label><input id="sigName" type="text" placeholder="Your full name" autocomplete="name"></div>';
+    html += '<div class="form-group"><label>Title / Role</label><input id="sigTitle" type="text" placeholder="e.g. Owner"></div>';
+    html += '</div>';
+    html += '<div class="canvas-wrap"><label>Signature *</label><canvas id="sigCanvas"></canvas></div>';
+    html += '<div class="sig-actions"><button class="btn-clear" onclick="clearSig()">Clear</button></div>';
+    html += '<button class="btn-sign" id="signBtn" onclick="submitSig()">&#9998; Sign & Accept Proposal</button>';
+    html += '<p class="agreement-text">By signing, you agree to the terms outlined in this proposal and authorize Janovum AI to proceed with setup. You will receive a confirmation email with next steps.</p>';
+    html += '</div>';
+  } else if (isSigned) {
+    html += '<div style="text-align:center;padding:24px;color:#555;font-size:0.82em">A copy of this signed proposal has been recorded for your records.</div>';
+  } else if (isExpired) {
+    html += '<div style="text-align:center;padding:24px"><p style="color:#ef5350;font-size:0.88em;margin-bottom:12px">This proposal has expired. Please contact us for an updated quote.</p>';
+    html += '<a href="mailto:hello@janovum.com" style="color:#D4AF37;font-size:0.85em">hello@janovum.com</a></div>';
+  }
+
+  el.innerHTML = html;
+
+  if (!isSigned && !isExpired) initSigCanvas();
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Signature canvas
+let isDrawing = false, hasSig = false;
+let ctx, canvas, lastX, lastY;
+
+function initSigCanvas() {
+  canvas = document.getElementById('sigCanvas');
+  if (!canvas) return;
+  ctx = canvas.getContext('2d');
+
+  // Retina-ready sizing
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * window.devicePixelRatio;
+  canvas.height = rect.height * window.devicePixelRatio;
+  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+  ctx.strokeStyle = '#D4AF37';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  const getPos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: src.clientX - r.left, y: src.clientY - r.top };
+  };
+
+  canvas.addEventListener('mousedown', e => { isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; canvas.classList.add('active'); });
+  canvas.addEventListener('mousemove', e => { if (!isDrawing) return; draw(getPos(e)); });
+  canvas.addEventListener('mouseup', () => { isDrawing = false; });
+  canvas.addEventListener('mouseleave', () => { isDrawing = false; });
+  canvas.addEventListener('touchstart', e => { e.preventDefault(); isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; canvas.classList.add('active'); }, { passive: false });
+  canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!isDrawing) return; draw(getPos(e)); }, { passive: false });
+  canvas.addEventListener('touchend', () => { isDrawing = false; });
+}
+
+function draw(pos) {
+  ctx.beginPath();
+  ctx.moveTo(lastX, lastY);
+  ctx.lineTo(pos.x, pos.y);
+  ctx.stroke();
+  lastX = pos.x; lastY = pos.y;
+  hasSig = true;
+}
+
+function clearSig() {
+  if (!canvas) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSig = false;
+  canvas.classList.remove('active');
+}
+
+async function submitSig() {
+  const name = document.getElementById('sigName')?.value?.trim();
+  if (!name) { alert('Please enter your full name.'); return; }
+  if (!hasSig) { alert('Please draw your signature.'); return; }
+
+  const btn = document.getElementById('signBtn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const sigData = canvas.toDataURL('image/png');
+
+  try {
+    const r = await fetch('/api/proposals/' + PID + '/sign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ signed_by: name, signature: sigData })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      btn.textContent = 'Signed!';
+      setTimeout(() => { loadProposal(); }, 800);
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Sign & Accept Proposal';
+      alert('Error signing. Please try again.');
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Sign & Accept Proposal';
+    alert('Network error. Please try again.');
+  }
+}
+
+loadProposal();
+</script>
+</body>
+</html>

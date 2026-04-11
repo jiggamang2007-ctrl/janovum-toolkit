@@ -248,6 +248,18 @@ def hub():
 def drive():
     return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Drive.html"))
 
+@app.route("/sales")
+def sales_tracker():
+    html_path = os.path.join(PLATFORM_DIR, "Sales_Tracker.html")
+    with open(html_path, encoding="utf-8") as f:
+        html = f.read()
+    from flask import Response
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
+
 @app.route("/sales-deck")
 def sales_deck():
     return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Sales_Deck.html"))

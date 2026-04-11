@@ -6162,27 +6162,44 @@ function tkLoginAs(username, acct) {
   localStorage.setItem('janovum_tk_user', username);
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('guestBanner').classList.remove('show');
-  // Update topbar with user info
+  // Kill any dynamic guest banners injected into content
+  document.querySelectorAll('[data-guest-banner]').forEach(el => el.remove());
+
+  const displayName = acct.displayName || username;
+  const initial = displayName.charAt(0).toUpperCase();
+  const isAdmin = acct.role === 'admin';
   const actions = document.querySelector('.topbar-actions');
-  if (!document.getElementById('tkUserBadge')) {
-    const badge = document.createElement('span');
-    badge.id = 'tkUserBadge';
-    badge.style.cssText = 'font-size:0.75em;color:var(--gold);font-weight:600;margin-right:4px;';
-    badge.textContent = acct.displayName || username;
-    actions.prepend(badge);
-  } else {
-    document.getElementById('tkUserBadge').textContent = acct.displayName || username;
-  }
-  // Add logout button if not exists
-  if (!document.getElementById('tkLogoutBtn')) {
-    const btn = document.createElement('button');
-    btn.id = 'tkLogoutBtn';
-    btn.className = 'btn-sm btn-outline';
-    btn.textContent = 'Log out';
-    btn.style.cssText = 'font-size:0.72em;padding:4px 10px;';
-    btn.onclick = tkLogout;
-    actions.appendChild(btn);
-  }
+
+  // Remove old badge/logout if they exist (e.g. switching from guest or another user)
+  const oldBadge = document.getElementById('tkUserBadge');
+  const oldBtn = document.getElementById('tkLogoutBtn');
+  if (oldBadge) oldBadge.remove();
+  if (oldBtn) oldBtn.remove();
+
+  // Account icon — circle avatar with initial + dropdown
+  const badge = document.createElement('div');
+  badge.id = 'tkUserBadge';
+  badge.style.cssText = 'position:relative;display:flex;align-items:center;gap:7px;cursor:pointer';
+  badge.innerHTML = `
+    <div id="tkAvatarBtn" style="width:30px;height:30px;border-radius:50%;background:${isAdmin ? 'linear-gradient(135deg,var(--gold),var(--orange))' : 'linear-gradient(135deg,var(--blue),var(--purple))'};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82em;color:#000;border:2px solid ${isAdmin ? 'var(--gold)' : 'var(--blue)'}44;user-select:none" title="${displayName}">${initial}</div>
+    <div id="tkAccountDropdown" style="display:none;position:absolute;top:38px;right:0;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 0;min-width:160px;z-index:9999;box-shadow:0 8px 32px #000a">
+      <div style="padding:8px 14px 8px;border-bottom:1px solid var(--border);margin-bottom:4px">
+        <div style="font-weight:700;font-size:0.84em;color:var(--text)">${displayName}</div>
+        <div style="font-size:0.7em;color:var(--dim)">${isAdmin ? 'Admin' : 'Member'}</div>
+      </div>
+      <div onclick="showAuthScreen();document.getElementById('tkAccountDropdown').style.display='none'" style="padding:7px 14px;font-size:0.82em;color:var(--muted);cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background=''">&#128100; Switch Account</div>
+      <div onclick="tkLogout();document.getElementById('tkAccountDropdown').style.display='none'" style="padding:7px 14px;font-size:0.82em;color:#ef5350;cursor:pointer;transition:background 0.15s" onmouseover="this.style.background='#1a1a1a'" onmouseout="this.style.background=''">&#x2192; Log Out</div>
+    </div>`;
+  badge.querySelector('#tkAvatarBtn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dd = document.getElementById('tkAccountDropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', () => {
+    const dd = document.getElementById('tkAccountDropdown');
+    if (dd) dd.style.display = 'none';
+  }, { once: false, capture: true });
+  actions.prepend(badge);
 }
 
 function enterGuest() {
@@ -6191,6 +6208,11 @@ function enterGuest() {
   localStorage.removeItem('janovum_tk_user');
   document.getElementById('authScreen').classList.add('hidden');
   document.getElementById('guestBanner').classList.add('show');
+  // Remove any logged-in user badge/button
+  const oldBadge = document.getElementById('tkUserBadge');
+  const oldBtn = document.getElementById('tkLogoutBtn');
+  if (oldBadge) oldBadge.remove();
+  if (oldBtn) oldBtn.remove();
   // Guests can browse freely — unlock nav and hide setup lock banner
   unlockNav();
   const lockBanner = document.getElementById('setupLockBanner');
@@ -9771,6 +9793,16 @@ function getUser() {
   try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch(e) { return null; }
 }
 function getUserState() {
+  // Logged-in admin via toolkit auth always overrides everything
+  if (typeof tkUser !== 'undefined' && tkUser === 'jaden') return 'admin';
+  if (typeof tkIsGuest !== 'undefined' && tkIsGuest) return 'guest';
+  // Toolkit user (non-admin) logged in = treat as trial/paid
+  if (typeof tkUser !== 'undefined' && tkUser && tkUser !== 'jaden') {
+    const accounts = typeof getTkAccounts === 'function' ? getTkAccounts() : {};
+    const acct = accounts[tkUser];
+    if (acct && acct.plan === 'paid') return 'paid';
+    return 'trial'; // logged-in non-admin users get full access
+  }
   const u = getUser();
   if (!u) return 'guest';
   if (u.role === 'admin') return 'admin';

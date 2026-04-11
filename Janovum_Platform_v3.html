@@ -330,6 +330,7 @@
   <nav class="sidebar-nav" id="sidebarNav">
     <!-- BUSINESS ESSENTIALS — What clients use daily -->
     <div class="nav-item active" data-tab="dashboard"><span class="nav-icon">&#9632;</span> Dashboard</div>
+    <div class="nav-item" data-tab="howto" style="border-left:3px solid var(--blue)33"><span class="nav-icon">&#128218;</span> How to Use</div>
     <div class="nav-item" data-tab="idealab"><span class="nav-icon">&#128161;</span> Idea Lab <span class="nav-badge" style="background:linear-gradient(135deg,var(--gold),var(--green))">NEW</span></div>
     <div class="nav-item" data-tab="clients"><span class="nav-icon">&#128101;</span> Clients <span class="nav-badge" id="clientBadgeCount" style="display:none">0</span></div>
     <div class="nav-item" data-tab="crm"><span class="nav-icon">&#128200;</span> CRM</div>
@@ -429,6 +430,160 @@
     </div>
 
     <!-- ═══ DASHBOARD TAB ═══ -->
+    <!-- ═══ HOW TO USE TAB ═══ -->
+    <div class="tab-pane" id="tab-howto">
+
+      <!-- Hero -->
+      <div style="text-align:center;padding:32px 20px 24px;background:linear-gradient(135deg,#0a0f1a,#0a0a0a);border:1px solid var(--blue)22;border-radius:16px;margin-bottom:24px">
+        <div style="font-size:2em;margin-bottom:8px">&#128218;</div>
+        <div style="font-size:1.3em;font-weight:900;background:linear-gradient(135deg,var(--blue),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">How Janovum Works</div>
+        <div style="font-size:0.88em;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.7">Janovum lets you deploy AI automation for any business in minutes. You set it up, your client goes live — no coding, no technical knowledge needed.</div>
+      </div>
+
+      <!-- 3-Step Quick Start -->
+      <div style="font-size:0.7em;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">&#9889; Quick Start — 3 Steps</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:28px">
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:18px;position:relative">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-weight:800;font-size:0.85em;display:flex;align-items:center;justify-content:center;margin-bottom:12px">1</div>
+          <div style="font-weight:700;font-size:0.9em;margin-bottom:6px">Go to Setup Wizard</div>
+          <div style="font-size:0.78em;color:var(--muted);line-height:1.6">Click <strong style="color:var(--text)">Setup Wizard</strong> in the sidebar. Pick <strong style="color:var(--green)">Deploying for a Client</strong>. Fill in the business name, type, email, and hours.</div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-weight:800;font-size:0.85em;display:flex;align-items:center;justify-content:center;margin-bottom:12px">2</div>
+          <div style="font-weight:700;font-size:0.9em;margin-bottom:6px">Pick Services</div>
+          <div style="font-size:0.78em;color:var(--muted);line-height:1.6">Choose what the client needs — <strong style="color:var(--text)">AI Receptionist, Data Automation, Social Media, Email Campaigns</strong>, and more. Mix and match.</div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-weight:800;font-size:0.85em;display:flex;align-items:center;justify-content:center;margin-bottom:12px">3</div>
+          <div style="font-weight:700;font-size:0.9em;margin-bottom:6px">Deploy</div>
+          <div style="font-size:0.78em;color:var(--muted);line-height:1.6">Hit <strong style="color:var(--green)">Deploy</strong>. The AI goes live immediately. Provide any API keys needed (instructions shown on screen).</div>
+        </div>
+      </div>
+
+      <!-- Service Types -->
+      <div style="font-size:0.7em;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">&#127970; What You Can Deploy</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:28px">
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4em;margin-bottom:8px">&#128222;</div>
+          <div style="font-weight:700;font-size:0.88em;color:var(--green);margin-bottom:4px">AI Receptionist</div>
+          <div style="font-size:0.76em;color:var(--muted);line-height:1.6;margin-bottom:8px">Answers incoming phone calls, books appointments, handles FAQs 24/7. Works for any service business — salons, dentists, gyms, contractors, restaurants.</div>
+          <div style="font-size:0.7em;background:#0a1a0a;border:1px solid var(--green)22;border-radius:6px;padding:6px 10px;color:var(--dim)">Needs: <strong style="color:var(--text)">Twilio account ($1/mo per number)</strong></div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4em;margin-bottom:8px">&#128295;</div>
+          <div style="font-weight:700;font-size:0.88em;color:var(--blue);margin-bottom:4px">Data Automation</div>
+          <div style="font-size:0.76em;color:var(--muted);line-height:1.6;margin-bottom:8px">Scrapes leads, processes spreadsheets, pulls reports, monitors websites, syncs data between apps. Runs on a schedule automatically.</div>
+          <div style="font-size:0.7em;background:#0a0a1a;border:1px solid var(--blue)22;border-radius:6px;padding:6px 10px;color:var(--dim)">Needs: <strong style="color:var(--text)">Just describe the workflow — no extra APIs</strong></div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4em;margin-bottom:8px">&#128202;</div>
+          <div style="font-weight:700;font-size:0.88em;color:var(--gold);margin-bottom:4px">CRM & Follow-Ups</div>
+          <div style="font-size:0.76em;color:var(--muted);line-height:1.6;margin-bottom:8px">Tracks customers in a pipeline, sends follow-up messages automatically after calls, quotes, or appointments. Turns cold leads warm.</div>
+          <div style="font-size:0.7em;background:#1a1400;border:1px solid var(--gold)22;border-radius:6px;padding:6px 10px;color:var(--dim)">Needs: <strong style="color:var(--text)">Nothing extra — built-in</strong></div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4em;margin-bottom:8px">&#128247;</div>
+          <div style="font-weight:700;font-size:0.88em;color:var(--purple);margin-bottom:4px">Social Media Manager</div>
+          <div style="font-size:0.76em;color:var(--muted);line-height:1.6;margin-bottom:8px">Creates and posts to Instagram, Facebook, TikTok, and Google Business automatically. Generates captions, hashtags, and images.</div>
+          <div style="font-size:0.7em;background:#120a1a;border:1px solid var(--purple)22;border-radius:6px;padding:6px 10px;color:var(--dim)">Needs: <strong style="color:var(--text)">Platform API keys (free — instructions provided)</strong></div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4em;margin-bottom:8px">&#128140;</div>
+          <div style="font-weight:700;font-size:0.88em;color:var(--orange);margin-bottom:4px">Email Campaigns</div>
+          <div style="font-size:0.76em;color:var(--muted);line-height:1.6;margin-bottom:8px">Sends newsletters, promos, and re-engagement emails automatically. Builds and manages an email list. Tracks open rates.</div>
+          <div style="font-size:0.7em;background:#1a0e00;border:1px solid var(--orange)22;border-radius:6px;padding:6px 10px;color:var(--dim)">Needs: <strong style="color:var(--text)">SendGrid or Gmail (free tier available)</strong></div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-size:1.4em;margin-bottom:8px">&#127775;</div>
+          <div style="font-weight:700;font-size:0.88em;color:var(--green);margin-bottom:4px">Review Management</div>
+          <div style="font-size:0.76em;color:var(--muted);line-height:1.6;margin-bottom:8px">Texts customers after service asking for a Google or Yelp review. Auto-responds to bad reviews. Tracks reputation score.</div>
+          <div style="font-size:0.7em;background:#0a1a0a;border:1px solid var(--green)22;border-radius:6px;padding:6px 10px;color:var(--dim)">Needs: <strong style="color:var(--text)">Twilio for SMS (same number as receptionist)</strong></div>
+        </div>
+      </div>
+
+      <!-- API Keys Table -->
+      <div style="font-size:0.7em;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">&#128273; API Keys — What You Need & Where to Get Them</div>
+      <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:28px">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.7em;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:10px 16px;border-bottom:1px solid var(--border);background:#111">
+          <div>Service</div><div>API Needed</div><div>How to Get It</div>
+        </div>
+        <div id="apiKeyRows">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;border-bottom:1px solid #1a1a1a;align-items:center">
+            <div style="color:var(--green);font-weight:600">AI Receptionist</div>
+            <div style="color:var(--text)">Twilio — free trial, ~$1/mo per number</div>
+            <div><a onclick="window.open('https://twilio.com','_blank')" style="color:var(--blue);cursor:pointer;text-decoration:underline">twilio.com</a> → Sign up → Buy a number → Copy Account SID + Auth Token</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;border-bottom:1px solid #1a1a1a;align-items:center">
+            <div style="color:var(--blue);font-weight:600">AI Brain (all features)</div>
+            <div style="color:var(--text)">Claude API — pay-per-use, very cheap</div>
+            <div><a onclick="window.open('https://console.anthropic.com','_blank')" style="color:var(--blue);cursor:pointer;text-decoration:underline">console.anthropic.com</a> → Sign up → API Keys → Create Key</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;border-bottom:1px solid #1a1a1a;align-items:center">
+            <div style="color:var(--blue);font-weight:600">Fast AI Voice</div>
+            <div style="color:var(--text)">Groq — free tier (very fast)</div>
+            <div><a onclick="window.open('https://console.groq.com','_blank')" style="color:var(--blue);cursor:pointer;text-decoration:underline">console.groq.com</a> → Sign up free → API Keys → Create</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;border-bottom:1px solid #1a1a1a;align-items:center">
+            <div style="color:var(--gold);font-weight:600">Text-to-Speech</div>
+            <div style="color:var(--text)">Cartesia — free 1M chars/mo</div>
+            <div><a onclick="window.open('https://play.cartesia.ai','_blank')" style="color:var(--blue);cursor:pointer;text-decoration:underline">play.cartesia.ai</a> → Sign up → API Keys → Copy key</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;border-bottom:1px solid #1a1a1a;align-items:center">
+            <div style="color:var(--gold);font-weight:600">Speech-to-Text</div>
+            <div style="color:var(--text)">Deepgram — free 200 hrs/mo</div>
+            <div><a onclick="window.open('https://deepgram.com','_blank')" style="color:var(--blue);cursor:pointer;text-decoration:underline">deepgram.com</a> → Sign up free → Create API Key</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;border-bottom:1px solid #1a1a1a;align-items:center">
+            <div style="color:var(--orange);font-weight:600">Email Campaigns</div>
+            <div style="color:var(--text)">SendGrid — free 100/day</div>
+            <div><a onclick="window.open('https://sendgrid.com','_blank')" style="color:var(--blue);cursor:pointer;text-decoration:underline">sendgrid.com</a> → Sign up free → Settings → API Keys</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;font-size:0.78em;padding:12px 16px;align-items:center">
+            <div style="color:var(--purple);font-weight:600">Data Automation</div>
+            <div style="color:var(--text)">None needed for most tasks</div>
+            <div style="color:var(--dim)">Just describe what to automate — the AI handles it</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Where Keys Go -->
+      <div style="font-size:0.7em;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">&#128736; Where Do I Enter These Keys?</div>
+      <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:28px">
+        <div style="font-size:0.84em;line-height:1.8;color:var(--muted)">
+          <div style="margin-bottom:10px">&#10148; Go to <strong style="color:var(--gold);cursor:pointer" onclick="switchTab('settings')">Settings → API Keys</strong> to enter your keys globally (applies to all clients)</div>
+          <div style="margin-bottom:10px">&#10148; OR during client setup in the <strong style="color:var(--gold);cursor:pointer" onclick="switchTab('setup')">Setup Wizard</strong> — it asks you for the relevant keys before deploying</div>
+          <div style="margin-bottom:10px">&#10148; For the AI Receptionist: after deploying a client, go to <strong style="color:var(--text)">Twilio Console → Phone Numbers → Your Number → Voice webhook</strong> and paste the webhook URL shown after deployment</div>
+          <div>&#10148; API keys are encrypted and stored on your server — never shared with anyone</div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div style="font-size:0.7em;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">&#10067; FAQ</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-weight:700;font-size:0.88em;margin-bottom:6px">Do clients need a phone number for every service?</div>
+          <div style="font-size:0.8em;color:var(--muted);line-height:1.6">No — only the AI Receptionist and SMS features need a phone number (via Twilio). Data automation, CRM, email campaigns, and social media work without any phone number.</div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-weight:700;font-size:0.88em;margin-bottom:6px">What if I don't have a Twilio account yet?</div>
+          <div style="font-size:0.8em;color:var(--muted);line-height:1.6">Skip the Twilio field during setup and add it later from the client's settings page. The AI can still handle all other services without it. Twilio takes about 5 minutes to set up at <strong style="color:var(--blue)">twilio.com</strong>.</div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-weight:700;font-size:0.88em;margin-bottom:6px">How much does it cost to run a client?</div>
+          <div style="font-size:0.8em;color:var(--muted);line-height:1.6">AI Receptionist runs about <strong style="color:var(--green)">$0.023/minute</strong> of call time. Data automation jobs cost pennies. Most clients cost <strong style="color:var(--green)">$10–50/month</strong> in API costs depending on usage. You charge the client whatever you want.</div>
+        </div>
+        <div style="background:#0d0d0d;border:1px solid var(--border);border-radius:12px;padding:16px">
+          <div style="font-weight:700;font-size:0.88em;margin-bottom:6px">Can I deploy a data automation client without any phone number?</div>
+          <div style="font-size:0.8em;color:var(--muted);line-height:1.6">Yes — in the Setup Wizard just pick <strong style="color:var(--blue)">Data Automation</strong> or <strong style="color:var(--gold)">CRM</strong> as the service. The wizard skips the phone/Twilio fields entirely and asks you to describe the automation instead.</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px">
+        <button class="btn" onclick="switchTab('setup')" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;font-weight:800;padding:14px 36px;font-size:0.95em">Start Setup Wizard &#8594;</button>
+      </div>
+
+    </div>
+
     <div class="tab-pane active" id="tab-dashboard">
       <!-- Inspiring Welcome -->
       <div style="text-align:center;padding:40px 20px 30px;position:relative">
@@ -1794,16 +1949,16 @@
               </select>
             </div>
             <div class="setup-field">
-              <label>Business Phone <span style="color:var(--red)">*</span></label>
+              <label>Business Phone</label>
               <input id="fast-biz-phone" placeholder="(305) 555-1234" type="tel">
-              <div class="hint">The number customers call — AI answers this</div>
+              <div class="hint">Only needed if using AI Receptionist or SMS features</div>
             </div>
             <div class="setup-field">
               <label>Business Email <span style="color:var(--red)">*</span></label>
               <input id="fast-biz-email" placeholder="info@business.com" type="email">
             </div>
             <div class="setup-field" style="grid-column:span 2">
-              <label>Business Hours <span style="color:var(--red)">*</span></label>
+              <label>Business Hours</label>
               <input id="fast-biz-hours" placeholder="Mon-Fri 9am-6pm, Sat 10am-4pm, Closed Sun">
             </div>
             <div class="setup-field">
@@ -1813,12 +1968,12 @@
             <div class="setup-field">
               <label>Owner Email (for alerts) <span style="color:var(--red)">*</span></label>
               <input id="fast-owner-email" placeholder="owner@email.com" type="email">
-              <div class="hint">We'll send appointment notifications here</div>
+              <div class="hint">We'll send notifications here</div>
             </div>
-            <div class="setup-field" style="grid-column:span 2">
-              <label>Twilio Phone Number <span style="color:var(--red)">*</span></label>
-              <input id="fast-twilio-phone" placeholder="+13055550001 (format: +1xxxxxxxxxx)">
-              <div class="hint">The AI receptionist will answer calls on this number. Buy one at <strong>twilio.com/console</strong> (~$1/mo). Must be in +1xxxxxxxxxx format.</div>
+            <div class="setup-field" style="grid-column:span 2" id="fast-twilio-field" style="display:none">
+              <label>Twilio Phone Number <span style="color:var(--dim);font-weight:400">(for AI Receptionist / SMS)</span></label>
+              <input id="fast-twilio-phone" placeholder="+13055550001">
+              <div class="hint">Buy a number at <strong>twilio.com/console</strong> (~$1/mo). Leave blank to add later. Format: +1xxxxxxxxxx</div>
             </div>
             <div class="setup-field" style="grid-column:span 2">
               <label>Business Address</label>
@@ -1826,13 +1981,13 @@
             </div>
             <div class="setup-field" style="grid-column:span 2">
               <label>Quick Description</label>
-              <input id="fast-biz-desc" placeholder="e.g. Premium barbershop serving Miami since 2015. Specializes in fades, beard trims, and hot towel shaves.">
+              <input id="fast-biz-desc" placeholder="e.g. Premium barbershop serving Miami since 2015...">
               <div class="hint">The AI uses this to answer questions about the business</div>
             </div>
           </div>
           <div style="background:linear-gradient(135deg,#0a1a0a,#050f05);border:1px solid var(--green)33;border-radius:10px;padding:12px 16px;margin-top:14px;font-size:0.78em">
-            <div style="color:var(--green);font-weight:700;margin-bottom:4px">ℹ️ How deployment works</div>
-            <div style="color:var(--dim);line-height:1.6">The client's AI receptionist will live on <strong style="color:var(--text)">Janovum's server</strong> — no VPS needed on their end. Once deployed, their Twilio number routes calls to our server and the AI handles it 24/7. You just need to set the Twilio webhook (we'll show you how after deploy).</div>
+            <div style="color:var(--green);font-weight:700;margin-bottom:4px">&#8505;&#65039; How deployment works</div>
+            <div style="color:var(--dim);line-height:1.6">The client's AI lives on Janovum's server — no VPS needed on their end. After deploying, you'll see any API keys needed based on the services you picked. Most services need nothing beyond what's already set up.</div>
           </div>
           <div id="fastStepAError" style="color:var(--red);font-size:0.78em;margin-top:8px;display:none"></div>
           <div style="margin-top:20px;display:flex;justify-content:flex-end">
@@ -1847,8 +2002,15 @@
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-bottom:20px" id="fastServiceCards">
             <!-- Rendered by JS -->
           </div>
+          <!-- Data automation workflow input — shown when data_automation is selected -->
+          <div id="fastDataWorkflowBox" style="display:none;background:#0a0a1a;border:1px solid var(--blue)33;border-radius:10px;padding:14px;margin-bottom:12px">
+            <div style="font-size:0.8em;font-weight:700;color:var(--blue);margin-bottom:8px">&#9881; Describe the Data Automation</div>
+            <textarea id="fast-data-workflow" placeholder="e.g. Scrape all Google reviews for a list of businesses and export to a spreadsheet weekly.&#10;e.g. Pull new leads from LinkedIn daily and add to our CRM.&#10;e.g. Monitor competitor prices and alert when they change." style="width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:0.82em;min-height:80px;resize:vertical;font-family:inherit"></textarea>
+            <div style="font-size:0.7em;color:var(--dim);margin-top:4px">Describe what data to pull, process, or automate. Be as specific as possible — the AI will handle the rest.</div>
+          </div>
+
           <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:0.78em;color:var(--dim);margin-bottom:16px">
-            💡 <strong style="color:var(--text)">Tip:</strong> Not sure? Start with <strong style="color:var(--gold)">AI Receptionist + Appointment Scheduler</strong> — works for almost every business.
+            &#128161; <strong style="color:var(--text)">Not sure what to pick?</strong> Start with <strong style="color:var(--gold)">AI Receptionist + Appointment Booking</strong> for any service business, or <strong style="color:var(--blue)">Data Automation + CRM</strong> for a non-phone client.
           </div>
           <div style="margin-top:8px;display:flex;justify-content:space-between">
             <button class="btn-outline" onclick="fastNext('A')">← Back</button>
@@ -9400,33 +9562,41 @@ const _origLoadSetupWizard = typeof loadSetupWizard === 'function' ? loadSetupWi
 // SALES FAST MODE
 // ══════════════════════════════════════
 const FAST_SERVICES = [
-  { id: 'ai_receptionist', icon: '📞', name: 'AI Receptionist', desc: 'Answers calls, books appointments, handles FAQs 24/7', recommended: true, color: 'var(--green)' },
-  { id: 'appointment_scheduler', icon: '📅', name: 'Appointment Scheduler', desc: 'Lets customers book, reschedule, and get reminders automatically', recommended: true, color: 'var(--blue)' },
-  { id: 'customer_support', icon: '🎧', name: 'Customer Support AI', desc: 'Handles complaints, questions, and follow-ups via email/chat', recommended: false, color: 'var(--gold)' },
-  { id: 'lead_hunter', icon: '🎯', name: 'Lead Hunter', desc: 'Finds new potential customers in the target area automatically', recommended: false, color: 'var(--orange)' },
-  { id: 'email_campaign', icon: '📧', name: 'Email Campaigns', desc: 'Sends promotional emails, follow-ups, and newsletters automatically', recommended: false, color: 'var(--purple)' },
-  { id: 'social_media_manager', icon: '📲', name: 'Social Media Manager', desc: 'Posts to Instagram, Facebook, and Google Business automatically', recommended: false, color: 'var(--blue)' },
-  { id: 'sales_outreach', icon: '💰', name: 'Sales Outreach', desc: 'Cold outreach to potential customers with AI-personalized messages', recommended: false, color: 'var(--green)' },
-  { id: 'content_writer', icon: '✍️', name: 'Content Writer', desc: 'Generates blog posts, website copy, and marketing content', recommended: false, color: 'var(--muted)' },
+  { id: 'ai_receptionist', icon: '📞', name: 'AI Receptionist', desc: 'Answers calls 24/7, books appointments, handles FAQs. Works for any service business.', recommended: true, color: 'var(--green)', needsApis: ['Twilio (phone number, ~$1/mo)'] },
+  { id: 'appointment_scheduler', icon: '📅', name: 'Appointment Booking', desc: 'Customers book, reschedule, and get reminders automatically. No phone needed.', recommended: true, color: 'var(--blue)', needsApis: [] },
+  { id: 'data_automation', icon: '⚙️', name: 'Data Automation', desc: 'Scrapes leads, processes spreadsheets, runs reports, syncs data — on a schedule.', recommended: false, color: 'var(--blue)', needsApis: [], dataWorkflow: true },
+  { id: 'crm_pipeline', icon: '📊', name: 'CRM & Pipeline', desc: 'Tracks all clients in a deal pipeline. Logs calls, notes, and follow-up tasks.', recommended: false, color: 'var(--gold)', needsApis: [] },
+  { id: 'followup_automation', icon: '🔁', name: 'Follow-Up Automation', desc: 'Auto-texts or emails customers after calls, quotes, or appointments to close more deals.', recommended: false, color: 'var(--orange)', needsApis: ['Twilio for SMS (optional)'] },
+  { id: 'review_management', icon: '⭐', name: 'Review Management', desc: 'Texts customers asking for Google/Yelp reviews after service. Monitors reputation.', recommended: false, color: 'var(--gold)', needsApis: ['Twilio for SMS'] },
+  { id: 'missed_call_textback', icon: '📲', name: 'Missed Call Text-Back', desc: 'Instantly texts anyone who called but didn\'t get answered — captures lost leads.', recommended: false, color: 'var(--green)', needsApis: ['Twilio for SMS'] },
+  { id: 'email_campaign', icon: '📧', name: 'Email Campaigns', desc: 'Sends newsletters, promos, and follow-up sequences automatically.', recommended: false, color: 'var(--purple)', needsApis: ['SendGrid (free 100/day) or Gmail'] },
+  { id: 'social_media_manager', icon: '📱', name: 'Social Media Manager', desc: 'Creates and posts to Instagram, Facebook, and Google Business automatically.', recommended: false, color: 'var(--blue)', needsApis: ['Platform API keys (free, instructions provided)'] },
+  { id: 'lead_hunter', icon: '🎯', name: 'Lead Generation', desc: 'Finds potential customers in a target area and reaches out with personalized messages.', recommended: false, color: 'var(--orange)', needsApis: [] },
+  { id: 'invoicing', icon: '💳', name: 'Invoicing & Payments', desc: 'Generates and sends invoices automatically. Tracks payments and sends reminders.', recommended: false, color: 'var(--green)', needsApis: ['Stripe (optional, free to connect)'] },
+  { id: 'content_writer', icon: '✍️', name: 'Content Writer', desc: 'Generates blog posts, website copy, and ad creative automatically.', recommended: false, color: 'var(--muted)', needsApis: [] },
 ];
 
-let fastSelectedServices = new Set(['ai_receptionist', 'appointment_scheduler']);
+let fastSelectedServices = new Set();
 
 function renderFastServiceCards() {
   const container = document.getElementById('fastServiceCards');
   if (!container) return;
   container.innerHTML = FAST_SERVICES.map(svc => {
     const sel = fastSelectedServices.has(svc.id);
+    const apiTag = svc.needsApis && svc.needsApis.length
+      ? `<div style="margin-top:8px;font-size:0.68em;color:var(--dim);background:#111;border-radius:5px;padding:4px 8px;display:inline-block">&#128273; ${svc.needsApis.join(' · ')}</div>`
+      : `<div style="margin-top:8px;font-size:0.68em;color:var(--green);background:#0a1a0a;border-radius:5px;padding:4px 8px;display:inline-block">&#10003; No extra APIs needed</div>`;
     return `<div onclick="toggleFastService('${svc.id}',this)" style="background:${sel ? 'rgba(247,201,72,0.05)' : '#0a0a0a'};border:2px solid ${sel ? 'var(--gold)' : 'var(--border)'};border-radius:12px;padding:16px;cursor:pointer;transition:all 0.2s;position:relative" id="fsc-${svc.id}">
       ${svc.recommended ? '<span style="position:absolute;top:10px;right:10px;font-size:0.6em;font-weight:800;color:#000;background:var(--gold);padding:2px 7px;border-radius:4px">POPULAR</span>' : ''}
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
         <span style="font-size:1.6em">${svc.icon}</span>
         <div>
           <div style="font-size:0.85em;font-weight:700;color:${sel ? 'var(--gold)' : 'var(--text)'}">${svc.name}</div>
-          ${sel ? '<div style="font-size:0.65em;color:var(--green);font-weight:700">✓ SELECTED</div>' : ''}
+          ${sel ? '<div style="font-size:0.65em;color:var(--green);font-weight:700">&#10003; SELECTED</div>' : ''}
         </div>
       </div>
       <div style="font-size:0.74em;color:var(--muted);line-height:1.5">${svc.desc}</div>
+      ${apiTag}
     </div>`;
   }).join('');
 }
@@ -9438,23 +9608,23 @@ function toggleFastService(id, el) {
     fastSelectedServices.add(id);
   }
   renderFastServiceCards();
+  // Show/hide the data workflow textarea
+  const dataBox = document.getElementById('fastDataWorkflowBox');
+  if (dataBox) dataBox.style.display = fastSelectedServices.has('data_automation') ? '' : 'none';
 }
 
 function fastNext(step) {
-  // Validate step A
+  // Validate step A — only name + email are truly required
   if (step === 'B') {
     const required = [
       ['fast-biz-name', 'Business Name'],
-      ['fast-biz-type', 'Business Type'],
-      ['fast-biz-phone', 'Business Phone'],
       ['fast-biz-email', 'Business Email'],
-      ['fast-biz-hours', 'Business Hours'],
       ['fast-owner-email', 'Owner Email'],
     ];
     const missing = required.filter(([id]) => !document.getElementById(id)?.value?.trim());
     const errEl = document.getElementById('fastStepAError');
     if (missing.length) {
-      errEl.textContent = '⚠️ Please fill in: ' + missing.map(([,l]) => l).join(', ');
+      errEl.textContent = '&#9888; Please fill in: ' + missing.map(([,l]) => l).join(', ');
       errEl.style.display = 'block';
       return;
     }
@@ -9491,24 +9661,51 @@ function renderFastReview() {
 
   const selectedSvcs = FAST_SERVICES.filter(s => fastSelectedServices.has(s.id));
 
+  // Collect all required APIs from selected services
+  const allApis = [...new Set(selectedSvcs.flatMap(s => s.needsApis || []))];
+
+  // Show Twilio field if receptionist/SMS services picked
+  const needsTwilio = selectedSvcs.some(s => s.needsApis && s.needsApis.some(a => a.includes('Twilio')));
+  const twilioField = document.getElementById('fast-twilio-field');
+  if (twilioField) twilioField.style.display = needsTwilio ? '' : 'none';
+
   const container = document.getElementById('fastReviewContent');
   container.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
       <div class="review-section">
         <h4>Business Info</h4>
         <div class="review-row"><span class="rk">Name</span><span class="rv">${bizName}</span></div>
-        <div class="review-row"><span class="rk">Type</span><span class="rv">${bizType}</span></div>
-        <div class="review-row"><span class="rk">Phone</span><span class="rv">${phone}</span></div>
+        ${bizType ? `<div class="review-row"><span class="rk">Type</span><span class="rv">${bizType}</span></div>` : ''}
+        ${phone ? `<div class="review-row"><span class="rk">Phone</span><span class="rv">${phone}</span></div>` : ''}
         <div class="review-row"><span class="rk">Email</span><span class="rv">${email}</span></div>
-        <div class="review-row"><span class="rk">Hours</span><span class="rv">${hours}</span></div>
+        ${hours ? `<div class="review-row"><span class="rk">Hours</span><span class="rv">${hours}</span></div>` : ''}
         ${address ? `<div class="review-row"><span class="rk">Address</span><span class="rv">${address}</span></div>` : ''}
         <div class="review-row"><span class="rk">Owner Email</span><span class="rv">${ownerEmail}</span></div>
       </div>
       <div class="review-section">
-        <h4>Services Enabled (${selectedSvcs.length})</h4>
-        ${selectedSvcs.map(s => `<div class="review-row"><span class="chk" style="color:var(--green)">✓</span><span class="rv" style="color:var(--text)">${s.icon} ${s.name}</span></div>`).join('')}
+        <h4>Services (${selectedSvcs.length})</h4>
+        ${selectedSvcs.map(s => `<div class="review-row"><span class="chk" style="color:var(--green)">&#10003;</span><span class="rv" style="color:var(--text)">${s.icon} ${s.name}</span></div>`).join('')}
       </div>
-    </div>`;
+    </div>
+    ${allApis.length > 0 ? `
+    <div style="background:linear-gradient(135deg,#0d1525,#0a0a0a);border:1px solid var(--blue)33;border-radius:10px;padding:14px 16px;margin-bottom:14px">
+      <div style="font-size:0.82em;font-weight:700;color:var(--blue);margin-bottom:10px">&#128273; API Keys Needed for Selected Services</div>
+      ${allApis.map(api => {
+        const isTwilio = api.includes('Twilio');
+        const isSendGrid = api.includes('SendGrid');
+        const val = isTwilio ? (document.getElementById('fast-twilio-phone')?.value?.trim() || '') : '';
+        const status = val ? '&#10003; Provided' : '&#9888; Add below or after deploy';
+        const statusColor = val ? 'var(--green)' : 'var(--gold)';
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:0.8em">
+          <div style="color:var(--text)">${api}</div>
+          <div style="color:${statusColor};font-size:0.85em;font-weight:600">${isTwilio ? status : '&#9888; Add in Settings → API Keys'}</div>
+        </div>`;
+      }).join('')}
+      <div style="font-size:0.72em;color:var(--dim);margin-top:8px">You can add missing keys in <strong style="color:var(--gold);cursor:pointer" onclick="closeModal && closeModal('');switchTab('settings')">Settings → API Keys</strong> after deploying.</div>
+    </div>` : `
+    <div style="background:#0a1a0a;border:1px solid var(--green)22;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:0.8em;color:var(--dim)">
+      &#10003; <strong style="color:var(--green)">No extra API keys needed</strong> for the selected services — ready to deploy!
+    </div>`}`;
 }
 
 async function fastDeploy() {

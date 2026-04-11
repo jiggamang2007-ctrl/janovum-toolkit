@@ -2889,22 +2889,67 @@ cd /opt/janovum/platform && python3 install.py</pre>
         </details>
       </div>
 
-      <!-- ── API KEY ── -->
-      <div class="panel">
-        <div class="panel-header"><div class="panel-title">&#128273; API Key Configuration</div></div>
-        <p style="font-size:0.82em;color:var(--muted);margin-bottom:12px">Alternatively, paste an Anthropic API key directly. This is the developer/fallback method.</p>
-        <div class="form-group"><label class="form-label">Anthropic API Key</label><input class="form-input" id="set-apikey" type="password" placeholder="sk-ant-..."></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Model</label>
-            <select class="form-select" id="set-model">
-              <option value="haiku">Claude Haiku</option>
-              <option value="sonnet">Claude Sonnet</option>
-              <option value="opus">Claude Opus</option>
-            </select>
+      <!-- ── API KEYS ── -->
+      <div class="panel" style="border-color:var(--gold)33">
+        <div class="panel-header"><div class="panel-title">&#128273; API Keys</div><span style="font-size:0.72em;color:var(--dim)">Enter once — applies to all clients</span></div>
+        <p style="font-size:0.82em;color:var(--muted);margin-bottom:16px">These keys power your AI features. All are optional except Anthropic — add only what you need for the services you're using.</p>
+
+        <!-- Anthropic -->
+        <div style="background:#0d0d0d;border:1px solid var(--gold)22;border-radius:10px;padding:14px;margin-bottom:10px">
+          <div style="font-size:0.78em;font-weight:700;color:var(--gold);margin-bottom:10px">&#129302; Anthropic (Claude AI Brain) — <span style="font-weight:400;color:var(--dim)">Required for all AI features</span></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Anthropic API Key</label><input class="form-input" id="set-apikey" type="password" placeholder="sk-ant-..." style="font-family:monospace;font-size:0.85em"></div>
+            <div class="form-group"><label class="form-label">Model</label>
+              <select class="form-select" id="set-model">
+                <option value="haiku">Claude Haiku (fastest, cheapest)</option>
+                <option value="sonnet" selected>Claude Sonnet (recommended)</option>
+                <option value="opus">Claude Opus (most capable)</option>
+              </select>
+            </div>
           </div>
-          <div class="form-group"><label class="form-label">Monthly Spend Limit ($)</label><input class="form-input" id="set-limit" type="number" placeholder="50.00" value="50"></div>
+          <div class="form-group"><label class="form-label">Monthly Spend Limit ($)</label><input class="form-input" id="set-limit" type="number" placeholder="50.00" value="50" style="width:150px"></div>
         </div>
-        <button class="btn" onclick="saveConfig()">Save Configuration</button>
+
+        <!-- Voice Stack -->
+        <div style="background:#0d0d0d;border:1px solid var(--green)22;border-radius:10px;padding:14px;margin-bottom:10px">
+          <div style="font-size:0.78em;font-weight:700;color:var(--green);margin-bottom:10px">&#127908; Voice Stack — <span style="font-weight:400;color:var(--dim)">For AI Receptionist (phone calls)</span></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Groq API Key <span style="color:var(--dim);font-weight:400">(fast AI brain for calls — free)</span></label>
+              <input class="form-input" id="set-groq-key" type="password" placeholder="gsk_..." style="font-family:monospace;font-size:0.85em">
+              <div style="font-size:0.7em;color:var(--dim);margin-top:3px">Get free at <strong style="color:var(--blue)">console.groq.com</strong></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cartesia API Key <span style="color:var(--dim);font-weight:400">(text-to-speech — free 1M chars)</span></label>
+              <input class="form-input" id="set-cartesia-key" type="password" placeholder="..." style="font-family:monospace;font-size:0.85em">
+              <div style="font-size:0.7em;color:var(--dim);margin-top:3px">Get free at <strong style="color:var(--blue)">play.cartesia.ai</strong></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Deepgram API Key <span style="color:var(--dim);font-weight:400">(speech-to-text — free 200 hrs/mo)</span></label>
+            <input class="form-input" id="set-deepgram-key" type="password" placeholder="..." style="font-family:monospace;font-size:0.85em;width:50%">
+            <div style="font-size:0.7em;color:var(--dim);margin-top:3px">Get free at <strong style="color:var(--blue)">deepgram.com</strong></div>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div style="background:#0d0d0d;border:1px solid var(--orange)22;border-radius:10px;padding:14px;margin-bottom:14px">
+          <div style="font-size:0.78em;font-weight:700;color:var(--orange);margin-bottom:10px">&#128140; Email Sending — <span style="font-weight:400;color:var(--dim)">For email campaigns, follow-ups, notifications</span></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">SendGrid API Key <span style="color:var(--dim);font-weight:400">(free 100/day)</span></label>
+              <input class="form-input" id="set-sendgrid-key" type="password" placeholder="SG...." style="font-family:monospace;font-size:0.85em">
+              <div style="font-size:0.7em;color:var(--dim);margin-top:3px">Get free at <strong style="color:var(--blue)">sendgrid.com</strong></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">From Email Address</label>
+              <input class="form-input" id="set-from-email" type="email" placeholder="hello@yourdomain.com" style="font-size:0.85em">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn" onclick="saveAllApiKeys()" style="background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;font-weight:700">Save All Keys</button>
+        <span id="apiKeysSaveResult" style="font-size:0.8em;margin-left:12px;color:var(--green)"></span>
       </div>
 
       <!-- ── HEARTBEAT ── -->
@@ -7924,6 +7969,7 @@ async function loadSettings() {
   stLoadSettings();
   loadAuthStatus();
   loadToolkitConfig();
+  loadApiKeys();
   const [failover, costs] = await Promise.all([
     api('/api/failover/status'),
     api('/api/costs')
@@ -7970,6 +8016,52 @@ async function saveConfig() {
   const r = await api('/api/config', { method: 'POST', body: JSON.stringify(body) });
   if (r) { toast('Configuration saved', 'success'); }
   else { toast('Failed to save config', 'error'); }
+}
+
+async function saveAllApiKeys() {
+  const resultEl = document.getElementById('apiKeysSaveResult');
+  resultEl.textContent = 'Saving...';
+
+  // Save Anthropic key + model via existing /api/config
+  const apiKey = document.getElementById('set-apikey')?.value?.trim();
+  const model = document.getElementById('set-model')?.value;
+  const limit = parseFloat(document.getElementById('set-limit')?.value) || 50;
+  const cfgBody = { model, spend_limit: limit };
+  if (apiKey) cfgBody.api_key = apiKey;
+  await fetch(API + '/api/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(cfgBody) }).catch(() => {});
+
+  // Save voice stack + email keys via toolkit config
+  const voiceBody = {};
+  const groq = document.getElementById('set-groq-key')?.value?.trim();
+  const cartesia = document.getElementById('set-cartesia-key')?.value?.trim();
+  const deepgram = document.getElementById('set-deepgram-key')?.value?.trim();
+  const sendgrid = document.getElementById('set-sendgrid-key')?.value?.trim();
+  const fromEmail = document.getElementById('set-from-email')?.value?.trim();
+  if (groq) voiceBody.groq_api_key = groq;
+  if (cartesia) voiceBody.cartesia_api_key = cartesia;
+  if (deepgram) voiceBody.deepgram_api_key = deepgram;
+  if (sendgrid) voiceBody.sendgrid_api_key = sendgrid;
+  if (fromEmail) voiceBody.from_email = fromEmail;
+
+  if (Object.keys(voiceBody).length > 0) {
+    await fetch(API + '/api/toolkit/config', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(voiceBody) }).catch(() => {});
+  }
+
+  resultEl.textContent = '&#10003; Saved!';
+  setTimeout(() => { resultEl.textContent = ''; }, 3000);
+  toast('API keys saved', 'success');
+}
+
+async function loadApiKeys() {
+  // Load voice/email keys from toolkit config to populate fields
+  try {
+    const cfg = await fetch(API + '/api/toolkit/config').then(r => r.json());
+    if (cfg.groq_api_key) document.getElementById('set-groq-key').value = cfg.groq_api_key;
+    if (cfg.cartesia_api_key) document.getElementById('set-cartesia-key').value = cfg.cartesia_api_key;
+    if (cfg.deepgram_api_key) document.getElementById('set-deepgram-key').value = cfg.deepgram_api_key;
+    if (cfg.sendgrid_api_key) document.getElementById('set-sendgrid-key').value = cfg.sendgrid_api_key;
+    if (cfg.from_email) document.getElementById('set-from-email').value = cfg.from_email;
+  } catch(e) {}
 }
 
 async function heartbeatAction(action) {

@@ -124,6 +124,22 @@
   .roi-stat-val { font-size: 0.88em; font-weight: 600; margin-top: 1px; }
   .best-roi-tag { font-size: 0.65em; background: var(--gold); color: #000; padding: 1px 6px; border-radius: 4px; font-weight: 700; margin-left: 6px; vertical-align: middle; }
 
+  /* ── CLIENT ROWS ─────────────────────────────────────── */
+  .client-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+  .client-row:active { border-color: var(--gold); }
+  .client-row-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .client-row-name { font-weight: 700; font-size: 0.95em; }
+  .client-row-meta { font-size: 0.72em; color: var(--muted); margin-top: 1px; }
+  .client-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .client-stat { }
+  .client-stat-label { font-size: 0.63em; color: var(--dim); text-transform: uppercase; }
+  .client-stat-val { font-size: 0.85em; font-weight: 600; margin-top: 1px; }
+  .client-detail-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .client-detail-row:last-child { border-bottom: none; }
+  .client-picker-row { display: flex; gap: 8px; align-items: flex-end; }
+  .client-picker-row .fg { flex: 1; margin-bottom: 0; }
+  .client-picker-row .add-client-btn { padding: 11px 14px; border-radius: 10px; border: 1px solid var(--border2); background: #1a1a1a; color: var(--gold); font-size: 0.88em; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+
   /* ── MODAL ───────────────────────────────────────────── */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; align-items: flex-end; justify-content: center; }
   .modal-overlay.open { display: flex; }
@@ -147,6 +163,12 @@
   /* ── SEARCH ──────────────────────────────────────────── */
   .search-bar { background: #1a1a1a; border: 1px solid var(--border2); color: var(--text); padding: 10px 14px; border-radius: 10px; font-size: 0.92em; outline: none; width: 100%; margin-bottom: 12px; }
   .search-bar:focus { border-color: var(--gold); }
+
+  /* ── COLOR UTILITIES ────────────────────────────────── */
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .gold { color: var(--gold); }
+  .blue { color: var(--blue); }
 
   /* ── DESKTOP ─────────────────────────────────────────── */
   @media (min-width: 768px) {
@@ -248,9 +270,16 @@
           <label>Date</label>
           <input type="date" id="saleDate">
         </div>
+        <div class="fg" style="margin-bottom:12px;">
+          <label>Client (optional)</label>
+          <div class="client-picker-row">
+            <div class="fg"><select id="saleClient"><option value="">-- No Client --</option></select></div>
+            <button class="add-client-btn" onclick="openAddClientModal()">+ New</button>
+          </div>
+        </div>
         <div class="fg">
           <label>Notes (optional)</label>
-          <input type="text" id="saleNotes" placeholder="e.g. sold on eBay, customer name...">
+          <input type="text" id="saleNotes" placeholder="e.g. sold on eBay, details...">
         </div>
         <button class="btn btn-solid-green btn-full btn-big" onclick="addSale()">Add Sale</button>
       </div>
@@ -292,6 +321,16 @@
       </div>
     </div>
 
+    <!-- ── PAGE: CLIENTS ─────────────────────────────────── -->
+    <div class="page" id="page-clients">
+      <input class="search-bar" type="text" id="searchClients" placeholder="Search clients..." oninput="renderClients()">
+      <div id="clientsList"></div>
+      <div id="noClientsMsg" class="empty" style="display:none;">
+        <div class="empty-icon">&#128101;</div>
+        <p>No clients yet. Add one when logging a sale.</p>
+      </div>
+    </div>
+
     <!-- ── PAGE: SETTINGS ──────────────────────────────── -->
     <div class="page" id="page-settings">
       <div class="section-title">Data</div>
@@ -327,6 +366,10 @@
     <button class="bnav" data-page="products" onclick="switchPage('products')">
       <svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>
       Products
+    </button>
+    <button class="bnav" data-page="clients" onclick="switchPage('clients')">
+      <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      Clients
     </button>
     <button class="bnav" data-page="roi" onclick="switchPage('roi')">
       <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
@@ -374,6 +417,46 @@
     <div class="modal-actions">
       <button class="btn" onclick="closeModal('editProductModal')">Cancel</button>
       <button class="btn btn-gold" onclick="saveProductEdit()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADD CLIENT MODAL ══════════════════════════════════ -->
+<div class="modal-overlay" id="addClientModal">
+  <div class="modal">
+    <h2>Add Client</h2>
+    <div class="fg">
+      <label>Name *</label>
+      <input type="text" id="newClientName" placeholder="Full name or business name">
+    </div>
+    <div class="fg-row">
+      <div class="fg">
+        <label>Phone</label>
+        <input type="tel" id="newClientPhone" placeholder="(optional)">
+      </div>
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" id="newClientEmail" placeholder="(optional)">
+      </div>
+    </div>
+    <div class="fg">
+      <label>Notes</label>
+      <input type="text" id="newClientNotes" placeholder="e.g. referred by John, prefers email...">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('addClientModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="saveNewClient()">Add Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CLIENT DETAIL MODAL ══════════════════════════════ -->
+<div class="modal-overlay" id="clientDetailModal">
+  <div class="modal">
+    <div id="clientDetailContent"></div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="btn" onclick="closeModal('clientDetailModal')">Close</button>
+      <button class="btn btn-red" id="clientDeleteBtn">Delete Client</button>
     </div>
   </div>
 </div>
@@ -482,9 +565,11 @@ document.getElementById('authUser').addEventListener('keydown', e => { if (e.key
 // DATA
 // ══════════════════════════════════════════════════════════
 function loadData() {
-  if (!currentUser) return { products: [], sales: [] };
+  if (!currentUser) return { products: [], sales: [], clients: [] };
   const raw = localStorage.getItem('st_data_' + currentUser);
-  return raw ? JSON.parse(raw) : { products: [], sales: [] };
+  const d = raw ? JSON.parse(raw) : { products: [], sales: [], clients: [] };
+  if (!d.clients) d.clients = []; // migrate old data
+  return d;
 }
 function saveData(d) {
   if (!currentUser) return;
@@ -611,6 +696,8 @@ function addSale() {
   const qty = parseInt(document.getElementById('saleQty').value) || 1;
   const date = document.getElementById('saleDate').value;
   const notes = document.getElementById('saleNotes').value.trim();
+  const clientId = document.getElementById('saleClient')?.value || '';
+  const client = clientId ? data.clients.find(c => c.id === clientId) : null;
 
   if (!productId) return alert('Select a product.');
   if (isNaN(salePrice) || salePrice < 0) return alert('Enter a valid sale price.');
@@ -625,6 +712,8 @@ function addSale() {
       salePrice,
       cost: product.cost,
       date,
+      clientId: clientId || '',
+      clientName: client ? client.name : '',
       notes: qty > 1 ? (notes ? notes + ` (${i+1}/${qty})` : `${i+1}/${qty}`) : notes
     });
   }
@@ -632,6 +721,7 @@ function addSale() {
   document.getElementById('salePrice').value = '';
   document.getElementById('saleQty').value = '1';
   document.getElementById('saleNotes').value = '';
+  if (document.getElementById('saleClient')) document.getElementById('saleClient').value = '';
   toast(`${qty} sale${qty > 1 ? 's' : ''} added!`);
   refreshAll();
 }
@@ -663,10 +753,11 @@ function renderSales() {
 
   list.innerHTML = sales.map(s => {
     const profit = s.salePrice - s.cost;
+    const meta = [s.date, s.clientName ? '&#128101; ' + esc(s.clientName) : '', s.notes ? esc(s.notes) : ''].filter(Boolean).join(' &middot; ');
     return `<div class="sale-row">
       <div class="sale-row-info">
         <div class="sale-row-name">${esc(s.productName)}</div>
-        <div class="sale-row-meta">${s.date}${s.notes ? ' &middot; ' + esc(s.notes) : ''}</div>
+        <div class="sale-row-meta">${meta}</div>
       </div>
       <div>
         <div class="sale-row-profit ${profit >= 0 ? 'green' : 'red'}">$${profit.toFixed(2)}</div>
@@ -798,6 +889,181 @@ function renderDropdowns() {
   const hp = data.products.length > 0;
   document.getElementById('addNoProducts').style.display = hp ? 'none' : '';
   document.getElementById('addSaleForm').style.display = hp ? '' : 'none';
+
+  // Client dropdown
+  const clientSel = document.getElementById('saleClient');
+  if (clientSel) {
+    const prevClient = clientSel.value;
+    clientSel.innerHTML = '<option value="">-- No Client --</option>'
+      + (data.clients || []).sort((a,b) => a.name.localeCompare(b.name))
+          .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    if (prevClient) clientSel.value = prevClient;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// CLIENTS
+// ══════════════════════════════════════════════════════════
+function openAddClientModal() {
+  document.getElementById('newClientName').value = '';
+  document.getElementById('newClientPhone').value = '';
+  document.getElementById('newClientEmail').value = '';
+  document.getElementById('newClientNotes').value = '';
+  document.getElementById('addClientModal').classList.add('open');
+  setTimeout(() => document.getElementById('newClientName').focus(), 100);
+}
+
+function saveNewClient() {
+  const name = document.getElementById('newClientName').value.trim();
+  if (!name) { alert('Enter a client name.'); return; }
+  if (data.clients.find(c => c.name.toLowerCase() === name.toLowerCase())) { alert('Client already exists.'); return; }
+  const client = {
+    id: Date.now().toString(),
+    name,
+    phone: document.getElementById('newClientPhone').value.trim(),
+    email: document.getElementById('newClientEmail').value.trim(),
+    notes: document.getElementById('newClientNotes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  data.clients.push(client);
+  saveData(data);
+  closeModal('addClientModal');
+  // Auto-select the new client in the sale form
+  const clientSel = document.getElementById('saleClient');
+  renderDropdowns();
+  if (clientSel) clientSel.value = client.id;
+  toast('Client added!');
+  renderClients();
+}
+
+function deleteClient(id) {
+  const c = data.clients.find(x => x.id === id);
+  if (!c) return;
+  const sc = data.sales.filter(s => s.clientId === id).length;
+  if (!confirm(`Delete "${c.name}"${sc ? ` and unlink ${sc} sale(s)` : ''}? Sales will not be deleted.`)) return;
+  // Unlink client from sales but keep the sales
+  data.sales.forEach(s => { if (s.clientId === id) { s.clientId = ''; s.clientName = ''; } });
+  data.clients = data.clients.filter(x => x.id !== id);
+  saveData(data);
+  closeModal('clientDetailModal');
+  toast('Client removed');
+  refreshAll();
+}
+
+function getClientStats(clientId) {
+  const sales = data.sales.filter(s => s.clientId === clientId);
+  let totalSpent = 0, totalCost = 0;
+  sales.forEach(s => {
+    totalSpent += s.salePrice;
+    totalCost += s.cost;
+  });
+  const profit = totalSpent - totalCost;
+  const roi = totalCost > 0 ? ((profit / totalCost) * 100) : 0;
+  return { sales, totalSpent, totalCost, profit, roi, count: sales.length };
+}
+
+function openClientDetail(id) {
+  const c = data.clients.find(x => x.id === id);
+  if (!c) return;
+  const stats = getClientStats(id);
+  const roiClass = stats.roi >= 50 ? 'green' : stats.roi >= 20 ? 'gold' : stats.roi >= 0 ? 'text' : 'red';
+  const profitClass = stats.profit >= 0 ? 'green' : 'red';
+
+  const salesRows = stats.sales.length === 0
+    ? '<div style="color:var(--dim);font-size:0.85em;padding:12px 0;">No sales yet for this client.</div>'
+    : [...stats.sales].sort((a,b) => b.date.localeCompare(a.date)).map(s => {
+        const profit = s.salePrice - s.cost;
+        return `<div class="client-detail-row">
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:0.88em;">${esc(s.productName)}</div>
+            <div style="font-size:0.72em;color:var(--muted);">${s.date}${s.notes ? ' · ' + esc(s.notes) : ''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-weight:700;font-size:0.9em;" class="${profit>=0?'green':'red'}">+$${profit.toFixed(2)}</div>
+            <div style="font-size:0.7em;color:var(--muted);">$${s.salePrice.toFixed(2)}</div>
+          </div>
+        </div>`;
+      }).join('');
+
+  document.getElementById('clientDetailContent').innerHTML = `
+    <div style="margin-bottom:16px;">
+      <div style="font-size:1.1em;font-weight:800;margin-bottom:2px;">${esc(c.name)}</div>
+      ${c.phone ? `<div style="font-size:0.78em;color:var(--muted);">&#128222; ${esc(c.phone)}</div>` : ''}
+      ${c.email ? `<div style="font-size:0.78em;color:var(--muted);">&#128140; ${esc(c.email)}</div>` : ''}
+      ${c.notes ? `<div style="font-size:0.78em;color:var(--dim);margin-top:4px;">${esc(c.notes)}</div>` : ''}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;">
+      <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:12px;">
+        <div style="font-size:0.65em;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Total Spent</div>
+        <div style="font-weight:700;font-size:1.1em;color:var(--green);">$${stats.totalSpent.toFixed(2)}</div>
+      </div>
+      <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:12px;">
+        <div style="font-size:0.65em;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Your Profit</div>
+        <div style="font-weight:700;font-size:1.1em;" class="${profitClass}">$${stats.profit.toFixed(2)}</div>
+      </div>
+      <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:12px;">
+        <div style="font-size:0.65em;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">ROI on Client</div>
+        <div style="font-weight:700;font-size:1.1em;" class="${roiClass}">${stats.roi.toFixed(1)}%</div>
+      </div>
+      <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:12px;">
+        <div style="font-size:0.65em;color:var(--dim);text-transform:uppercase;letter-spacing:0.5px;">Purchases</div>
+        <div style="font-weight:700;font-size:1.1em;">${stats.count}</div>
+      </div>
+    </div>
+    <div style="font-size:0.75em;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Purchase History</div>
+    ${salesRows}
+  `;
+
+  document.getElementById('clientDeleteBtn').onclick = () => deleteClient(id);
+  document.getElementById('clientDetailModal').classList.add('open');
+}
+
+function renderClients() {
+  const list = document.getElementById('clientsList');
+  const empty = document.getElementById('noClientsMsg');
+  if (!list) return;
+  const search = (document.getElementById('searchClients')?.value || '').toLowerCase();
+  let clients = [...(data.clients || [])];
+  if (search) clients = clients.filter(c =>
+    c.name.toLowerCase().includes(search) ||
+    (c.phone && c.phone.includes(search)) ||
+    (c.email && c.email.toLowerCase().includes(search))
+  );
+  // Sort by total spent descending
+  clients.sort((a, b) => getClientStats(b.id).totalSpent - getClientStats(a.id).totalSpent);
+
+  if (clients.length === 0 && !search) { list.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  if (clients.length === 0) { list.innerHTML = '<div class="empty"><p>No clients match your search.</p></div>'; return; }
+
+  list.innerHTML = clients.map(c => {
+    const stats = getClientStats(c.id);
+    const roiClass = stats.roi >= 50 ? 'green' : stats.roi >= 20 ? 'gold' : 'text';
+    const profitClass = stats.profit >= 0 ? 'green' : 'red';
+    return `<div class="client-row" onclick="openClientDetail('${c.id}')">
+      <div class="client-row-top">
+        <div>
+          <div class="client-row-name">${esc(c.name)}</div>
+          <div class="client-row-meta">${stats.count} purchase${stats.count !== 1 ? 's' : ''}${c.phone ? ' &middot; ' + esc(c.phone) : ''}${c.email ? ' &middot; ' + esc(c.email) : ''}</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--dim);">&#x276F;</div>
+      </div>
+      <div class="client-stats">
+        <div class="client-stat">
+          <div class="client-stat-label">Total Spent</div>
+          <div class="client-stat-val green">$${stats.totalSpent.toFixed(2)}</div>
+        </div>
+        <div class="client-stat">
+          <div class="client-stat-label">Your Profit</div>
+          <div class="client-stat-val ${profitClass}">$${stats.profit.toFixed(2)}</div>
+        </div>
+        <div class="client-stat">
+          <div class="client-stat-label">ROI</div>
+          <div class="client-stat-val ${roiClass}">${stats.roi.toFixed(1)}%</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -805,11 +1071,11 @@ function renderDropdowns() {
 // ══════════════════════════════════════════════════════════
 function exportCSV() {
   if (data.sales.length === 0) return alert('No sales to export.');
-  let csv = 'Date,Product,Sale Price,Cost,Profit,Notes\n';
+  let csv = 'Date,Product,Client,Sale Price,Cost,Profit,Notes\n';
   data.sales.forEach(s => {
     const p = data.products.find(x => x.id === s.productId);
     const c = p ? p.cost : s.cost;
-    csv += `${s.date},"${s.productName}",${s.salePrice.toFixed(2)},${c.toFixed(2)},${(s.salePrice - c).toFixed(2)},"${(s.notes||'').replace(/"/g,'""')}"\n`;
+    csv += `${s.date},"${s.productName}","${(s.clientName||'').replace(/"/g,'""')}",${s.salePrice.toFixed(2)},${c.toFixed(2)},${(s.salePrice - c).toFixed(2)},"${(s.notes||'').replace(/"/g,'""')}"\n`;
   });
   dl('sales_export.csv', csv, 'text/csv');
 }
@@ -870,6 +1136,7 @@ function refreshAll() {
   renderSales();
   renderROI();
   renderDashboard();
+  renderClients();
   document.getElementById('saleDate').value = new Date().toISOString().split('T')[0];
 }
 </script>

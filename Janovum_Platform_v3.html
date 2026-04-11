@@ -6200,6 +6200,11 @@ function tkLoginAs(username, acct) {
     if (dd) dd.style.display = 'none';
   }, { once: false, capture: true });
   actions.prepend(badge);
+  // Clear guest banners and update topbar immediately
+  const authBtns = document.getElementById('topbarAuthBtns');
+  if (authBtns) authBtns.innerHTML = '';
+  const trialBanner = document.getElementById('authTrialBanner');
+  if (trialBanner) trialBanner.style.display = 'none';
 }
 
 function enterGuest() {
@@ -10040,6 +10045,8 @@ function showPaywallModal() {
 function renderTopbarAuth() {
   const btns = document.getElementById('topbarAuthBtns');
   if (!btns) return;
+  // Toolkit-auth users already have the avatar badge — don't inject anything into topbarAuthBtns
+  if (typeof tkUser !== 'undefined' && tkUser) { btns.innerHTML = ''; return; }
   const state = getUserState();
   const user = getUser();
   if (state === 'guest') {

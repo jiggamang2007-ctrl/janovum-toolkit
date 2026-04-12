@@ -3517,6 +3517,137 @@ def receptionist_clear_logs(client_id):
 
 
 # ══════════════════════════════════════════
+# UNIVERSAL AI AGENT TRIGGER
+# POST /api/receptionist/clients/<client_id>/trigger
+# Body: {"message": "...", "context": "...", "reply_to": "..."}
+# Returns: {"response": "...", "agent_name": "...", "client_id": "..."}
+# ══════════════════════════════════════════
+
+@app.route("/api/receptionist/clients/<client_id>/trigger", methods=["POST"])
+def agent_trigger(client_id):
+    """Run a client's AI agent on any task/message. Works for email, webhook, or manual triggers."""
+    data = request.json or {}
+    message = data.get("message") or data.get("task") or data.get("body") or ""
+    context = data.get("context") or data.get("subject") or ""
+    reply_to = data.get("reply_to") or data.get("from") or ""
+
+    if not message:
+        return jsonify({"error": "message is required"}), 400
+
+    # Load client config
+    config = cm_get_client(client_id)
+    if not config:
+        return jsonify({"error": "Client not found"}), 404
+
+    # Get agent instructions from config
+    agent_cfg = config.get("agent_config") or {}
+    agent_name = agent_cfg.get("agent_name") or config.get("business_name", "AI Agent") + " Agent"
+    instructions = agent_cfg.get("instructions") or (
+        f"You are a helpful AI agent for {config.get('business_name', 'this business')}. "
+        f"Respond professionally and helpfully to any message."
+    )
+
+    # Build system prompt
+    system_prompt = f"""{instructions}
+
+Business context:
+- Business Name: {config.get('business_name', '')}
+- Business Type: {config.get('business_type', '')}
+- Business Email: {config.get('business_email', '')}
+- Phone: {config.get('business_phone', '')}
+- Address: {config.get('business_address', '')}
+- Hours: {config.get('hours', '')}
+
+Always be helpful, professional, and represent the business well. Keep responses concise and actionable."""
+
+    # Build the user message
+    full_message = message
+    if context:
+        full_message = f"Subject/Context: {context}\n\n{message}"
+    if reply_to:
+        full_message = f"From: {reply_to}\n{full_message}"
+
+    # Call Claude
+    result = call_claude(
+        messages=[{"role": "user", "content": full_message}],
+        system_prompt=system_prompt,
+        max_tokens=1500,
+        force_model="claude-haiku-4-5-20251001"  # fast + cheap for agent responses
+    )
+
+    if "error" in result:
+        return jsonify({"error": result["error"]}), 500
+
+    response_text = result.get("text", "")
+
+    # Optionally send email reply if reply_to is provided and client has email configured
+    email_sent = False
+    if reply_to and "@" in reply_to:
+        from_email = config.get("business_email") or agent_cfg.get("agent_email")
+        sendgrid_key = config.get("sendgrid_api_key")
+        if from_email and sendgrid_key:
+            try:
+                import smtplib
+                from email.mime.text import MIMEText
+                from email.mime.multipart import MIMEMultipart
+                # Try SendGrid SMTP
+                msg = MIMEMultipart()
+                msg["From"] = f"{agent_name} <{from_email}>"
+                msg["To"] = reply_to
+                msg["Subject"] = f"Re: {context}" if context else f"Response from {agent_name}"
+                msg.attach(MIMEText(response_text, "plain"))
+                with smtplib.SMTP("smtp.sendgrid.net", 587) as server:
+                    server.starttls()
+                    server.login("apikey", sendgrid_key)
+                    server.send_message(msg)
+                email_sent = True
+            except Exception as e:
+                pass  # Email failed silently — response still returned
+
+    return jsonify({
+        "response": response_text,
+        "agent_name": agent_name,
+        "client_id": client_id,
+        "email_sent": email_sent,
+        "model_used": result.get("model_used", ""),
+        "tokens_used": result.get("usage", {})
+    })
+
+
+@app.route("/api/agent/run", methods=["POST"])
+def agent_run_direct():
+    """Run any AI task directly with custom instructions (no client required).
+    Body: {"instructions": "...", "message": "...", "business_name": "..."}"""
+    data = request.json or {}
+    instructions = data.get("instructions") or "You are a helpful AI assistant."
+    message = data.get("message") or data.get("task") or ""
+    biz_name = data.get("business_name") or ""
+
+    if not message:
+        return jsonify({"error": "message is required"}), 400
+
+    system = instructions
+    if biz_name:
+        system += f"\n\nYou are working on behalf of: {biz_name}"
+
+    result = call_claude(
+        messages=[{"role": "user", "content": message}],
+        system_prompt=system,
+        max_tokens=1500,
+        force_model="claude-haiku-4-5-20251001"
+    )
+
+    if "error" in result:
+        return jsonify({"error": result["error"]}), 500
+
+    return jsonify({
+        "response": result.get("text", ""),
+        "model_used": result.get("model_used", ""),
+        "tokens_used": result.get("usage", {})
+    })
+
+
+# ══════════════════════════════════════════
 # TOOLKIT CONFIG (domain, Twilio, etc.)
 # ══════════════════════════════════════════
 

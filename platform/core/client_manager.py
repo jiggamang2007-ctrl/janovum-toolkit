@@ -267,8 +267,19 @@ def add_client(data):
         return {"error": "business_name is required"}
 
     twilio_phone = data.get("twilio_phone_number", "").strip()
-    if not twilio_phone:
-        return {"error": "twilio_phone_number is required — buy one from Twilio first"}
+
+    # Only require Twilio for phone-based services
+    services_list = data.get("services", [])
+    service_names = [s.get("name", s) if isinstance(s, dict) else str(s) for s in services_list]
+    modules = data.get("modules_enabled", {})
+    needs_phone = (
+        "ai_receptionist" in service_names or modules.get("ai_receptionist") or
+        "missed_call_textback" in service_names or modules.get("missed_call_textback") or
+        "review_management" in service_names or modules.get("review_management") or
+        "followup_automation" in service_names or modules.get("followup_automation")
+    )
+    if needs_phone and not twilio_phone:
+        return {"error": "twilio_phone_number is required for AI Receptionist / SMS services — buy one at twilio.com"}
 
     client_id = _generate_client_id(business_name)
 
@@ -310,6 +321,15 @@ def add_client(data):
             "voice_id": data.get("cartesia_voice_id", "f786b574-daa5-4673-aa0c-cbe3e8534c02"),
         },
         "notification_email": data.get("notification_email", ""),
+        "business_email": data.get("business_email", ""),
+        "business_phone": data.get("business_phone", ""),
+        "business_address": data.get("business_address", ""),
+        "business_description": data.get("business_description", ""),
+        "owner_name": data.get("owner_name", ""),
+        "modules_enabled": data.get("modules_enabled", {}),
+        "setup_mode": data.get("setup_mode", ""),
+        "agent_config": data.get("agent_config") or {},
+        "sendgrid_api_key": data.get("sendgrid_api_key", ""),
         "daily_spend_cap": float(data.get("daily_spend_cap", 5.00)),
         "daily_call_limit": int(data.get("daily_call_limit", 50)),
         "created_at": datetime.now().isoformat(),

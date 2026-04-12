@@ -1755,6 +1755,25 @@
           </div>
           <div id="clDetailLogs" style="max-height:400px;overflow-y:auto;font-family:Consolas,monospace;font-size:0.75em;background:#0a0a0a;padding:12px;border-radius:8px;color:#aaa;white-space:pre-wrap;word-break:break-all">No logs loaded. Click Refresh to view.</div>
         </div>
+
+        <!-- Run AI Agent — shows for clients with custom_ai_agent -->
+        <div class="panel" id="clAgentPanel" style="margin-top:16px;display:none;background:linear-gradient(135deg,#0d0a1a,#0a0a0a);border-color:rgba(187,134,252,0.3)">
+          <div class="panel-header">
+            <div class="panel-title" style="color:var(--purple)">🤖 Run AI Agent</div>
+            <div style="font-size:0.72em;color:var(--dim)" id="clAgentName">Custom AI Agent</div>
+          </div>
+          <div style="font-size:0.78em;color:var(--dim);margin-bottom:12px">Type any task or message — the agent will respond using its custom instructions.</div>
+          <textarea id="clAgentInput" placeholder="e.g. Draft a quote for HVAC tune-up service for a 2-bedroom house&#10;e.g. Reply to this inquiry: 'What are your rates for lawn care?'&#10;e.g. Write a follow-up email for someone who requested info but didn't book..." style="width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:0.82em;min-height:80px;resize:vertical;font-family:inherit;margin-bottom:10px"></textarea>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button onclick="clRunAgent()" style="padding:9px 20px;border-radius:8px;border:none;background:var(--purple);color:#fff;font-weight:700;font-size:0.82em;cursor:pointer">&#9654; Run Agent</button>
+            <button onclick="document.getElementById('clAgentResponse').style.display='none';document.getElementById('clAgentInput').value=''" style="padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--dim);font-size:0.82em;cursor:pointer">Clear</button>
+          </div>
+          <div id="clAgentResponse" style="display:none;margin-top:12px;background:#0a0a0a;border:1px solid rgba(187,134,252,0.2);border-radius:8px;padding:14px">
+            <div style="font-size:0.72em;color:var(--purple);font-weight:700;margin-bottom:8px">AGENT RESPONSE</div>
+            <div id="clAgentResponseText" style="font-size:0.84em;color:var(--text);white-space:pre-wrap;line-height:1.6"></div>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('clAgentResponseText').textContent).then(()=>toast('Copied!','success'))" style="margin-top:10px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--dim);font-size:0.75em;cursor:pointer">Copy Response</button>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -2007,6 +2026,44 @@
             <div style="font-size:0.8em;font-weight:700;color:var(--blue);margin-bottom:8px">&#9881; Describe the Data Automation</div>
             <textarea id="fast-data-workflow" placeholder="e.g. Scrape all Google reviews for a list of businesses and export to a spreadsheet weekly.&#10;e.g. Pull new leads from LinkedIn daily and add to our CRM.&#10;e.g. Monitor competitor prices and alert when they change." style="width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:0.82em;min-height:80px;resize:vertical;font-family:inherit"></textarea>
             <div style="font-size:0.7em;color:var(--dim);margin-top:4px">Describe what data to pull, process, or automate. Be as specific as possible — the AI will handle the rest.</div>
+          </div>
+
+          <!-- Custom AI Agent config — shown when custom_ai_agent is selected -->
+          <div id="fastAgentConfigBox" style="display:none;background:#0d0a1a;border:1px solid rgba(187,134,252,0.25);border-radius:10px;padding:16px;margin-bottom:12px">
+            <div style="font-size:0.82em;font-weight:700;color:var(--purple);margin-bottom:12px">🤖 Configure Your AI Agent</div>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:0.75em;color:var(--dim);display:block;margin-bottom:4px">Agent Name</label>
+                <input id="fast-agent-name" placeholder="e.g. Alex — Sales Agent for Remi HVAC" style="width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:0.85em">
+              </div>
+              <div>
+                <label style="font-size:0.75em;color:var(--dim);display:block;margin-bottom:4px">What does this agent do? <span style="color:var(--dim)">(instructions)</span></label>
+                <textarea id="fast-agent-instructions" placeholder="e.g. You are Alex, a sales agent for Remi HVAC. When someone emails asking for a quote, reply with a professional estimate based on what they need. Always include our contact number (555-1234) and website (remiHVAC.com). Be warm and professional." style="width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:0.82em;min-height:90px;resize:vertical;font-family:inherit"></textarea>
+                <div style="font-size:0.68em;color:var(--dim);margin-top:3px">Write this like training a new employee — be specific about their role, tone, and what they should do.</div>
+              </div>
+              <div>
+                <label style="font-size:0.75em;color:var(--dim);display:block;margin-bottom:4px">How do people reach this agent?</label>
+                <select id="fast-agent-trigger" onchange="updateAgentTriggerUI()" style="width:100%;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px 12px;font-size:0.85em">
+                  <option value="email">📧 Email — someone emails the agent, it auto-replies</option>
+                  <option value="webhook">🔗 Webhook — send data from any app or form to a URL</option>
+                  <option value="manual">✋ Manual — you run it from the dashboard anytime</option>
+                </select>
+              </div>
+              <div id="fastAgentEmailHint">
+                <div style="background:#0a0a0a;border:1px solid #1e1e2e;border-radius:8px;padding:10px 12px;font-size:0.75em;color:var(--dim);line-height:1.6">
+                  After deploy, you'll get a <strong style="color:var(--purple)">webhook URL</strong>. You can forward emails to it via Gmail filters + Zapier, or hit it directly from any app. No coding needed.
+                </div>
+              </div>
+              <div>
+                <div style="font-size:0.75em;color:var(--dim);margin-bottom:6px;font-weight:600">Quick Templates:</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button type="button" onclick="applyAgentTemplate('email_agent')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#111;color:var(--text);font-size:0.72em;cursor:pointer">📧 Email Agent</button>
+                  <button type="button" onclick="applyAgentTemplate('quote_sender')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#111;color:var(--text);font-size:0.72em;cursor:pointer">💰 Quote Sender</button>
+                  <button type="button" onclick="applyAgentTemplate('contact_manager')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#111;color:var(--text);font-size:0.72em;cursor:pointer">📇 Contact Manager</button>
+                  <button type="button" onclick="applyAgentTemplate('inbox_assistant')" style="padding:5px 10px;border-radius:6px;border:1px solid var(--border);background:#111;color:var(--text);font-size:0.72em;cursor:pointer">📬 Inbox Assistant</button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div style="background:#0a0a0a;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:0.78em;color:var(--dim);margin-bottom:16px">
@@ -9666,6 +9723,7 @@ const FAST_SERVICES = [
   { id: 'lead_hunter', icon: '🎯', name: 'Lead Generation', desc: 'Finds potential customers in a target area and reaches out with personalized messages.', recommended: false, color: 'var(--orange)', needsApis: [] },
   { id: 'invoicing', icon: '💳', name: 'Invoicing & Payments', desc: 'Generates and sends invoices automatically. Tracks payments and sends reminders.', recommended: false, color: 'var(--green)', needsApis: ['Stripe (optional, free to connect)'] },
   { id: 'content_writer', icon: '✍️', name: 'Content Writer', desc: 'Generates blog posts, website copy, and ad creative automatically.', recommended: false, color: 'var(--muted)', needsApis: [] },
+  { id: 'custom_ai_agent', icon: '🤖', name: 'Custom AI Agent', desc: 'Build a personal AI agent for anything — replies to emails, sends estimates, manages contacts. Give it any instructions you want.', recommended: false, color: 'var(--purple)', needsApis: [], agentConfig: true },
 ];
 
 let fastSelectedServices = new Set();
@@ -9703,6 +9761,51 @@ function toggleFastService(id, el) {
   // Show/hide the data workflow textarea
   const dataBox = document.getElementById('fastDataWorkflowBox');
   if (dataBox) dataBox.style.display = fastSelectedServices.has('data_automation') ? '' : 'none';
+  // Show/hide the custom agent config panel
+  const agentBox = document.getElementById('fastAgentConfigBox');
+  if (agentBox) agentBox.style.display = fastSelectedServices.has('custom_ai_agent') ? '' : 'none';
+}
+
+function updateAgentTriggerUI() {
+  const trigger = document.getElementById('fast-agent-trigger')?.value;
+  const hint = document.getElementById('fastAgentEmailHint');
+  if (!hint) return;
+  if (trigger === 'email') {
+    hint.innerHTML = '<div style="background:#0a0a0a;border:1px solid #1e1e2e;border-radius:8px;padding:10px 12px;font-size:0.75em;color:var(--dim);line-height:1.6">After deploy, you\'ll get a <strong style="color:var(--purple)">webhook URL</strong>. Set up email forwarding to it: Gmail → Filters → Forward to webhook via Zapier. The agent reads the email and sends a reply automatically.</div>';
+  } else if (trigger === 'webhook') {
+    hint.innerHTML = '<div style="background:#0a0a0a;border:1px solid #1e1e2e;border-radius:8px;padding:10px 12px;font-size:0.75em;color:var(--dim);line-height:1.6">You\'ll get a <strong style="color:var(--purple)">POST endpoint URL</strong>. Send JSON with a <code style="color:var(--gold)">"message"</code> field from any app, form, or Zapier automation. The agent processes it and returns a response.</div>';
+  } else {
+    hint.innerHTML = '<div style="background:#0a0a0a;border:1px solid #1e1e2e;border-radius:8px;padding:10px 12px;font-size:0.75em;color:var(--dim);line-height:1.6">You can run this agent anytime from <strong style="color:var(--text)">Clients → Run Agent</strong> in the toolkit. Type any task and the agent responds instantly.</div>';
+  }
+}
+
+const AGENT_TEMPLATES = {
+  email_agent: {
+    name: 'Email Reply Agent',
+    instructions: 'You are a professional email agent representing this business. When someone sends a message, read it carefully and reply helpfully on their behalf. Keep your response professional, warm, and concise. End every reply with the business name and contact information.'
+  },
+  quote_sender: {
+    name: 'Quote & Estimate Agent',
+    instructions: 'You are a quoting agent. When someone asks for a price or estimate, analyze their request and provide a professional quote. Include:\n- A brief summary of the service\n- Estimated price range\n- What\'s included\n- Timeline\n- How to book or get started\n\nBe friendly and encourage them to move forward. End with business contact info.'
+  },
+  contact_manager: {
+    name: 'Contact & Info Agent',
+    instructions: 'You are a contact management agent. When someone reaches out, help them get in touch with the right person or find what they need. Provide relevant contact info, hours, and directions. If they need something specific, offer to take a message and make sure they feel heard. Always be warm and professional.'
+  },
+  inbox_assistant: {
+    name: 'Inbox Assistant',
+    instructions: 'You are a personal inbox assistant. For each incoming message:\n1. Understand the intent and urgency\n2. Draft a helpful, professional response\n3. If it needs the owner\'s attention, flag it clearly\n4. Keep responses concise and actionable\n\nAlways represent the business professionally.'
+  }
+};
+
+function applyAgentTemplate(templateId) {
+  const t = AGENT_TEMPLATES[templateId];
+  if (!t) return;
+  const nameEl = document.getElementById('fast-agent-name');
+  const instrEl = document.getElementById('fast-agent-instructions');
+  if (nameEl && !nameEl.value) nameEl.value = t.name;
+  if (instrEl) instrEl.value = t.instructions;
+  toast('Template applied!', 'success');
 }
 
 function fastNext(step) {
@@ -9815,6 +9918,16 @@ async function fastDeploy() {
   const ownerName = document.getElementById('fast-owner-name')?.value?.trim() || '';
   const address = document.getElementById('fast-biz-address')?.value?.trim() || '';
   const desc = document.getElementById('fast-biz-desc')?.value?.trim() || '';
+  // Agent config (if custom_ai_agent selected)
+  const hasAgent = fastSelectedServices.has('custom_ai_agent');
+  const agentName = document.getElementById('fast-agent-name')?.value?.trim() || '';
+  const agentInstructions = document.getElementById('fast-agent-instructions')?.value?.trim() || '';
+  const agentTrigger = document.getElementById('fast-agent-trigger')?.value || 'webhook';
+  const agentConfig = hasAgent ? {
+    agent_name: agentName || bizName + ' AI Agent',
+    instructions: agentInstructions || `You are an AI agent for ${bizName}. Help people who contact you professionally and helpfully.`,
+    trigger_type: agentTrigger,
+  } : null;
 
   if (!bizName) { toast('Business name is required', 'error'); btn.disabled=false; btn.textContent='🚀 Deploy Client Now'; return; }
 
@@ -9840,6 +9953,7 @@ async function fastDeploy() {
     setup_mode: 'sales',
     deployed_at: new Date().toISOString(),
     services: fastSelectedServices.map(s => ({ name: s, duration_minutes: 30 })),
+    agent_config: agentConfig,
   };
 
   // Save locally regardless
@@ -9864,8 +9978,8 @@ async function fastDeploy() {
       localStorage.setItem('janovum_deployed_clients', JSON.stringify(localClients));
       markSetupComplete();
       updateDashboardChecklist();
-      // Show success modal with Twilio webhook instructions
-      showDeploySuccessModal(bizName, data.client_id, twilioPhone || phone, data.port);
+      // Show success modal with appropriate next-step instructions
+      showDeploySuccessModal(bizName, data.client_id, twilioPhone || phone, data.port, [...fastSelectedServices], agentConfig);
     } else {
       // Server error — still save locally, show fallback
       localClients[0].status = 'pending';
@@ -10926,6 +11040,21 @@ async function clShowClient(clientId) {
       `;
     }
 
+    // Show agent panel if this client has a custom AI agent configured
+    const agentPanel = document.getElementById('clAgentPanel');
+    const agentCfg = cfg.agent_config || {};
+    const hasAgentService = cfg.modules_enabled?.custom_ai_agent || agentCfg.agent_name || agentCfg.instructions;
+    if (agentPanel) {
+      agentPanel.style.display = hasAgentService ? 'block' : 'none';
+      const agentNameEl = document.getElementById('clAgentName');
+      if (agentNameEl && agentCfg.agent_name) agentNameEl.textContent = agentCfg.agent_name;
+      // Reset any previous response
+      const respDiv = document.getElementById('clAgentResponse');
+      if (respDiv) respDiv.style.display = 'none';
+      const inp = document.getElementById('clAgentInput');
+      if (inp) inp.value = '';
+    }
+
     document.getElementById('clListView').style.display = 'none';
     document.getElementById('clDetailView').style.display = 'block';
     clLoadAppts();
@@ -11455,6 +11584,39 @@ async function clClearLogs() {
     clLoadLogs();
   } catch (e) {
     toast('Failed to clear logs', 'error');
+  }
+}
+
+async function clRunAgent() {
+  if (!clSelectedClient) return;
+  const message = document.getElementById('clAgentInput')?.value?.trim();
+  if (!message) { toast('Enter a task for the agent', 'error'); return; }
+
+  const btn = document.querySelector('#clAgentPanel button');
+  const origText = btn?.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Running...'; }
+
+  const responseDiv = document.getElementById('clAgentResponse');
+  const responseText = document.getElementById('clAgentResponseText');
+  if (responseDiv) responseDiv.style.display = 'none';
+
+  try {
+    const res = await fetch(API + '/api/receptionist/clients/' + clSelectedClient.client_id + '/trigger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, context: '', trigger_type: 'manual' })
+    });
+    const data = await res.json();
+    if (data.error) {
+      toast('Agent error: ' + data.error, 'error');
+    } else {
+      if (responseText) responseText.textContent = data.response || '(No response)';
+      if (responseDiv) responseDiv.style.display = 'block';
+    }
+  } catch (e) {
+    toast('Could not reach server', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
   }
 }
 
@@ -18418,40 +18580,88 @@ function printQuote() {
   setTimeout(() => w.print(), 500);
 }
 
-function showDeploySuccessModal(bizName, clientId, twilioPhone, port) {
-  const webhookUrl = `https://janovum.com/incoming`;
-  const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:#000c;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
-  modal.innerHTML = `
-    <div style="background:var(--card);border:1px solid var(--green)55;border-radius:18px;max-width:580px;width:100%;padding:0;box-shadow:0 24px 80px #000e">
-      <div style="padding:28px;border-bottom:1px solid var(--border);text-align:center">
-        <div style="font-size:3em;margin-bottom:10px">🎉</div>
-        <div style="font-size:1.2em;font-weight:900;color:var(--green)">${esc(bizName)} is LIVE!</div>
-        <div style="font-size:0.82em;color:var(--dim);margin-top:6px">Client deployed on Janovum's server. One last step to route calls.</div>
+function showDeploySuccessModal(bizName, clientId, twilioPhone, port, selectedServices, agentConfig) {
+  selectedServices = selectedServices || [];
+  agentConfig = agentConfig || null;
+  const hasReceptionist = selectedServices.includes('ai_receptionist') || selectedServices.includes('missed_call_textback') || selectedServices.includes('review_management');
+  const hasAgent = selectedServices.includes('custom_ai_agent');
+  const hasEmail = selectedServices.includes('email_campaign') || selectedServices.includes('followup_automation');
+  const twilioWebhookUrl = `https://janovum.com/incoming`;
+  const agentTriggerUrl = `https://janovum.com/api/receptionist/clients/${clientId}/trigger`;
+
+  // Build the "next steps" block based on what was deployed
+  let nextStepsHtml = '';
+
+  if (hasReceptionist && twilioPhone) {
+    nextStepsHtml += `
+    <div style="background:#0a1a0a;border:1px solid var(--green)33;border-radius:12px;padding:16px;margin-bottom:14px">
+      <div style="font-size:0.78em;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">📞 Set Twilio Webhook for Calls</div>
+      <div style="font-size:0.8em;color:var(--dim);margin-bottom:10px;line-height:1.6">In Twilio Console → phone number <strong style="color:var(--gold)">${esc(twilioPhone)}</strong> → set Voice webhook to:</div>
+      <div style="display:flex;align-items:center;gap:8px;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+        <code style="font-size:0.8em;color:var(--gold);flex:1;word-break:break-all">${twilioWebhookUrl}</code>
+        <button onclick="navigator.clipboard.writeText('${twilioWebhookUrl}').then(()=>toast('Copied!','success'))" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.75em;cursor:pointer;white-space:nowrap">Copy</button>
       </div>
-      <div style="padding:24px 28px">
-        <div style="background:#0a1a0a;border:1px solid var(--green)33;border-radius:12px;padding:16px;margin-bottom:16px">
-          <div style="font-size:0.78em;color:var(--green);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Last Step — Set Twilio Webhook</div>
-          <div style="font-size:0.82em;color:var(--dim);margin-bottom:10px;line-height:1.6">In your <strong style="color:var(--text)">Twilio Console</strong>, go to the phone number <strong style="color:var(--gold)">${esc(twilioPhone)}</strong>, and set the <em>Voice webhook</em> to:</div>
-          <div style="display:flex;align-items:center;gap:8px;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px 14px">
-            <code style="font-size:0.82em;color:var(--gold);flex:1;word-break:break-all">${webhookUrl}</code>
-            <button onclick="navigator.clipboard.writeText('${webhookUrl}').then(()=>toast('Copied!','success'))" style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--fg);font-size:0.78em;cursor:pointer;white-space:nowrap">Copy</button>
-          </div>
-          <div style="font-size:0.75em;color:var(--dim);margin-top:8px">Method: HTTP POST · That's it. Takes 30 seconds.</div>
-        </div>
+      <div style="font-size:0.72em;color:var(--dim);margin-top:6px">Method: HTTP POST · Takes 30 seconds in Twilio.</div>
+    </div>`;
+  }
+
+  if (hasAgent && clientId) {
+    const triggerType = agentConfig?.trigger_type || 'webhook';
+    const agentName = agentConfig?.agent_name || bizName + ' AI Agent';
+    nextStepsHtml += `
+    <div style="background:#0d0a1a;border:1px solid rgba(187,134,252,0.3);border-radius:12px;padding:16px;margin-bottom:14px">
+      <div style="font-size:0.78em;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">🤖 ${esc(agentName)} — Agent Endpoint</div>
+      <div style="font-size:0.8em;color:var(--dim);margin-bottom:10px;line-height:1.6">${
+        triggerType === 'email'
+          ? 'Forward any email to this endpoint and the agent will read it and reply automatically:'
+          : triggerType === 'webhook'
+          ? 'Send a POST request with <code style="color:var(--gold)">{"message":"..."}</code> to run this agent:'
+          : 'Run this agent manually from the dashboard, or hit this endpoint anytime:'
+      }</div>
+      <div style="display:flex;align-items:center;gap:8px;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:10px 12px">
+        <code style="font-size:0.78em;color:var(--purple);flex:1;word-break:break-all">${agentTriggerUrl}</code>
+        <button onclick="navigator.clipboard.writeText('${agentTriggerUrl}').then(()=>toast('Copied!','success'))" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.75em;cursor:pointer;white-space:nowrap">Copy</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;font-size:0.72em;color:var(--dim)">
+        <div>• Method: <strong style="color:var(--text)">POST</strong></div>
+        <div>• Body: <code style="color:var(--gold)">{"message":"your task here"}</code></div>
+        <div>• Returns: <strong style="color:var(--text)">agent response text</strong></div>
+        <div>• Works with: <strong style="color:var(--text)">Zapier, Make, any app</strong></div>
+      </div>
+    </div>`;
+  }
+
+  if (!hasReceptionist && !hasAgent) {
+    nextStepsHtml += `
+    <div style="background:#0a1a0a;border:1px solid var(--green)22;border-radius:12px;padding:16px;margin-bottom:14px;font-size:0.82em;color:var(--dim)">
+      ✅ <strong style="color:var(--green)">Your client is live.</strong> All selected modules are active and running. You can manage this client from the <strong style="color:var(--text)">Clients</strong> tab.
+    </div>`;
+  }
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:#000c;z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+  modal.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--green)55;border-radius:18px;max-width:600px;width:100%;padding:0;box-shadow:0 24px 80px #000e;margin:auto">
+      <div style="padding:24px 28px;border-bottom:1px solid var(--border);text-align:center">
+        <div style="font-size:2.8em;margin-bottom:8px">🎉</div>
+        <div style="font-size:1.15em;font-weight:900;color:var(--green)">${esc(bizName)} is LIVE!</div>
+        <div style="font-size:0.8em;color:var(--dim);margin-top:6px">Deployed on Janovum's server${selectedServices.length ? ` · ${selectedServices.length} service${selectedServices.length>1?'s':''} active` : ''}.</div>
+      </div>
+      <div style="padding:22px 28px">
+        ${nextStepsHtml}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:0.72em;color:var(--dim);margin-bottom:4px">Client ID</div>
-            <div style="font-size:0.82em;font-weight:700;font-family:monospace;color:var(--gold)">${esc(clientId||'pending')}</div>
+          <div style="background:#111;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:0.7em;color:var(--dim);margin-bottom:4px">Client ID</div>
+            <div style="font-size:0.8em;font-weight:700;font-family:monospace;color:var(--gold)">${esc(clientId||'pending')}</div>
           </div>
-          <div style="background:var(--card2);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:0.72em;color:var(--dim);margin-bottom:4px">Status</div>
+          <div style="background:#111;border-radius:8px;padding:12px;text-align:center">
+            <div style="font-size:0.7em;color:var(--dim);margin-bottom:4px">Status</div>
             <div style="font-size:0.82em;font-weight:700;color:var(--green)">✓ Deployed</div>
           </div>
         </div>
         <div style="display:flex;gap:8px">
           <button onclick="this.closest('div[style*=fixed]').remove();switchTab('dashboard')" style="flex:1;padding:11px;border-radius:8px;border:none;background:var(--green);color:#000;font-weight:800;cursor:pointer">Go to Dashboard →</button>
-          <button onclick="this.closest('div[style*=fixed]').remove();switchTab('clients')" style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--fg);cursor:pointer">View All Clients</button>
+          <button onclick="this.closest('div[style*=fixed]').remove();switchTab('clients')" style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text);cursor:pointer">View All Clients</button>
         </div>
       </div>
     </div>`;

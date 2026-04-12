@@ -3448,6 +3448,15 @@ def receptionist_add_client():
     result = cm_add_client(data)
     if "error" in result:
         return jsonify(result), 400
+    # Auto-send welcome email in background
+    try:
+        config = cm_get_client(result["client_id"])
+        if config:
+            tk_cfg = cm_load_toolkit_config()
+            domain = tk_cfg.get("domain", "janovum.com")
+            threading.Thread(target=_send_welcome_email, args=(config, domain), daemon=True).start()
+    except Exception:
+        pass
     return jsonify(result)
 
 @app.route("/api/receptionist/clients/<client_id>", methods=["GET"])
@@ -3645,6 +3654,273 @@ def agent_run_direct():
         "model_used": result.get("model_used", ""),
         "tokens_used": result.get("usage", {})
     })
+
+
+# ══════════════════════════════════════════
+# WELCOME EMAIL + CLIENT PORTAL TOKEN
+# ══════════════════════════════════════════
+
+def _send_welcome_email(config, domain="janovum.com"):
+    """Send welcome email to client's owner after deploy. Uses toolkit SMTP config or fallback."""
+    import smtplib, secrets
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    to_email = config.get("notification_email") or config.get("business_email") or ""
+    if not to_email:
+        return False, "no recipient email"
+
+    tk_cfg = cm_load_toolkit_config()
+    sendgrid_key = tk_cfg.get("sendgrid_api_key") or config.get("sendgrid_api_key") or ""
+    from_email = tk_cfg.get("from_email") or "hello@janovum.com"
+
+    biz_name = config.get("business_name", "Your Business")
+    client_id = config.get("client_id", "")
+    agent_cfg = config.get("agent_config") or {}
+    has_agent = bool(agent_cfg.get("instructions"))
+    has_receptionist = bool(config.get("twilio_phone_number"))
+
+    # Generate portal token if not set
+    if not config.get("portal_token"):
+        config["portal_token"] = secrets.token_urlsafe(24)
+        config_path = PLATFORM_DIR + f"/data/clients/{client_id}.json"
+        try:
+            with open(config_path, "w") as f:
+                json.dump(config, f, indent=2)
+        except Exception:
+            pass
+
+    portal_url = f"https://{domain}/portal/{client_id}/{config.get('portal_token','')}"
+    trigger_url = f"https://{domain}/api/receptionist/clients/{client_id}/trigger"
+    webhook_url = f"https://{domain}/incoming"
+
+    subject = f"🎉 Your AI automation is live — {biz_name}"
+
+    next_steps = ""
+    if has_receptionist:
+        next_steps += f"""
+<tr><td style="padding:12px 0;border-bottom:1px solid #f0f0f0">
+  <strong>📞 AI Receptionist</strong><br>
+  <span style="color:#666;font-size:14px">Set your Twilio webhook to: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px">{webhook_url}</code></span>
+</td></tr>"""
+    if has_agent:
+        next_steps += f"""
+<tr><td style="padding:12px 0;border-bottom:1px solid #f0f0f0">
+  <strong>🤖 {agent_cfg.get("agent_name","AI Agent")}</strong><br>
+  <span style="color:#666;font-size:14px">Send tasks to: <code style="background:#f5f5f5;padding:2px 6px;border-radius:4px">POST {trigger_url}</code></span>
+</td></tr>"""
+
+    html = f"""<!DOCTYPE html>
+<html><body style="font-family:-apple-system,sans-serif;background:#f9f9f9;margin:0;padding:20px">
+<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
+  <div style="background:linear-gradient(135deg,#ff6b35,#f7c948);padding:32px;text-align:center">
+    <div style="font-size:36px">🎉</div>
+    <h1 style="color:#000;margin:8px 0 4px;font-size:22px">{biz_name} is LIVE</h1>
+    <p style="color:#333;margin:0;font-size:14px">Your AI automation is set up and ready to go.</p>
+  </div>
+  <div style="padding:28px">
+    <p style="color:#333;font-size:15px;line-height:1.6">Here's everything you need to get started:</p>
+    <table style="width:100%;border-collapse:collapse">
+      <tr><td style="padding:12px 0;border-bottom:1px solid #f0f0f0">
+        <strong>🆔 Client ID</strong><br>
+        <code style="background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:13px">{client_id}</code>
+      </td></tr>
+      {next_steps}
+      <tr><td style="padding:12px 0">
+        <strong>📊 Your Dashboard</strong><br>
+        <span style="color:#666;font-size:14px">View your stats, activity, and manage everything at:</span><br>
+        <a href="{portal_url}" style="color:#ff6b35;font-size:13px;word-break:break-all">{portal_url}</a>
+      </td></tr>
+    </table>
+    <div style="margin-top:24px;text-align:center">
+      <a href="{portal_url}" style="background:linear-gradient(135deg,#ff6b35,#f7c948);color:#000;font-weight:700;padding:12px 28px;border-radius:8px;text-decoration:none;display:inline-block">View My Dashboard →</a>
+    </div>
+  </div>
+  <div style="padding:16px 28px;background:#f9f9f9;text-align:center;font-size:12px;color:#999">
+    Powered by <strong>Janovum</strong> · janovum.com
+  </div>
+</div>
+</body></html>"""
+
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["From"] = f"Janovum <{from_email}>"
+        msg["To"] = to_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(html, "html"))
+
+        if sendgrid_key:
+            with smtplib.SMTP("smtp.sendgrid.net", 587) as srv:
+                srv.starttls()
+                srv.login("apikey", sendgrid_key)
+                srv.send_message(msg)
+        else:
+            # Fallback: Janovum agent Gmail
+            with smtplib.SMTP("smtp.gmail.com", 587) as srv:
+                srv.starttls()
+                srv.login("myfriendlyagent12@gmail.com", "pdcvjroclstugncx")
+                msg["From"] = "Janovum <myfriendlyagent12@gmail.com>"
+                srv.send_message(msg)
+        return True, "sent"
+    except Exception as e:
+        return False, str(e)
+
+
+@app.route("/api/receptionist/clients/<client_id>/welcome-email", methods=["POST"])
+def send_welcome_email_route(client_id):
+    """Resend or send welcome email to client's owner."""
+    config = cm_get_client(client_id)
+    if not config:
+        return jsonify({"error": "Client not found"}), 404
+    tk_cfg = cm_load_toolkit_config()
+    domain = tk_cfg.get("domain", "janovum.com")
+    ok, msg = _send_welcome_email(config, domain)
+    return jsonify({"sent": ok, "detail": msg})
+
+
+@app.route("/portal/<client_id>/<token>")
+def client_portal(client_id, token):
+    """Client-facing portal — read-only dashboard for deployed clients."""
+    config = cm_get_client(client_id)
+    if not config or config.get("portal_token") != token:
+        return "<h2 style='font-family:sans-serif;text-align:center;margin-top:80px'>Invalid or expired link.</h2>", 403
+    portal_path = os.path.join(PLATFORM_DIR, "client_portal.html")
+    if os.path.exists(portal_path):
+        with open(portal_path) as f:
+            html = f.read()
+        # Inject config as JS
+        config_safe = {k: v for k, v in config.items() if k != "portal_token"}
+        html = html.replace("/*INJECT_CLIENT_CONFIG*/", f"const CLIENT_CONFIG = {json.dumps(config_safe)};")
+        return html
+    return jsonify(config)
+
+
+@app.route("/api/portal/<client_id>/stats", methods=["GET"])
+def portal_stats(client_id):
+    """Public stats for client portal (token checked via referrer or query param)."""
+    token = request.args.get("token", "")
+    config = cm_get_client(client_id)
+    if not config or config.get("portal_token") != token:
+        return jsonify({"error": "unauthorized"}), 403
+
+    appts = cm_get_client_appointments(client_id)
+    health = cm_check_health(client_id)
+    return jsonify({
+        "business_name": config.get("business_name"),
+        "business_type": config.get("business_type"),
+        "status": health.get("status", "unknown"),
+        "appointments_total": len(appts),
+        "appointments_recent": appts[-5:][::-1] if appts else [],
+        "modules_enabled": config.get("modules_enabled", {}),
+        "agent_config": {
+            "agent_name": (config.get("agent_config") or {}).get("agent_name", ""),
+            "trigger_type": (config.get("agent_config") or {}).get("trigger_type", ""),
+        },
+        "deployed_at": config.get("created_at", ""),
+    })
+
+
+@app.route("/demo")
+def demo_page():
+    """Demo mode — shows a branded demo dashboard with fake data for prospects."""
+    biz = request.args.get("biz", "Demo Business")
+    biz_type = request.args.get("type", "Service Business")
+    services = request.args.get("services", "receptionist")
+
+    service_modules = {
+        "receptionist": {"ai_receptionist": True, "appointment_scheduler": True},
+        "agent": {"custom_ai_agent": True},
+        "full": {"ai_receptionist": True, "appointment_scheduler": True, "custom_ai_agent": True, "crm_pipeline": True, "followup_automation": True, "review_management": True, "missed_call_textback": True},
+        "crm": {"crm_pipeline": True, "followup_automation": True, "email_campaign": True},
+    }
+
+    import html as html_lib
+    biz_safe = html_lib.escape(biz)
+    type_safe = html_lib.escape(biz_type)
+    mods = service_modules.get(services, service_modules["receptionist"])
+
+    mod_pills = ""
+    names = {"ai_receptionist":"📞 AI Receptionist","appointment_scheduler":"📅 Appointment Booking","custom_ai_agent":"🤖 Custom AI Agent","crm_pipeline":"📊 CRM & Pipeline","followup_automation":"🔁 Follow-Up Automation","review_management":"⭐ Review Management","missed_call_textback":"📲 Missed Call Text-Back","email_campaign":"📧 Email Campaigns"}
+    for k, v in mods.items():
+        if v:
+            mod_pills += f'<span style="display:inline-block;padding:4px 10px;border-radius:6px;font-size:0.72em;font-weight:700;margin:2px;background:rgba(0,200,83,0.1);color:#00c853">{names.get(k,k)}</span>'
+
+    appts_html = ""
+    demo_appts = [
+        ("Sarah Johnson", "HVAC Tune-Up", "Tomorrow 10:00 AM"),
+        ("Mike Torres", "AC Repair", "Wed 2:00 PM"),
+        ("Lisa Park", "Heating Inspection", "Thu 9:00 AM"),
+        ("David Kim", "Duct Cleaning", "Fri 11:00 AM"),
+        ("Emma Wilson", "HVAC Installation Quote", "Mon 3:00 PM"),
+    ]
+    for name, svc, dt in demo_appts:
+        appts_html += f'<div style="padding:10px 12px;background:#0a0a0a;border-radius:8px;margin-bottom:6px;font-size:0.82em"><div style="font-weight:700">{name}</div><div style="color:#555;font-size:0.85em;margin-top:2px">{svc} · {dt}</div></div>'
+
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{biz_safe} — AI Dashboard Demo</title>
+<style>
+  *{{margin:0;padding:0;box-sizing:border-box}}
+  :root{{--bg:#0a0a0a;--card:#111;--border:#1e1e1e;--gold:#f7c948;--orange:#ff6b35;--green:#00c853;--blue:#42a5f5;--purple:#bb86fc;--text:#e0e0e0;--muted:#888}}
+  body{{font-family:-apple-system,'Segoe UI',sans-serif;background:var(--bg);color:var(--text)}}
+  .topbar{{background:#0d0d0d;border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}}
+  .brand{{font-size:1.1em;font-weight:800;letter-spacing:3px;background:linear-gradient(135deg,#ff6b35,#f7c948);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+  .demo-banner{{background:linear-gradient(135deg,#1a1a3d,#0d0d0d);border-bottom:1px solid rgba(66,165,245,0.3);padding:8px 24px;text-align:center;font-size:0.75em;color:var(--blue)}}
+  .hero{{background:linear-gradient(135deg,#0d1a0d,#0a0a0a);border-bottom:1px solid var(--border);padding:28px 24px}}
+  .hero h1{{font-size:1.5em;font-weight:900}}
+  .status-pill{{display:inline-flex;align-items:center;gap:6px;background:#0a1a0a;border:1px solid rgba(0,200,83,0.3);border-radius:20px;padding:4px 12px;font-size:0.75em;font-weight:700;color:var(--green);margin-top:10px}}
+  .dot{{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}}
+  @keyframes pulse{{0%,100%{{opacity:1}}50%{{opacity:0.4}}}}
+  .content{{padding:24px;max-width:900px;margin:0 auto}}
+  .g3{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}}
+  .g2{{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}}
+  @media(max-width:600px){{.g3,.g2{{grid-template-columns:1fr}}}}
+  .card{{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}}
+  .card-title{{font-size:0.7em;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;font-weight:700;margin-bottom:12px}}
+  .big{{font-size:2.2em;font-weight:900;color:var(--gold)}}
+  .sub{{font-size:0.72em;color:#555;margin-top:4px}}
+  .cta-bar{{background:linear-gradient(135deg,#0d1a0d,#0a0a0a);border:1px solid rgba(0,200,83,0.3);border-radius:12px;padding:20px 24px;margin-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}}
+  .btn{{background:linear-gradient(135deg,#ff6b35,#f7c948);border:none;color:#000;font-weight:800;padding:11px 24px;border-radius:8px;cursor:pointer;font-size:0.85em;text-decoration:none;display:inline-block}}
+</style></head><body>
+<div class="topbar"><div class="brand">JANOVUM</div><div style="font-size:0.75em;color:var(--muted)">{biz_safe}</div></div>
+<div class="demo-banner">🔵 DEMO MODE — This is a preview of what {biz_safe}'s live dashboard would look like. <a href="https://janovum.com" style="color:var(--gold);text-decoration:none;font-weight:700">Get this for your business →</a></div>
+<div class="hero">
+  <h1>{biz_safe}</h1>
+  <div style="font-size:0.82em;color:var(--muted);margin-top:4px">{type_safe} · AI Automation Dashboard</div>
+  <div class="status-pill"><div class="dot"></div> System Online</div>
+</div>
+<div class="content">
+  <div class="g3">
+    <div class="card" style="text-align:center"><div class="big">47</div><div class="sub">Calls This Week</div></div>
+    <div class="card" style="text-align:center"><div class="big" style="color:var(--green)">31</div><div class="sub">Appointments Booked</div></div>
+    <div class="card" style="text-align:center"><div class="big" style="color:var(--blue)">66%</div><div class="sub">Booking Rate</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">Active Services</div>
+      {mod_pills}
+    </div>
+    <div class="card">
+      <div class="card-title">This Month</div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #151515;font-size:0.82em"><span style="color:var(--muted)">Calls Answered</span><span style="font-weight:700">191</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #151515;font-size:0.82em"><span style="color:var(--muted)">Appts Booked</span><span style="font-weight:700;color:var(--green)">54</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #151515;font-size:0.82em"><span style="color:var(--muted)">Missed Calls</span><span style="font-weight:700;color:var(--green)">0</span></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:0.82em"><span style="color:var(--muted)">Revenue Protected</span><span style="font-weight:700;color:var(--gold)">~$5,400</span></div>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📅 Upcoming Appointments</div>
+    {appts_html}
+  </div>
+  <div class="cta-bar">
+    <div>
+      <div style="font-size:1em;font-weight:800;color:var(--green)">Ready to go live for {biz_safe}?</div>
+      <div style="font-size:0.78em;color:var(--muted);margin-top:4px">Setup takes less than 24 hours. No coding required.</div>
+    </div>
+    <a href="https://janovum.com" class="btn">Get Started →</a>
+  </div>
+</div>
+</body></html>"""
 
 
 # ══════════════════════════════════════════

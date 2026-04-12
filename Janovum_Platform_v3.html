@@ -371,6 +371,7 @@
     <div class="nav-item" data-tab="approvals"><span class="nav-icon">&#10003;</span> Approvals <span class="nav-badge" id="approvalBadge" style="display:none">0</span></div>
     <div class="nav-item" data-tab="soul"><span class="nav-icon">&#9829;</span> Soul Editor</div>
     <!-- SETUP & BILLING -->
+    <div class="nav-item" data-tab="proposals"><span class="nav-icon">&#128196;</span> Proposals</div>
     <div class="nav-item" data-tab="billing"><span class="nav-icon">&#128179;</span> Plans & Billing</div>
     <div class="nav-item" data-tab="setup"><span class="nav-icon">&#128736;</span> Setup Wizard</div>
     <div class="nav-item" data-tab="settings"><span class="nav-icon">&#9881;</span> Settings</div>
@@ -2525,6 +2526,101 @@ cd /opt/janovum/platform && python3 install.py</pre>
     <!-- ════════════════════════════════════════ -->
     <!-- PLANS & BILLING TAB                     -->
     <!-- ════════════════════════════════════════ -->
+    <!-- ═══ PROPOSALS TAB ═══ -->
+    <div class="tab-pane" id="tab-proposals">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:1.15em;font-weight:800;background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Proposal Generator</div>
+          <div style="font-size:0.78em;color:var(--muted);margin-top:4px">Fill in the client's info → generate a polished PDF proposal you can send or print on the spot.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-outline" onclick="propReset()">&#8635; Reset</button>
+          <button class="btn" onclick="propPreview()" style="background:linear-gradient(135deg,var(--gold),var(--orange))">&#128196; Generate Proposal</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <!-- Left: form -->
+        <div>
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-title" style="margin-bottom:14px">Client Info</div>
+            <div class="setup-field"><label>Business Name *</label><input id="prop-biz-name" class="form-input" placeholder="Remi HVAC"></div>
+            <div class="setup-field"><label>Business Type</label><input id="prop-biz-type" class="form-input" placeholder="HVAC, Salon, Law Firm..."></div>
+            <div class="setup-field"><label>Owner Name</label><input id="prop-owner-name" class="form-input" placeholder="John Smith"></div>
+            <div class="setup-field"><label>Owner Email</label><input id="prop-owner-email" class="form-input" type="email" placeholder="john@remihvac.com"></div>
+            <div class="setup-field"><label>Phone</label><input id="prop-phone" class="form-input" placeholder="(555) 123-4567"></div>
+          </div>
+
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-title" style="margin-bottom:14px">Services to Include</div>
+            <div id="propServiceChecks" style="display:grid;gap:8px">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <div class="panel" style="margin-bottom:16px">
+            <div class="panel-title" style="margin-bottom:14px">Pricing</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="setup-field"><label>Setup Fee</label><input id="prop-setup-fee" class="form-input" value="$1,000" placeholder="$1,000"></div>
+              <div class="setup-field"><label>Monthly Retainer</label><input id="prop-monthly" class="form-input" value="$500/mo" placeholder="$500/mo"></div>
+            </div>
+            <div class="setup-field"><label>Notes / Custom Terms (optional)</label><textarea id="prop-notes" class="form-input" placeholder="e.g. First month free, includes 24/7 support..." style="min-height:60px;resize:vertical"></textarea></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title" style="margin-bottom:14px">Your Info (Agency)</div>
+            <div class="setup-field"><label>Your Name</label><input id="prop-your-name" class="form-input" placeholder="Jaden"></div>
+            <div class="setup-field"><label>Your Company</label><input id="prop-your-company" class="form-input" placeholder="Janovum" value="Janovum"></div>
+            <div class="setup-field"><label>Your Email</label><input id="prop-your-email" class="form-input" placeholder="hello@janovum.com" value="hello@janovum.com"></div>
+          </div>
+        </div>
+
+        <!-- Right: preview -->
+        <div>
+          <div class="panel" style="height:100%;min-height:600px;padding:0;overflow:hidden;position:relative">
+            <div id="propPreviewArea" style="padding:0;height:100%;min-height:600px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:0.84em">
+              <div style="text-align:center">
+                <div style="font-size:3em;margin-bottom:12px">📄</div>
+                <div>Fill in the form and click <strong style="color:var(--gold)">Generate Proposal</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo Mode -->
+      <div class="panel" style="margin-top:20px;background:linear-gradient(135deg,#0d1a2d,#0a0a0a);border-color:rgba(66,165,245,0.3)">
+        <div class="panel-header">
+          <div>
+            <div class="panel-title" style="color:var(--blue)">🔗 Demo Mode — Share a Live Demo Link</div>
+            <div style="font-size:0.76em;color:var(--muted);margin-top:4px">Generate a shareable link that shows a prospect their own branded demo dashboard — no login, no setup.</div>
+          </div>
+          <button class="btn" onclick="genDemoLink()" style="background:var(--blue);color:#fff;white-space:nowrap">Generate Demo Link</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+          <div class="setup-field" style="margin:0"><label>Business Name</label><input id="demo-biz-name" class="form-input" placeholder="e.g. Remi HVAC"></div>
+          <div class="setup-field" style="margin:0"><label>Business Type</label><input id="demo-biz-type" class="form-input" placeholder="HVAC, Salon..."></div>
+          <div class="setup-field" style="margin:0">
+            <label>Demo Services</label>
+            <select id="demo-services" class="form-input">
+              <option value="receptionist">AI Receptionist + Booking</option>
+              <option value="agent">Custom AI Agent</option>
+              <option value="full">Full Suite (All Services)</option>
+              <option value="crm">CRM + Follow-Up</option>
+            </select>
+          </div>
+        </div>
+        <div id="demoLinkResult" style="display:none;background:#0a0a0a;border:1px solid var(--border);border-radius:8px;padding:12px">
+          <div style="font-size:0.72em;color:var(--blue);font-weight:700;margin-bottom:6px">DEMO LINK — Share with prospect:</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <code id="demoLinkUrl" style="font-size:0.8em;color:var(--gold);flex:1;word-break:break-all"></code>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('demoLinkUrl').textContent).then(()=>toast('Copied!','success'))" style="padding:4px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:0.75em;cursor:pointer;white-space:nowrap">Copy</button>
+          </div>
+          <div style="font-size:0.72em;color:var(--dim);margin-top:6px">This link shows a pre-filled branded demo dashboard. The prospect sees exactly what their setup would look like.</div>
+        </div>
+      </div>
+    </div>
+
     <div class="tab-pane" id="tab-billing">
       <style>
         .plan-card { background:var(--card);border:2px solid var(--border);border-radius:14px;padding:28px;transition:all 0.2s;position:relative;overflow:hidden; }
@@ -9978,6 +10074,10 @@ async function fastDeploy() {
       localStorage.setItem('janovum_deployed_clients', JSON.stringify(localClients));
       markSetupComplete();
       updateDashboardChecklist();
+      // Send welcome email to client owner (fire and forget)
+      if (data.client_id) {
+        fetch(API + '/api/receptionist/clients/' + data.client_id + '/welcome-email', { method: 'POST' }).catch(()=>{});
+      }
       // Show success modal with appropriate next-step instructions
       showDeploySuccessModal(bizName, data.client_id, twilioPhone || phone, data.port, [...fastSelectedServices], agentConfig);
     } else {
@@ -18667,6 +18767,217 @@ function showDeploySuccessModal(bizName, clientId, twilioPhone, port, selectedSe
     </div>`;
   document.body.appendChild(modal);
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  PROPOSAL GENERATOR + DEMO MODE
+// ═══════════════════════════════════════════════════════════════
+
+const PROP_SERVICES = [
+  { id: 'ai_receptionist', label: '📞 AI Receptionist', desc: 'Answers calls 24/7, books appointments, handles FAQs' },
+  { id: 'appointment_scheduler', label: '📅 Appointment Booking', desc: 'Customers book, reschedule, and get reminders automatically' },
+  { id: 'custom_ai_agent', label: '🤖 Custom AI Agent', desc: 'Personal AI agent for emails, estimates, and any custom task' },
+  { id: 'missed_call_textback', label: '📲 Missed Call Text-Back', desc: 'Instantly texts anyone who called but didn\'t get answered' },
+  { id: 'followup_automation', label: '🔁 Follow-Up Automation', desc: 'Auto-texts or emails customers to close more deals' },
+  { id: 'review_management', label: '⭐ Review Management', desc: 'Texts customers asking for Google/Yelp reviews after service' },
+  { id: 'crm_pipeline', label: '📊 CRM & Pipeline', desc: 'Tracks all clients in a deal pipeline with notes and tasks' },
+  { id: 'email_campaign', label: '📧 Email Campaigns', desc: 'Sends newsletters, promos, and follow-up sequences automatically' },
+  { id: 'lead_hunter', label: '🎯 Lead Generation', desc: 'Finds potential customers and reaches out automatically' },
+  { id: 'invoicing', label: '💳 Invoicing & Payments', desc: 'Generates and sends invoices, tracks payments, sends reminders' },
+];
+
+let propSelectedServices = new Set(['ai_receptionist', 'appointment_scheduler']);
+
+function initProposalsTab() {
+  const container = document.getElementById('propServiceChecks');
+  if (!container) return;
+  container.innerHTML = PROP_SERVICES.map(s => `
+    <label style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#0a0a0a;border:1px solid ${propSelectedServices.has(s.id) ? 'var(--gold)' : 'var(--border)'};border-radius:8px;cursor:pointer;transition:border-color 0.15s" id="psl-${s.id}">
+      <input type="checkbox" ${propSelectedServices.has(s.id) ? 'checked' : ''} onchange="propToggle('${s.id}',this)" style="margin-top:2px;accent-color:var(--gold)">
+      <div>
+        <div style="font-size:0.82em;font-weight:700">${s.label}</div>
+        <div style="font-size:0.7em;color:var(--dim);margin-top:2px">${s.desc}</div>
+      </div>
+    </label>`).join('');
+}
+
+function propToggle(id, el) {
+  if (el.checked) propSelectedServices.add(id); else propSelectedServices.delete(id);
+  const lbl = document.getElementById('psl-' + id);
+  if (lbl) lbl.style.borderColor = el.checked ? 'var(--gold)' : 'var(--border)';
+}
+
+function propReset() {
+  propSelectedServices = new Set(['ai_receptionist', 'appointment_scheduler']);
+  ['prop-biz-name','prop-biz-type','prop-owner-name','prop-owner-email','prop-phone','prop-notes'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('prop-setup-fee').value = '$1,000';
+  document.getElementById('prop-monthly').value = '$500/mo';
+  document.getElementById('prop-your-company').value = 'Janovum';
+  document.getElementById('prop-your-email').value = 'hello@janovum.com';
+  initProposalsTab();
+  document.getElementById('propPreviewArea').innerHTML = '<div style="text-align:center"><div style="font-size:3em;margin-bottom:12px">📄</div><div style="color:var(--dim);font-size:0.84em">Fill in the form and click <strong style="color:var(--gold)">Generate Proposal</strong></div></div>';
+}
+
+function propPreview() {
+  const bizName = document.getElementById('prop-biz-name')?.value?.trim();
+  if (!bizName) { toast('Enter the business name first', 'error'); return; }
+
+  const bizType = document.getElementById('prop-biz-type')?.value?.trim() || '';
+  const ownerName = document.getElementById('prop-owner-name')?.value?.trim() || '';
+  const ownerEmail = document.getElementById('prop-owner-email')?.value?.trim() || '';
+  const phone = document.getElementById('prop-phone')?.value?.trim() || '';
+  const setupFee = document.getElementById('prop-setup-fee')?.value?.trim() || '$1,000';
+  const monthly = document.getElementById('prop-monthly')?.value?.trim() || '$500/mo';
+  const notes = document.getElementById('prop-notes')?.value?.trim() || '';
+  const yourName = document.getElementById('prop-your-name')?.value?.trim() || 'Jaden';
+  const yourCompany = document.getElementById('prop-your-company')?.value?.trim() || 'Janovum';
+  const yourEmail = document.getElementById('prop-your-email')?.value?.trim() || 'hello@janovum.com';
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  const selectedSvcList = PROP_SERVICES.filter(s => propSelectedServices.has(s.id));
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,Helvetica,Arial,sans-serif;background:#fff;color:#1a1a1a;font-size:14px}
+  .header{background:linear-gradient(135deg,#ff6b35,#f7c948);padding:40px 48px;color:#000}
+  .header h1{font-size:2em;font-weight:900;letter-spacing:3px}
+  .header .sub{font-size:1em;opacity:0.7;margin-top:4px}
+  .body{padding:40px 48px}
+  h2{font-size:1.1em;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#333;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #f0f0f0}
+  .section{margin-bottom:32px}
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .info-row{padding:8px 12px;background:#f9f9f9;border-radius:6px;font-size:0.9em}
+  .info-row strong{display:block;color:#666;font-size:0.75em;text-transform:uppercase;margin-bottom:2px}
+  .svc-card{padding:14px 16px;border:1px solid #e8e8e8;border-radius:8px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start}
+  .svc-icon{font-size:1.4em;min-width:28px}
+  .svc-name{font-weight:700;font-size:0.95em}
+  .svc-desc{color:#666;font-size:0.82em;margin-top:2px}
+  .pricing-box{background:linear-gradient(135deg,#fff8e8,#fff);border:2px solid #f7c948;border-radius:12px;padding:24px 28px}
+  .price-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:1em}
+  .price-row:last-child{border-bottom:none;font-weight:800;font-size:1.15em;padding-top:14px}
+  .price-val{font-weight:800;color:#ff6b35;font-size:1.1em}
+  .footer{background:#1a1a1a;color:#fff;padding:24px 48px;display:flex;justify-content:space-between;align-items:center;font-size:0.82em}
+  .footer strong{display:block;font-size:1em}
+  .accept-box{border:2px dashed #ccc;border-radius:8px;padding:20px 24px;text-align:center;color:#999;margin-top:16px;font-size:0.85em}
+  @media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head><body>
+<div class="header">
+  <h1>JANOVUM</h1>
+  <div class="sub">AI Automation Proposal</div>
+  <div style="margin-top:20px;font-size:1.3em;font-weight:700">${esc(bizName)}</div>
+  <div style="opacity:0.8;font-size:0.9em;margin-top:4px">${today}</div>
+</div>
+
+<div class="body">
+  <div class="section">
+    <h2>Client Information</h2>
+    <div class="info-grid">
+      <div class="info-row"><strong>Business</strong>${esc(bizName)}</div>
+      ${bizType ? `<div class="info-row"><strong>Industry</strong>${esc(bizType)}</div>` : ''}
+      ${ownerName ? `<div class="info-row"><strong>Contact</strong>${esc(ownerName)}</div>` : ''}
+      ${ownerEmail ? `<div class="info-row"><strong>Email</strong>${esc(ownerEmail)}</div>` : ''}
+      ${phone ? `<div class="info-row"><strong>Phone</strong>${esc(phone)}</div>` : ''}
+      <div class="info-row"><strong>Prepared By</strong>${esc(yourName)} · ${esc(yourCompany)}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Services Included (${selectedSvcList.length})</h2>
+    ${selectedSvcList.map(s => `<div class="svc-card"><div class="svc-icon">${s.label.split(' ')[0]}</div><div><div class="svc-name">${s.label.slice(s.label.indexOf(' ')+1)}</div><div class="svc-desc">${s.desc}</div></div></div>`).join('')}
+  </div>
+
+  <div class="section">
+    <h2>Investment</h2>
+    <div class="pricing-box">
+      <div class="price-row"><span>One-Time Setup Fee</span><span class="price-val">${esc(setupFee)}</span></div>
+      <div class="price-row"><span>Monthly Retainer</span><span class="price-val">${esc(monthly)}</span></div>
+      ${notes ? `<div style="margin-top:12px;padding:10px 12px;background:#fff8e8;border-radius:6px;font-size:0.85em;color:#666"><strong>Notes:</strong> ${esc(notes)}</div>` : ''}
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>What Happens Next</h2>
+    <div style="display:grid;gap:8px">
+      ${['Approve this proposal (sign below or reply to this email)','Pay the setup fee to lock in your start date','We deploy your AI automation within 24 hours','You\'re live — your AI handles everything automatically'].map((s,i)=>`<div style="display:flex;gap:12px;padding:10px 14px;background:#f9f9f9;border-radius:8px;align-items:center"><div style="min-width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ff6b35,#f7c948);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85em">${i+1}</div><div style="font-size:0.88em">${s}</div></div>`).join('')}
+    </div>
+  </div>
+
+  <div class="accept-box">
+    <div style="font-size:1em;font-weight:700;margin-bottom:8px">Client Acceptance</div>
+    Signature: _____________________________ Date: _______________
+    <div style="margin-top:4px">Print Name: _________________________</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div><strong>${esc(yourCompany)}</strong>${esc(yourEmail)}</div>
+  <div style="text-align:right"><strong>Valid for 30 days</strong>${today}</div>
+</div>
+</body></html>`;
+
+  // Show in iframe inside preview area
+  const area = document.getElementById('propPreviewArea');
+  area.innerHTML = `
+    <div style="width:100%;height:100%;display:flex;flex-direction:column">
+      <div style="padding:10px 14px;background:#0d0d0d;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center">
+        <span style="font-size:0.75em;color:var(--green);font-weight:700">✓ Proposal Ready</span>
+        <button onclick="propPrint()" style="margin-left:auto;padding:5px 14px;border-radius:6px;border:none;background:var(--gold);color:#000;font-weight:700;font-size:0.75em;cursor:pointer">🖨 Print / Save PDF</button>
+        <button onclick="propOpenNew()" style="padding:5px 14px;border-radius:6px;border:1px solid var(--border);background:none;color:var(--text);font-size:0.75em;cursor:pointer">Open in New Tab</button>
+      </div>
+      <iframe id="propIframe" style="flex:1;border:none;min-height:550px;background:#fff"></iframe>
+    </div>`;
+
+  const iframe = document.getElementById('propIframe');
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
+  window._propHtml = html;
+}
+
+function propPrint() {
+  const iframe = document.getElementById('propIframe');
+  if (iframe) { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+}
+
+function propOpenNew() {
+  if (window._propHtml) {
+    const w = window.open('', '_blank');
+    w.document.write(window._propHtml);
+    w.document.close();
+  }
+}
+
+function genDemoLink() {
+  const biz = document.getElementById('demo-biz-name')?.value?.trim() || 'Demo Business';
+  const type = document.getElementById('demo-biz-type')?.value?.trim() || 'Service Business';
+  const services = document.getElementById('demo-services')?.value || 'receptionist';
+  const params = new URLSearchParams({ biz, type, services });
+  const url = `${location.origin}/demo?${params.toString()}`;
+  document.getElementById('demoLinkUrl').textContent = url;
+  document.getElementById('demoLinkResult').style.display = 'block';
+}
+
+// Initialize when proposals tab opens
+document.addEventListener('DOMContentLoaded', () => {
+  const observer = new MutationObserver(() => {
+    if (document.getElementById('tab-proposals')?.classList.contains('active')) {
+      if (!document.getElementById('propServiceChecks')?.children.length) initProposalsTab();
+    }
+  });
+  observer.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  // Also init on first tab switch
+  const origSwitch = window.switchTab;
+  if (origSwitch) {
+    window.switchTab = function(tab) {
+      origSwitch(tab);
+      if (tab === 'proposals') setTimeout(initProposalsTab, 50);
+    };
+  }
+});
 
 // ═══════════════════════════════════════════════════════════════
 //  CUSTOM TOOL BUILDER

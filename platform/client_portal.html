@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Dashboard — Janovum</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root { --bg:#0a0a0a; --card:#111; --border:#1e1e1e; --gold:#f7c948; --orange:#ff6b35; --green:#00c853; --blue:#42a5f5; --purple:#bb86fc; --red:#ff5252; --text:#e0e0e0; --muted:#888; --dim:#555; }
+  body { font-family:-apple-system,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  .topbar { background:#0d0d0d; border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; justify-content:space-between; }
+  .brand { font-size:1.1em; font-weight:800; letter-spacing:3px; background:linear-gradient(135deg,var(--orange),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .biz-badge { font-size:0.78em; color:var(--muted); }
+
+  .hero { background:linear-gradient(135deg,#0d1a0d,#0a0a0a); border-bottom:1px solid var(--border); padding:32px 24px; }
+  .hero h1 { font-size:1.6em; font-weight:900; margin-bottom:4px; }
+  .hero p { font-size:0.84em; color:var(--muted); }
+  .status-pill { display:inline-flex; align-items:center; gap:6px; background:#0a1a0a; border:1px solid rgba(0,200,83,0.3); border-radius:20px; padding:4px 12px; font-size:0.75em; font-weight:700; color:var(--green); margin-top:10px; }
+  .status-pill.offline { background:#1a0a0a; border-color:rgba(255,82,82,0.3); color:var(--red); }
+  .status-dot { width:7px; height:7px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+  .status-dot.off { background:var(--red); animation:none; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .content { padding:24px; max-width:900px; margin:0 auto; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+  .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+  @media(max-width:600px) { .grid2,.grid3 { grid-template-columns:1fr; } }
+
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .card-title { font-size:0.72em; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; font-weight:700; margin-bottom:14px; }
+  .stat-big { font-size:2em; font-weight:900; color:var(--gold); }
+  .stat-label { font-size:0.72em; color:var(--dim); margin-top:4px; }
+
+  .row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #151515; font-size:0.82em; }
+  .row:last-child { border-bottom:none; }
+  .row .k { color:var(--muted); }
+  .row .v { font-weight:600; text-align:right; max-width:60%; word-break:break-all; }
+
+  .module-pill { display:inline-block; padding:4px 10px; border-radius:6px; font-size:0.72em; font-weight:700; margin:2px; background:rgba(66,165,245,0.1); color:var(--blue); }
+  .module-pill.active { background:rgba(0,200,83,0.1); color:var(--green); }
+
+  .appt-row { padding:10px 12px; background:#0a0a0a; border-radius:8px; margin-bottom:6px; font-size:0.82em; }
+  .appt-row .appt-name { font-weight:700; }
+  .appt-row .appt-meta { color:var(--dim); font-size:0.85em; margin-top:2px; }
+
+  .endpoint-box { background:#0a0a0a; border:1px solid var(--border); border-radius:8px; padding:10px 14px; font-family:monospace; font-size:0.78em; color:var(--purple); word-break:break-all; margin-top:8px; }
+  .copy-btn { background:none; border:1px solid var(--border); color:var(--dim); padding:4px 10px; border-radius:6px; font-size:0.72em; cursor:pointer; margin-top:6px; }
+  .copy-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .empty { text-align:center; padding:24px; color:var(--dim); font-size:0.82em; }
+
+  .powered { text-align:center; padding:20px; font-size:0.72em; color:var(--dim); border-top:1px solid var(--border); margin-top:32px; }
+  .powered a { color:var(--gold); text-decoration:none; }
+
+  .loading { text-align:center; padding:60px; color:var(--dim); }
+</style>
+</head>
+<body>
+
+<script>
+/*INJECT_CLIENT_CONFIG*/
+</script>
+
+<div class="topbar">
+  <div class="brand">JANOVUM</div>
+  <div class="biz-badge" id="bizBadge">Loading...</div>
+</div>
+
+<div class="hero">
+  <h1 id="heroName">Your AI Dashboard</h1>
+  <p id="heroType">Loading your automation setup...</p>
+  <div class="status-pill" id="statusPill">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Checking status...</span>
+  </div>
+</div>
+
+<div class="content">
+  <div id="mainContent" class="loading">Loading your dashboard...</div>
+</div>
+
+<div class="powered">Powered by <a href="https://janovum.com" target="_blank">Janovum</a> · AI Automation Platform</div>
+
+<script>
+const token = location.pathname.split('/').pop();
+const clientId = location.pathname.split('/').slice(-2)[0];
+const API = '';
+
+async function init() {
+  // Set basic info from injected config immediately (no network needed)
+  if (typeof CLIENT_CONFIG !== 'undefined') {
+    const c = CLIENT_CONFIG;
+    document.getElementById('bizBadge').textContent = c.business_name || 'Client Dashboard';
+    document.getElementById('heroName').textContent = c.business_name || 'Your Dashboard';
+    document.getElementById('heroType').textContent = (c.business_type || 'AI Automation') + ' — Client Dashboard';
+    renderFromConfig(c);
+  }
+
+  // Fetch live stats
+  try {
+    const res = await fetch(`/api/portal/${clientId}/stats?token=${token}`);
+    const data = await res.json();
+    if (!data.error) updateLiveStats(data);
+  } catch(e) {
+    document.getElementById('statusText').textContent = 'Offline';
+    document.getElementById('statusDot').className = 'status-dot off';
+    document.getElementById('statusPill').className = 'status-pill offline';
+  }
+}
+
+function renderFromConfig(c) {
+  const modules = c.modules_enabled || {};
+  const agentCfg = c.agent_config || {};
+  const hasReceptionist = modules.ai_receptionist;
+  const hasAgent = modules.custom_ai_agent || agentCfg.agent_name;
+  const hasEmail = modules.email_campaign;
+  const hasCRM = modules.crm_pipeline;
+
+  const triggerUrl = `${location.origin}/api/receptionist/clients/${c.client_id}/trigger`;
+  const webhookUrl = `${location.origin}/incoming`;
+
+  let html = '';
+
+  // Stats row
+  html += `<div class="grid3">
+    <div class="card" style="text-align:center">
+      <div class="stat-big" id="liveAppts">—</div>
+      <div class="stat-label">Total Appointments</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="stat-big" style="color:var(--green)" id="liveStatus">—</div>
+      <div class="stat-label">System Status</div>
+    </div>
+    <div class="card" style="text-align:center">
+      <div class="stat-big" style="color:var(--blue)">${Object.values(modules).filter(Boolean).length}</div>
+      <div class="stat-label">Active Modules</div>
+    </div>
+  </div>`;
+
+  // Business info + modules
+  html += `<div class="grid2">
+    <div class="card">
+      <div class="card-title">Business Info</div>
+      ${[
+        ['Name', c.business_name],
+        ['Type', c.business_type || '—'],
+        ['Email', c.business_email || '—'],
+        ['Phone', c.business_phone || c.twilio_phone_number || '—'],
+        ['Address', c.business_address || '—'],
+        ['Client ID', c.client_id],
+        ['Deployed', c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'],
+      ].map(([k,v]) => `<div class="row"><span class="k">${k}</span><span class="v">${v||'—'}</span></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Active Services</div>
+      ${Object.entries(modules).filter(([,v])=>v).map(([k]) => {
+        const names = {
+          ai_receptionist:'📞 AI Receptionist', appointment_scheduler:'📅 Appointment Booking',
+          custom_ai_agent:'🤖 Custom AI Agent', email_campaign:'📧 Email Campaigns',
+          crm_pipeline:'📊 CRM & Pipeline', followup_automation:'🔁 Follow-Up Automation',
+          review_management:'⭐ Review Management', missed_call_textback:'📲 Missed Call Text-Back',
+          lead_hunter:'🎯 Lead Generation', invoicing:'💳 Invoicing', content_writer:'✍️ Content Writer',
+          social_media_manager:'📱 Social Media', data_automation:'⚙️ Data Automation',
+        };
+        return `<span class="module-pill active">${names[k]||k}</span>`;
+      }).join('') || '<div class="empty">No modules active</div>'}
+    </div>
+  </div>`;
+
+  // Receptionist webhook
+  if (hasReceptionist) {
+    html += `<div class="card" style="margin-bottom:16px;border-color:rgba(0,200,83,0.2)">
+      <div class="card-title" style="color:var(--green)">📞 AI Receptionist Setup</div>
+      <div style="font-size:0.82em;color:var(--muted);margin-bottom:6px">Set this as your Twilio Voice webhook (HTTP POST):</div>
+      <div class="endpoint-box">${webhookUrl}</div>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${webhookUrl}').then(()=>this.textContent='Copied!')">Copy Webhook URL</button>
+    </div>`;
+  }
+
+  // AI Agent endpoint
+  if (hasAgent) {
+    html += `<div class="card" style="margin-bottom:16px;border-color:rgba(187,134,252,0.2)">
+      <div class="card-title" style="color:var(--purple)">🤖 ${agentCfg.agent_name || 'AI Agent'}</div>
+      <div style="font-size:0.82em;color:var(--muted);margin-bottom:4px">Trigger type: <strong style="color:var(--text)">${agentCfg.trigger_type || 'webhook'}</strong></div>
+      <div style="font-size:0.82em;color:var(--muted);margin-bottom:6px">Send a POST request with <code style="color:var(--gold)">{"message":"your task"}</code> to:</div>
+      <div class="endpoint-box">${triggerUrl}</div>
+      <button class="copy-btn" onclick="navigator.clipboard.writeText('${triggerUrl}').then(()=>this.textContent='Copied!')">Copy Endpoint</button>
+    </div>`;
+  }
+
+  // Recent appointments
+  html += `<div class="card" style="margin-bottom:16px">
+    <div class="card-title">📅 Recent Appointments</div>
+    <div id="apptsContainer"><div class="empty">Loading appointments...</div></div>
+  </div>`;
+
+  document.getElementById('mainContent').innerHTML = html;
+}
+
+function updateLiveStats(data) {
+  // Status pill
+  const isOnline = data.status === 'running' || data.status === 'active';
+  document.getElementById('statusText').textContent = isOnline ? 'System Online' : 'System Offline';
+  document.getElementById('statusDot').className = 'status-dot' + (isOnline ? '' : ' off');
+  document.getElementById('statusPill').className = 'status-pill' + (isOnline ? '' : ' offline');
+
+  // Stats
+  const apptEl = document.getElementById('liveAppts');
+  if (apptEl) apptEl.textContent = data.appointments_total || '0';
+  const statusEl = document.getElementById('liveStatus');
+  if (statusEl) { statusEl.textContent = isOnline ? 'Online' : 'Offline'; statusEl.style.color = isOnline ? 'var(--green)' : 'var(--red)'; }
+
+  // Recent appointments
+  const container = document.getElementById('apptsContainer');
+  if (container) {
+    const appts = data.appointments_recent || [];
+    if (appts.length === 0) {
+      container.innerHTML = '<div class="empty">No appointments yet.</div>';
+    } else {
+      container.innerHTML = appts.map(a => `
+        <div class="appt-row">
+          <div class="appt-name">${a.customer_name || a.name || 'Customer'}</div>
+          <div class="appt-meta">${a.service || ''} ${a.datetime ? '· ' + new Date(a.datetime).toLocaleString() : ''} ${a.phone ? '· ' + a.phone : ''}</div>
+        </div>`).join('');
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>

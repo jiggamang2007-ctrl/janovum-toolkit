@@ -3924,6 +3924,81 @@ def demo_page():
 
 
 # ══════════════════════════════════════════
+# INTERNATIONAL HARDWOODS — TAKEOFF PROCESSOR
+# ══════════════════════════════════════════
+
+@app.route("/api/hardwood/process", methods=["POST"])
+def hardwood_process():
+    """
+    Accept a ZIP of architectural PDFs, run takeoff analysis, return Excel file.
+    Form fields: zip_file (file), project_name (str), address (str)
+    """
+    import tempfile, shutil
+    try:
+        from hardwood_processor import process_permit_set
+    except ImportError as e:
+        return jsonify({"error": f"hardwood_processor not available: {e}"}), 500
+
+    # --- Get fields ---
+    project_name = request.form.get("project_name", "Project")
+    address = request.form.get("address", "")
+    api_key = get_api_key()
+    if not api_key:
+        return jsonify({"error": "No Claude API key configured"}), 400
+
+    if "zip_file" not in request.files:
+        return jsonify({"error": "No zip_file uploaded"}), 400
+
+    uploaded = request.files["zip_file"]
+    if not uploaded.filename:
+        return jsonify({"error": "Empty file"}), 400
+
+    # Save uploaded zip to temp dir
+    tmp_dir = tempfile.mkdtemp()
+    try:
+        zip_path = os.path.join(tmp_dir, "upload.zip")
+        uploaded.save(zip_path)
+
+        # Run processor
+        result = process_permit_set(zip_path, project_name, address, api_key, output_dir=tmp_dir)
+
+        if result.get("error"):
+            return jsonify({"error": result["error"]}), 500
+
+        excel_path = result.get("excel_path")
+        if not excel_path or not os.path.exists(excel_path):
+            return jsonify({"error": "Excel file was not generated"}), 500
+
+        # Stream the Excel file back
+        from flask import send_file
+        filename = os.path.basename(excel_path)
+        return send_file(
+            excel_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        # Clean up temp dir after response (best-effort)
+        try:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+        except Exception:
+            pass
+
+
+@app.route("/hardwood")
+def hardwood_tool_page():
+    """Serve the International Hardwoods upload tool UI."""
+    tool_path = os.path.join(PLATFORM_DIR, "hardwood_tool.html")
+    if os.path.exists(tool_path):
+        with open(tool_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h2>hardwood_tool.html not found</h2>", 404
+
+
+# ══════════════════════════════════════════
 # TOOLKIT CONFIG (domain, Twilio, etc.)
 # ══════════════════════════════════════════
 

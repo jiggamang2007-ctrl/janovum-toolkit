@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>International Hardwoods — Takeoff Generator</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#0a0a0a; --card:#111; --border:#1e1e1e; --gold:#f7c948;
+    --orange:#ff6b35; --green:#00c853; --blue:#42a5f5; --red:#ff5252;
+    --text:#e0e0e0; --muted:#888; --dim:#555;
+  }
+  body { font-family:-apple-system,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  .topbar { background:#0d0d0d; border-bottom:1px solid var(--border); padding:14px 24px; display:flex; align-items:center; justify-content:space-between; }
+  .brand { font-size:1.1em; font-weight:800; letter-spacing:3px; background:linear-gradient(135deg,var(--orange),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .sub { font-size:0.78em; color:var(--muted); }
+
+  .hero { background:linear-gradient(135deg,#0d120a,#0a0a0a); border-bottom:1px solid var(--border); padding:32px 24px; }
+  .hero h1 { font-size:1.6em; font-weight:900; margin-bottom:6px; }
+  .hero h1 span { background:linear-gradient(135deg,#a0522d,var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .hero p { font-size:0.84em; color:var(--muted); }
+
+  .content { padding:32px 24px; max-width:700px; margin:0 auto; }
+
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:28px; margin-bottom:24px; }
+  .card-title { font-size:0.72em; color:var(--muted); text-transform:uppercase; letter-spacing:0.8px; font-weight:700; margin-bottom:18px; }
+
+  label { display:block; font-size:0.82em; color:var(--muted); margin-bottom:6px; margin-top:14px; }
+  label:first-of-type { margin-top:0; }
+  input[type=text] {
+    width:100%; background:#0d0d0d; border:1px solid var(--border); border-radius:8px;
+    padding:10px 14px; color:var(--text); font-size:0.9em; outline:none;
+    transition:border-color .2s;
+  }
+  input[type=text]:focus { border-color:var(--gold); }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius:12px; padding:40px 24px;
+    text-align:center; cursor:pointer; transition:all .2s; margin-top:14px;
+    background:#0d0d0d;
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color:var(--gold); background:#0d0e0a; }
+  .drop-zone .icon { font-size:2.4em; margin-bottom:8px; }
+  .drop-zone .main-text { font-weight:700; font-size:0.95em; margin-bottom:4px; }
+  .drop-zone .sub-text { font-size:0.78em; color:var(--dim); }
+  .drop-zone.has-file { border-color:var(--green); background:#0a120a; }
+  .drop-zone.has-file .icon::after { content:''; }
+  #fileInput { display:none; }
+
+  .file-name { font-size:0.82em; color:var(--green); margin-top:8px; font-weight:600; }
+
+  .btn-primary {
+    width:100%; padding:14px; background:linear-gradient(135deg,#5a3a1a,#8b5e2a);
+    border:none; border-radius:10px; color:var(--gold); font-size:1em; font-weight:800;
+    letter-spacing:1px; cursor:pointer; margin-top:20px; transition:opacity .2s;
+    text-transform:uppercase;
+  }
+  .btn-primary:hover { opacity:0.85; }
+  .btn-primary:disabled { opacity:0.4; cursor:not-allowed; }
+
+  /* Progress */
+  .progress-area { display:none; margin-top:20px; }
+  .progress-bar-wrap { background:#1a1a1a; border-radius:8px; height:6px; overflow:hidden; margin-bottom:12px; }
+  .progress-bar { height:100%; background:linear-gradient(90deg,var(--orange),var(--gold)); border-radius:8px; width:0%; transition:width .4s; }
+  .progress-steps { display:flex; flex-direction:column; gap:8px; }
+  .step-item { display:flex; align-items:center; gap:10px; font-size:0.82em; color:var(--dim); }
+  .step-item.active { color:var(--gold); }
+  .step-item.done { color:var(--green); }
+  .step-dot { width:8px; height:8px; border-radius:50%; background:var(--dim); flex-shrink:0; }
+  .step-item.active .step-dot { background:var(--gold); animation:pulse 1.5s infinite; }
+  .step-item.done .step-dot { background:var(--green); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* Result */
+  .result-area { display:none; }
+  .result-card {
+    background:linear-gradient(135deg,#0a150a,#0a0a0a); border:1px solid rgba(0,200,83,0.3);
+    border-radius:14px; padding:28px; text-align:center;
+  }
+  .result-icon { font-size:3em; margin-bottom:12px; }
+  .result-title { font-size:1.3em; font-weight:900; color:var(--green); margin-bottom:6px; }
+  .result-sub { font-size:0.84em; color:var(--muted); margin-bottom:20px; }
+  .download-btn {
+    display:inline-block; padding:14px 32px; background:linear-gradient(135deg,#00a844,#00c853);
+    border:none; border-radius:10px; color:#fff; font-size:0.95em; font-weight:800;
+    cursor:pointer; text-decoration:none; letter-spacing:.5px;
+  }
+  .download-btn:hover { opacity:0.9; }
+  .reset-btn {
+    display:block; margin:14px auto 0; background:none; border:1px solid var(--border);
+    color:var(--dim); padding:8px 20px; border-radius:8px; font-size:0.8em; cursor:pointer;
+  }
+  .reset-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+  .error-area { display:none; background:#1a0a0a; border:1px solid rgba(255,82,82,0.3); border-radius:12px; padding:18px; margin-top:16px; }
+  .error-area .err-title { color:var(--red); font-weight:700; font-size:0.88em; margin-bottom:6px; }
+  .error-area .err-msg { font-size:0.82em; color:var(--muted); word-break:break-all; }
+
+  .info-strip { background:#0d0d0d; border:1px solid var(--border); border-radius:10px; padding:14px 18px; font-size:0.78em; color:var(--dim); line-height:1.7; margin-bottom:24px; }
+  .info-strip strong { color:var(--muted); }
+
+  .powered { text-align:center; padding:20px; font-size:0.72em; color:var(--dim); border-top:1px solid var(--border); margin-top:32px; }
+  .powered a { color:var(--gold); text-decoration:none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">JANOVUM</div>
+  <div class="sub">International Hardwoods — Takeoff Tool</div>
+</div>
+
+<div class="hero">
+  <h1>🪵 <span>Hardwood Takeoff</span> Generator</h1>
+  <p>Upload the architect's permit set ZIP → Get a complete Excel takeoff in seconds</p>
+</div>
+
+<div class="content">
+
+  <div class="info-strip">
+    <strong>What this tool does:</strong> Reads the architectural PDF permit set, identifies every wood area
+    (interior floors IF-04, exterior decks EF-02A/B, wood ceilings/soffits, wood wall panels, site fencing),
+    calculates square footage with 10% waste, and outputs a formatted Excel takeoff spreadsheet ready to price.
+  </div>
+
+  <!-- Upload Form -->
+  <div class="card" id="uploadCard">
+    <div class="card-title">Project Details</div>
+
+    <label>Project Name</label>
+    <input type="text" id="projectName" placeholder="e.g. 3821 El Prado Residence" />
+
+    <label>Project Address</label>
+    <input type="text" id="projectAddr" placeholder="e.g. 3821 El Prado Ave, Los Angeles, CA" />
+
+    <label>Permit Set (ZIP file)</label>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">📁</div>
+      <div class="main-text">Drop ZIP file here or click to browse</div>
+      <div class="sub-text">Accepts .zip containing architectural PDF sheets</div>
+    </div>
+    <input type="file" id="fileInput" accept=".zip">
+    <div class="file-name" id="fileName" style="display:none"></div>
+
+    <button class="btn-primary" id="processBtn" onclick="startProcess()" disabled>
+      ⚙️ Generate Takeoff
+    </button>
+
+    <!-- Progress -->
+    <div class="progress-area" id="progressArea">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="progress-steps">
+        <div class="step-item" id="step1"><div class="step-dot"></div> Extracting PDFs from ZIP</div>
+        <div class="step-item" id="step2"><div class="step-dot"></div> Reading architectural sheets</div>
+        <div class="step-item" id="step3"><div class="step-dot"></div> Analyzing with AI (Claude)</div>
+        <div class="step-item" id="step4"><div class="step-dot"></div> Building Excel takeoff</div>
+        <div class="step-item" id="step5"><div class="step-dot"></div> Finalizing output</div>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div class="error-area" id="errorArea">
+      <div class="err-title">⚠ Processing Error</div>
+      <div class="err-msg" id="errorMsg"></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-area" id="resultArea">
+    <div class="result-card">
+      <div class="result-icon">✅</div>
+      <div class="result-title">Takeoff Complete</div>
+      <div class="result-sub" id="resultSub">Your Excel takeoff is ready to download.</div>
+      <a id="downloadLink" class="download-btn">⬇ Download Excel Takeoff</a>
+      <button class="reset-btn" onclick="resetForm()">Process another set</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="powered">Powered by <a href="https://janovum.com" target="_blank">Janovum</a> · AI Automation Platform</div>
+
+<script>
+let selectedFile = null;
+let downloadBlob = null;
+let downloadFilename = '';
+
+// --- Drag & drop ---
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f) setFile(f);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) setFile(fileInput.files[0]); });
+
+function setFile(f) {
+  if (!f.name.endsWith('.zip')) { showError('Please upload a .zip file.'); return; }
+  selectedFile = f;
+  document.getElementById('fileName').textContent = '📎 ' + f.name + ' (' + (f.size/1024/1024).toFixed(1) + ' MB)';
+  document.getElementById('fileName').style.display = 'block';
+  dropZone.classList.add('has-file');
+  dropZone.querySelector('.main-text').textContent = f.name;
+  dropZone.querySelector('.sub-text').textContent = 'Click to change file';
+  document.getElementById('processBtn').disabled = false;
+  hideError();
+}
+
+function setStep(n, status) {
+  // status: 'active' | 'done'
+  const el = document.getElementById('step' + n);
+  if (!el) return;
+  el.className = 'step-item ' + status;
+  const pct = { 1:15, 2:35, 3:65, 4:85, 5:100 }[n] || 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+async function startProcess() {
+  if (!selectedFile) return;
+  hideError();
+
+  const projectName = document.getElementById('projectName').value.trim() || 'Project';
+  const address = document.getElementById('projectAddr').value.trim() || '';
+
+  // Show progress
+  document.getElementById('processBtn').disabled = true;
+  document.getElementById('progressArea').style.display = 'block';
+  document.getElementById('progressBar').style.width = '5%';
+
+  // Animate steps sequentially while processing
+  setStep(1, 'active');
+  await wait(400);
+  setStep(1, 'done'); setStep(2, 'active');
+  await wait(600);
+  setStep(2, 'done'); setStep(3, 'active');
+
+  const formData = new FormData();
+  formData.append('zip_file', selectedFile);
+  formData.append('project_name', projectName);
+  formData.append('address', address);
+
+  try {
+    const resp = await fetch('/api/hardwood/process', {
+      method: 'POST',
+      body: formData
+    });
+
+    setStep(3, 'done'); setStep(4, 'active');
+    await wait(300);
+
+    if (!resp.ok) {
+      let errMsg = 'Server error ' + resp.status;
+      try { const j = await resp.json(); errMsg = j.error || errMsg; } catch(e) {}
+      throw new Error(errMsg);
+    }
+
+    const blob = await resp.blob();
+    setStep(4, 'done'); setStep(5, 'active');
+    await wait(200);
+    setStep(5, 'done');
+
+    // Get filename from Content-Disposition header
+    const cd = resp.headers.get('Content-Disposition') || '';
+    const match = cd.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+    downloadFilename = match ? match[1].replace(/['"]/g, '') : (projectName + ' Takeoff.xlsx');
+    downloadBlob = blob;
+
+    await wait(500);
+    showResult(projectName);
+
+  } catch(err) {
+    document.getElementById('progressArea').style.display = 'none';
+    document.getElementById('processBtn').disabled = false;
+    showError(err.message || 'Processing failed. Check the server logs.');
+  }
+}
+
+function showResult(projectName) {
+  document.getElementById('progressArea').style.display = 'none';
+  document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('resultArea').style.display = 'block';
+  document.getElementById('resultSub').textContent = projectName + ' — Excel takeoff ready.';
+
+  const link = document.getElementById('downloadLink');
+  link.href = '#';
+  link.onclick = (e) => {
+    e.preventDefault();
+    const url = URL.createObjectURL(downloadBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = downloadFilename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+}
+
+function resetForm() {
+  selectedFile = null; downloadBlob = null;
+  document.getElementById('uploadCard').style.display = 'block';
+  document.getElementById('resultArea').style.display = 'none';
+  document.getElementById('progressArea').style.display = 'none';
+  document.getElementById('processBtn').disabled = true;
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('fileName').style.display = 'none';
+  document.getElementById('projectName').value = '';
+  document.getElementById('projectAddr').value = '';
+  dropZone.classList.remove('has-file');
+  dropZone.querySelector('.main-text').textContent = 'Drop ZIP file here or click to browse';
+  dropZone.querySelector('.sub-text').textContent = 'Accepts .zip containing architectural PDF sheets';
+  fileInput.value = '';
+  ['step1','step2','step3','step4','step5'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.className = 'step-item';
+  });
+  hideError();
+}
+
+function showError(msg) {
+  document.getElementById('errorArea').style.display = 'block';
+  document.getElementById('errorMsg').textContent = msg;
+}
+function hideError() {
+  document.getElementById('errorArea').style.display = 'none';
+}
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>

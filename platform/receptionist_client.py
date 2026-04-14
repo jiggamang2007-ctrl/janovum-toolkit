@@ -427,10 +427,12 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         "'Just to confirm — [name], [service], [date] at [time]. Does that all sound right?' "
         "Wait for them to say yes before continuing. "
         "Step 6: Book with book_appointment. "
-        "Step 7: MANDATORY — ask 'Would you like me to send a confirmation to your email?' "
-        "Step 8: If yes, say 'What email address should I send that to?' — wait for them to give their email, then read it back exactly: "
-        "'Got it, I have [email] — is that right?' Wait for them to confirm, then send with send_confirmation_email. "
-        "If they say no, skip to Step 9. "
+        "Step 7: MANDATORY — ask 'Can I send a confirmation to your email? That's the easiest way.' "
+        "Push email first — it's the preferred option. "
+        "Step 8: If yes, say 'What email address should I send that to?' — wait for them to say their email, "
+        "then read it back exactly: 'Got it, I have [email] — is that right?' Wait for them to confirm, then send with send_confirmation_email. "
+        "If they say they'd prefer a text instead, say 'Sure! I'll have that sent to your number shortly.' then use send_confirmation_sms. "
+        "If they say no to both, skip to Step 9. "
         "Step 9: After sending, say 'All set! Is there anything else I can help you with?' "
         "Step 10: Only end the call after they say no or goodbye. "
         f"Caller's phone is {from_number}. "
@@ -525,15 +527,34 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
 
     async def handle_send_sms(function_name, tool_call_id, arguments, llm, context, result_callback):
         args = arguments
-        msg = (
-            f"Appointment Confirmed!\n"
-            f"Name: {args['name']}\n"
-            f"Date: {args['date']}\n"
-            f"Time: {args['time']}\n"
-            f"Service: {args['service']}\n"
+        # Can't send SMS directly from toll-free number (Twilio 30511).
+        # Instead: email Jaden the caller's number + the exact script to forward manually.
+        text_script = (
+            f"Hi {args['name']}! Your appointment is confirmed. "
+            f"{args['service']} on {args['date']} at {args['time']}. "
             f"See you then! - {BUSINESS_NAME}"
         )
-        success = send_sms(args["phone_number"], msg)
+        forward_email_body = (
+            f"📱 TEXT FORWARD REQUEST\n\n"
+            f"A caller requested a confirmation text. Forward the message below from your personal phone.\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"SEND TO: {args['phone_number']}\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"MESSAGE TO COPY & SEND:\n\n"
+            f"{text_script}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"Appointment Details:\n"
+            f"  Name:    {args['name']}\n"
+            f"  Service: {args['service']}\n"
+            f"  Date:    {args['date']}\n"
+            f"  Time:    {args['time']}\n"
+        )
+        owner_email = CLIENT_CONFIG.get("notification_email") or CLIENT_CONFIG.get("owner_email", "jaden@janovum.com")
+        success = send_email(
+            owner_email,
+            f"📱 Forward Text to {args['phone_number']} — {args['name']}",
+            forward_email_body,
+        )
         await result_callback({"status": "sent" if success else "failed"})
 
     async def handle_send_email(function_name, tool_call_id, arguments, llm, context, result_callback):

@@ -570,6 +570,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
             f"Date: {args['date']}\n"
             f"Time: {args['time']}\n"
             f"Service: {args['service']}\n\n"
+            f"You will also be receiving a confirmation text shortly.\n\n"
             f"See you then!\n- {BUSINESS_NAME}"
         )
         success = send_email(args["email"], f"Appointment Confirmation - {BUSINESS_NAME}", body)

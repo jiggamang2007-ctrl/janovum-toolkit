@@ -400,6 +400,9 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     system_prompt += (
         "BOOKING FLOW — follow these steps in order, every single time: "
         "Step 1: Get their name. Step 2: Get the service they want. Step 3: Get their preferred date and time. "
+        "For the date, ALWAYS get a specific date with month and day — never just a day name like 'Wednesday'. "
+        "If they say 'Wednesday', figure out the exact date and confirm it: 'So that's Wednesday April 16th — does that work?' "
+        f"Today is {datetime.now().strftime('%A, %B %d, %Y')}. Use this to calculate exact dates when callers say things like 'next Wednesday' or 'tomorrow'. "
         "Step 4: Check availability with check_time_slot. Step 5: Read back everything — say exactly: "
         "'Just to confirm — [name], [service], [date] at [time]. Does that all sound right?' "
         "Wait for them to say yes before continuing. "

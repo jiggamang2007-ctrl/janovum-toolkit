@@ -38,11 +38,14 @@ from loguru import logger
 from pipecat.adapters.schemas.function_schema import FunctionSchema
 from pipecat.adapters.schemas.tools_schema import ToolsSchema
 from pipecat.audio.vad.silero import SileroVADAnalyzer
+from pipecat.audio.vad.vad_analyzer import VADParams
 from pipecat.frames.frames import (
     EndFrame,
     LLMRunFrame,
     TTSSpeakFrame,
+    TranscriptionFrame,
 )
+from pipecat.processors.frame_processor import FrameProcessor, FrameDirection
 from pipecat.pipeline.pipeline import Pipeline
 from pipecat.pipeline.runner import PipelineRunner
 from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -431,6 +434,29 @@ RECEPTIONIST_TOOLS = ToolsSchema(
 
 
 # ---------------------------------------------------------------------------
+# Noise / short-transcript filter
+# ---------------------------------------------------------------------------
+
+class TranscriptQualityFilter(FrameProcessor):
+    """
+    Drop transcripts that are clearly noise artifacts (too short or blank).
+    In loud environments, background noise can trigger STT and produce
+    garbled 1-2 word outputs that confuse the LLM and cause freezes.
+    """
+    MIN_WORDS = 2
+    MIN_CHARS = 8
+
+    async def process_frame(self, frame, direction):
+        if isinstance(frame, TranscriptionFrame):
+            text = (frame.text or "").strip()
+            words = text.split()
+            if len(words) < self.MIN_WORDS or len(text) < self.MIN_CHARS:
+                logger.debug(f"[TranscriptFilter] Dropped noise artifact: {repr(text)}")
+                return  # swallow — don't pass to LLM
+        await self.push_frame(frame, direction)
+
+
+# ---------------------------------------------------------------------------
 # Main pipeline builder
 # ---------------------------------------------------------------------------
 
@@ -516,15 +542,24 @@ async def create_receptionist_pipeline(
     user_aggregator, assistant_aggregator = LLMContextAggregatorPair(
         context,
         user_params=LLMUserAggregatorParams(
-            vad_analyzer=SileroVADAnalyzer(),
+            # Require 400ms of continuous speech before triggering (default ~100ms).
+            # This filters out brief background noise bursts in loud rooms.
+            # stop_secs=1.2 gives the caller time to pause mid-sentence naturally.
+            vad_analyzer=SileroVADAnalyzer(
+                params=VADParams(start_secs=0.4, stop_secs=1.2)
+            ),
         ),
     )
+
+    # --- Noise filter ---
+    transcript_filter = TranscriptQualityFilter()
 
     # --- Pipeline ---
     pipeline = Pipeline(
         [
             transport.input(),
             stt,
+            transcript_filter,   # drop garbled/noise transcripts before LLM sees them
             user_aggregator,
             llm,
             tts,

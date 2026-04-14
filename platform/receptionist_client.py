@@ -295,6 +295,7 @@ def send_email(to_email, subject, body):
 
 async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_number="unknown"):
     from pipecat.audio.vad.silero import SileroVADAnalyzer
+    from pipecat.audio.vad.vad_analyzer import VADParams
     from pipecat.pipeline.pipeline import Pipeline
     from pipecat.pipeline.runner import PipelineRunner
     from pipecat.pipeline.task import PipelineParams, PipelineTask
@@ -314,7 +315,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
             audio_out_enabled=True,
             add_wav_header=False,
             vad_enabled=True,
-            vad_analyzer=SileroVADAnalyzer(),
+            vad_analyzer=SileroVADAnalyzer(params=VADParams(start_secs=0.2, stop_secs=0.8)),
             vad_audio_passthrough=True,
             serializer=TwilioFrameSerializer(
                 stream_sid=stream_sid,

@@ -329,17 +329,11 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     from pipecat.services.deepgram.stt import DeepgramSTTService
     stt = DeepgramSTTService(api_key=DEEPGRAM_KEY)
 
-    # Use Groq with the fastest model — llama-3.1-8b-instant is ~10x faster than 70b
-    # and more than capable for a receptionist. Falls back to llama-3.3-70b if 8b fails,
-    # then Cerebras as last resort.
-    logger.info(f"[{CLIENT_ID}] Using Groq LLM (llama-3.1-8b-instant)")
+    logger.info(f"[{CLIENT_ID}] Using Groq LLM (llama-3.3-70b-versatile)")
     llm = OpenAILLMService(
         api_key=GROQ_KEY,
-        model="llama-3.1-8b-instant",
+        model="llama-3.3-70b-versatile",
         base_url="https://api.groq.com/openai/v1",
-        params=OpenAILLMService.InputParams(
-            extra={"timeout": 8}  # 8s hard timeout — never hang forever
-        ),
     )
 
     tts = CartesiaTTSService(api_key=CARTESIA_KEY, voice_id=CARTESIA_VOICE)

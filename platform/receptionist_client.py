@@ -668,22 +668,6 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         messages.append({"role": "system", "content": f"Greet the caller. Say something like: {greeting}"})
         await task.queue_frames([context_aggregator.user().get_context_frame()])
 
-        # Silence watchdog — if bot goes quiet for 8s mid-call, nudge it back
-        import asyncio
-        from pipecat.frames.frames import TTSSpeakFrame
-        _last_tts_time = [asyncio.get_event_loop().time()]
-
-        async def silence_watchdog():
-            await asyncio.sleep(5)  # give greeting time to play
-            while True:
-                await asyncio.sleep(2)
-                silent_secs = asyncio.get_event_loop().time() - _last_tts_time[0]
-                if silent_secs > 8:
-                    logger.warning(f"[{CLIENT_ID}] Silence watchdog triggered after {silent_secs:.1f}s")
-                    await task.queue_frames([TTSSpeakFrame("Sorry about that, I'm still here. How can I help you?")])
-                    _last_tts_time[0] = asyncio.get_event_loop().time()
-
-        asyncio.create_task(silence_watchdog())
 
         # 5-minute max call timer
         import asyncio

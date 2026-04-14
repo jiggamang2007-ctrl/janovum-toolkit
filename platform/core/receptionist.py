@@ -443,8 +443,8 @@ class TranscriptQualityFilter(FrameProcessor):
     In loud environments, background noise can trigger STT and produce
     garbled 1-2 word outputs that confuse the LLM and cause freezes.
     """
-    MIN_WORDS = 2
-    MIN_CHARS = 8
+    MIN_WORDS = 1
+    MIN_CHARS = 2
 
     async def process_frame(self, frame, direction):
         if isinstance(frame, TranscriptionFrame):

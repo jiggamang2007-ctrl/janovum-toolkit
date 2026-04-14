@@ -52,7 +52,7 @@ TWILIO_AUTH_TOKEN = _tk_auth or CLIENT_CONFIG.get("twilio_auth_token", "")
 DEEPGRAM_KEY = CLIENT_CONFIG.get("deepgram_api_key", "")
 GROQ_KEY = CLIENT_CONFIG.get("groq_api_key", "")
 CEREBRAS_KEY = CLIENT_CONFIG.get("cerebras_api_key", "")
-CARTESIA_KEY = _cartesia_cfg.get("api_key") or CLIENT_CONFIG.get("cartesia_api_key", "")
+CARTESIA_KEY = CLIENT_CONFIG.get("cartesia_api_key", "")
 CARTESIA_VOICE = CLIENT_CONFIG.get("cartesia_voice_id", "9626c31c-bec5-4cca-baa8-f8ba9e84c8bc")
 
 # Tunnel URL — reads from tunnel_url.txt (written by start_tunnel.py), env var, or fallback

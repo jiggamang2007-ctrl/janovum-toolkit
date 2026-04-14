@@ -329,36 +329,18 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
     from pipecat.services.deepgram.stt import DeepgramSTTService
     stt = DeepgramSTTService(api_key=DEEPGRAM_KEY)
 
-    # Try Groq first, fall back to Cerebras if rate limited
-    _use_groq = True
-    try:
-        import httpx
-        test = httpx.get("https://api.groq.com/openai/v1/models",
-            headers={"Authorization": f"Bearer {GROQ_KEY}"},
-            timeout=5)
-        if test.status_code != 200:
-            _use_groq = False
-        # Also check remaining tokens from rate limit headers
-        remaining = test.headers.get("x-ratelimit-remaining-tokens", "999999")
-        if int(remaining) < 5000:
-            _use_groq = False
-    except Exception:
-        _use_groq = False
-
-    if _use_groq:
-        logger.info(f"[{CLIENT_ID}] Using Groq LLM")
-        llm = OpenAILLMService(
-            api_key=GROQ_KEY,
-            model="llama-3.3-70b-versatile",
-            base_url="https://api.groq.com/openai/v1",
-        )
-    else:
-        logger.info(f"[{CLIENT_ID}] Using Cerebras LLM (Groq unavailable)")
-        llm = OpenAILLMService(
-            api_key=CEREBRAS_KEY,
-            model="qwen-3-235b-a22b-instruct-2507",
-            base_url="https://api.cerebras.ai/v1",
-        )
+    # Use Groq with the fastest model — llama-3.1-8b-instant is ~10x faster than 70b
+    # and more than capable for a receptionist. Falls back to llama-3.3-70b if 8b fails,
+    # then Cerebras as last resort.
+    logger.info(f"[{CLIENT_ID}] Using Groq LLM (llama-3.1-8b-instant)")
+    llm = OpenAILLMService(
+        api_key=GROQ_KEY,
+        model="llama-3.1-8b-instant",
+        base_url="https://api.groq.com/openai/v1",
+        params=OpenAILLMService.InputParams(
+            extra={"timeout": 8}  # 8s hard timeout — never hang forever
+        ),
+    )
 
     tts = CartesiaTTSService(api_key=CARTESIA_KEY, voice_id=CARTESIA_VOICE)
 
@@ -685,6 +667,23 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
         logger.info(f"[{CLIENT_ID}] Client connected — greeting")
         messages.append({"role": "system", "content": f"Greet the caller. Say something like: {greeting}"})
         await task.queue_frames([context_aggregator.user().get_context_frame()])
+
+        # Silence watchdog — if bot goes quiet for 8s mid-call, nudge it back
+        import asyncio
+        from pipecat.frames.frames import TTSSpeakFrame
+        _last_tts_time = [asyncio.get_event_loop().time()]
+
+        async def silence_watchdog():
+            await asyncio.sleep(5)  # give greeting time to play
+            while True:
+                await asyncio.sleep(2)
+                silent_secs = asyncio.get_event_loop().time() - _last_tts_time[0]
+                if silent_secs > 8:
+                    logger.warning(f"[{CLIENT_ID}] Silence watchdog triggered after {silent_secs:.1f}s")
+                    await task.queue_frames([TTSSpeakFrame("Sorry about that, I'm still here. How can I help you?")])
+                    _last_tts_time[0] = asyncio.get_event_loop().time()
+
+        asyncio.create_task(silence_watchdog())
 
         # 5-minute max call timer
         import asyncio

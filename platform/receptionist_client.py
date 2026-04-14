@@ -87,12 +87,61 @@ DAILY_CALL_LIMIT = CLIENT_CONFIG.get("daily_call_limit", 50)
 COST_PER_MINUTE = 0.023
 
 import time
-from datetime import date, datetime
+import re
+from datetime import date, datetime, timedelta
 
 app = FastAPI()
 
 # Appointments file for this client
 APPTS_PATH = Path(CONFIG_PATH).parent / f"{CLIENT_ID}_appointments.json"
+
+MONTHS = {"january":1,"february":2,"march":3,"april":4,"may":5,"june":6,
+          "july":7,"august":8,"september":9,"october":10,"november":11,"december":12}
+DAYS = {"monday":0,"tuesday":1,"wednesday":2,"thursday":3,"friday":4,"saturday":5,"sunday":6}
+
+def normalize_date(raw: str) -> str:
+    """Convert any date string the LLM produces into YYYY-MM-DD."""
+    if not raw:
+        return raw
+    s = raw.strip().lower()
+    today = date.today()
+
+    if s in ("today",):
+        return today.isoformat()
+    if s in ("tomorrow",):
+        return (today + timedelta(days=1)).isoformat()
+
+    # Already YYYY-MM-DD
+    if re.match(r'^\d{4}-\d{2}-\d{2}$', s):
+        return s
+
+    # Day name like "wednesday"
+    if s in DAYS:
+        target_wd = DAYS[s]
+        days_ahead = (target_wd - today.weekday()) % 7
+        if days_ahead == 0:
+            days_ahead = 7
+        return (today + timedelta(days=days_ahead)).isoformat()
+
+    # "April 15th", "April 15", "april 15, 2026", "15 april 2026"
+    s_clean = re.sub(r'(st|nd|rd|th)\b', '', s).strip()
+    for month_name, month_num in MONTHS.items():
+        if month_name in s_clean:
+            nums = re.findall(r'\d+', s_clean)
+            day = None
+            year = today.year
+            for n in nums:
+                n = int(n)
+                if 1 <= n <= 31:
+                    day = n
+                elif n > 31:
+                    year = n
+            if day:
+                try:
+                    return date(year, month_num, day).isoformat()
+                except ValueError:
+                    pass
+    return raw  # fallback — return as-is if we can't parse
 
 
 class DailyTracker:
@@ -609,7 +658,7 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
             "business_name": BUSINESS_NAME,
             "name": args.get("name", "Unknown"),
             "phone": caller_phone_display,
-            "date": args.get("date", ""),
+            "date": normalize_date(args.get("date", "")),
             "time": args.get("time", ""),
             "service": args.get("service", ""),
             "notes": notes_with_script,

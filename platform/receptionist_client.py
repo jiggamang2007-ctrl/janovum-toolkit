@@ -607,16 +607,27 @@ async def run_bot(websocket, stream_sid, call_sid="", account_sid="", from_numbe
                     potential = p
                     break
 
+        caller_phone_display = args.get("phone", from_number)
+        text_script = (
+            f"Hi {args.get('name', 'there')}! Your appointment is confirmed. "
+            f"{args.get('service', '')} on {args.get('date', '')} at {args.get('time', '')}. "
+            f"See you then! - {BUSINESS_NAME}"
+        )
+        notes_with_script = (
+            (args.get("notes", "") + "\n\n" if args.get("notes") else "") +
+            f"📱 TEXT TO SEND: {caller_phone_display}\n{text_script}"
+        )
+
         appointment = {
             "id": str(_uuid.uuid4())[:8],
             "client_id": CLIENT_ID,
             "business_name": BUSINESS_NAME,
             "name": args.get("name", "Unknown"),
-            "phone": args.get("phone", from_number),
+            "phone": caller_phone_display,
             "date": args.get("date", ""),
             "time": args.get("time", ""),
             "service": args.get("service", ""),
-            "notes": args.get("notes", ""),
+            "notes": notes_with_script,
             "status": "confirmed",
             "payment_status": "pending",
             "potential_income": potential,

@@ -154,13 +154,11 @@ if old_deploy_save in c:
     print("Fixed deploy client payload serialization")
 
 # ─────────────────────────────────────────────────────────
-# VERIFY
+# SAVE FIRST, then verify
 # ─────────────────────────────────────────────────────────
-print(f"\nFinal: {len(c):,} chars")
-print(f"_safeLS calls: {c.count('_safeLS(')}")
-print(f"Remaining raw JSON.parse(localStorage: {len(re.findall(r'JSON\\.parse\\(localStorage\\.getItem\\(', c))}")
-print(f"switchTab: {c.count('function switchTab')}")
-
 with open(SRC, 'w', encoding='utf-8') as f:
     f.write(c)
 print("\nSaved.")
+print(f"Final: {len(c):,} chars")
+print(f"_safeLS calls: {c.count('_safeLS(')}")
+print(f"switchTab: {c.count('function switchTab')}")

@@ -230,7 +230,31 @@ def toolkit():
 
 @app.route("/toolkit/admin")
 def toolkit_admin():
-    return _no_cache_html(send_from_directory(PARENT_DIR, "Janovum_Platform_v2.html"))
+    html_path = os.path.join(PARENT_DIR, "Janovum_Platform_v3.html")
+    try:
+        with open(html_path, "r", encoding="utf-8") as f:
+            html = f.read()
+    except FileNotFoundError:
+        return "Toolkit HTML not found", 404
+    # Inject admin auto-login — calls tkLoginAs after all page JS loads
+    admin_script = """<script>
+// Auto-login as admin after all scripts load (avoids variable conflict with let tkUser in page JS)
+window.addEventListener('load', function() {
+    if (typeof tkLoginAs === 'function') {
+        tkLoginAs('jaden', {displayName: 'Jaden', role: 'admin'});
+    } else {
+        // Fallback: just hide auth screen
+        var as = document.getElementById('authScreen');
+        if (as) as.classList.add('hidden');
+    }
+});
+</script>"""
+    html = html.replace("<head>", "<head>" + admin_script, 1)
+    resp = Response(html, mimetype="text/html")
+    resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 @app.route("/toolkit/v1")
 def toolkit_v1():
@@ -4992,7 +5016,7 @@ app.register_blueprint(user_bp, url_prefix="/api/u")
 @app.route("/toolkit/guest")
 def toolkit_guest():
     """Serve the toolkit in guest/preview mode — all API calls return mock empty data."""
-    html_path = os.path.join(PARENT_DIR, "Janovum_Platform_v2.html")
+    html_path = os.path.join(PARENT_DIR, "Janovum_Platform_v3.html")
     try:
         with open(html_path, "r", encoding="utf-8") as f:
             html = f.read()
@@ -5100,13 +5124,26 @@ def toolkit_guest():
         return _origOpen.apply(this, arguments);
     };
 
-    // Add guest banner + sign-up button after page loads
+    // Auto-enter guest mode after page loads — hide auth screen, show platform
     window.addEventListener('DOMContentLoaded', function() {
+        // Hide the auth screen overlay
+        var as = document.getElementById('authScreen');
+        if (as) as.classList.add('hidden');
+
+        // Use enterGuest() if available, otherwise set guest state manually
+        if (typeof enterGuest === 'function') {
+            enterGuest();
+        } else {
+            var gb = document.getElementById('guestBanner');
+            if (gb) gb.classList.add('show');
+        }
+
+        // Add guest banner bar at top
         var bar = document.createElement('div');
+        bar.setAttribute('data-guest-banner', '1');
         bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:linear-gradient(90deg,#a78bfa,#7c3aed);color:#fff;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:16px;';
-        bar.innerHTML = 'You are viewing as a guest — nothing saves. <a href="/toolkit/use/login" style="color:#fff;background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:6px;text-decoration:none;font-size:13px;">Sign Up Free</a>';
-        document.body.appendChild(bar);
-        // Push body content down
+        bar.innerHTML = 'You are viewing as a guest \u2014 nothing saves. <a href="/toolkit/use/login" style="color:#fff;background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:6px;text-decoration:none;font-size:13px;">Sign Up Free</a>';
+        document.body.insertBefore(bar, document.body.firstChild);
         document.body.style.paddingTop = '44px';
     });
 })();

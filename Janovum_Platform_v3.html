@@ -14,7 +14,21 @@
   }
   body { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow-x: hidden; }
 
-  /* ── SCROLLBAR ── */
+  
+  /* ── NAV GROUP LABELS ── */
+  .nav-group-label {
+    font-size: 0.6em;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--dim);
+    padding: 14px 16px 4px;
+    margin-top: 4px;
+    user-select: none;
+    pointer-events: none;
+  }
+  .nav-group-label:first-child { padding-top: 6px; margin-top: 0; }
+/* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
@@ -328,56 +342,50 @@
     <span>Platform v9 — 24/7 Autonomous</span>
   </div>
   <nav class="sidebar-nav" id="sidebarNav">
-    <!-- BUSINESS ESSENTIALS — What clients use daily -->
-    <div class="nav-item active" data-tab="dashboard"><span class="nav-icon">&#9632;</span> Dashboard</div>
-    <div class="nav-item" data-tab="howto" style="border-left:3px solid var(--blue)33"><span class="nav-icon">&#128218;</span> How to Use</div>
-    <div class="nav-item" data-tab="idealab"><span class="nav-icon">&#128161;</span> Idea Lab <span class="nav-badge" style="background:linear-gradient(135deg,var(--gold),var(--green))">NEW</span></div>
+    <!-- CUSTOM GROUPS (populated by JS) -->
+
+    <div class="nav-group-label">BUSINESS ESSENTIALS</div>
+    <div class="nav-item" data-tab="dashboard"><span class="nav-icon">&#9632;</span> Dashboard</div>
     <div class="nav-item" data-tab="clients"><span class="nav-icon">&#128101;</span> Clients <span class="nav-badge" id="clientBadgeCount" style="display:none">0</span></div>
     <div class="nav-item" data-tab="crm"><span class="nav-icon">&#128200;</span> CRM</div>
     <div class="nav-item" data-tab="receptionist"><span class="nav-icon">&#128222;</span> Receptionist</div>
     <div class="nav-item" data-tab="copilot"><span class="nav-icon">&#127911;</span> Sales Co-Pilot <span class="nav-badge" style="background:var(--green)">LIVE</span></div>
     <div class="nav-item" data-tab="payments"><span class="nav-icon">&#128176;</span> Payments</div>
-    <div class="nav-item" data-tab="crypto" style="background:linear-gradient(135deg,rgba(147,51,234,0.08),rgba(236,72,153,0.08));border-left:2px solid #9333ea"><span class="nav-icon">&#9670;</span> Crypto Trading <span class="nav-badge" style="background:linear-gradient(135deg,#9333ea,#ec4899)">AI</span></div>
     <div class="nav-item" data-tab="analytics"><span class="nav-icon">&#128202;</span> Analytics</div>
     <div class="nav-item" data-tab="scheduler"><span class="nav-icon">&#128339;</span> Scheduler</div>
-    <!-- COMMUNITY & SKILLS — Browse and add to your arsenal -->
+
+    <div class="nav-group-label">GROWTH</div>
+    <div class="nav-item" data-tab="idealab"><span class="nav-icon">&#128161;</span> Idea Lab <span class="nav-badge" style="background:linear-gradient(135deg,var(--gold),var(--green))">NEW</span></div>
+    <div class="nav-item" data-tab="proposals"><span class="nav-icon">&#128196;</span> Proposals</div>
     <div class="nav-item" data-tab="community"><span class="nav-icon">&#127758;</span> Community</div>
     <div class="nav-item" data-tab="skills"><span class="nav-icon">&#128161;</span> Self-Extending Skills</div>
-    <div class="nav-item" data-tab="tools"><span class="nav-icon">&#128295;</span> Tools <span class="nav-badge">185</span></div>
-    <!-- AGENTS & WORKFORCE -->
+
+    <div class="nav-group-label">AGENTS & AUTOMATION</div>
     <div class="nav-item" data-tab="employees"><span class="nav-icon">&#128188;</span> AI Employees <span class="nav-badge" style="background:var(--green)">56</span></div>
     <div class="nav-item" data-tab="multiagent"><span class="nav-icon">&#129309;</span> Agent Teams</div>
     <div class="nav-item" data-tab="workflows"><span class="nav-icon">&#128260;</span> Workflows</div>
     <div class="nav-item" data-tab="proactive"><span class="nav-icon">&#9889;</span> Proactive Agent <span class="nav-badge" style="background:var(--green)">24/7</span></div>
     <div class="nav-item" data-tab="director"><span class="nav-icon">&#129504;</span> Director</div>
-    <!-- COMMUNICATION & MARKETING -->
+
+    <div class="nav-group-label">COMMUNICATION</div>
     <div class="nav-item" data-tab="channels"><span class="nav-icon">&#128172;</span> Channels <span class="nav-badge" style="background:var(--blue)">12</span></div>
     <div class="nav-item" data-tab="social"><span class="nav-icon">&#128227;</span> Social Hub</div>
     <div class="nav-item" data-tab="voice"><span class="nav-icon">&#9835;</span> Voice</div>
-    <!-- POWER TOOLS -->
+
+    <div class="nav-group-label">POWER TOOLS</div>
     <div class="nav-item" data-tab="chat"><span class="nav-icon">&#9993;</span> Terminal & API</div>
     <div class="nav-item" data-tab="computer"><span class="nav-icon">&#128421;</span> Computer Use</div>
     <div class="nav-item" data-tab="browser"><span class="nav-icon">&#127760;</span> Browser Agent</div>
     <div class="nav-item" data-tab="media"><span class="nav-icon">&#127912;</span> Media Studio</div>
     <div class="nav-item" data-tab="files"><span class="nav-icon">&#128193;</span> Files</div>
     <div class="nav-item" data-tab="knowledge"><span class="nav-icon">&#128218;</span> Knowledge</div>
-    <!-- INFRASTRUCTURE & ADMIN -->
-    <div class="nav-item" data-tab="models"><span class="nav-icon">&#129302;</span> Model Router</div>
-    <div class="nav-item" data-tab="mcp"><span class="nav-icon">&#128268;</span> MCP Hub <span class="nav-badge" style="background:var(--purple)">10K+</span></div>
-    <div class="nav-item" data-tab="deploy"><span class="nav-icon">&#128640;</span> Deploy Center</div>
-    <div class="nav-item" data-tab="security"><span class="nav-icon">&#128737;</span> Security</div>
-    <div class="nav-item" data-tab="healing"><span class="nav-icon">&#128296;</span> Self-Healing</div>
-    <div class="nav-item" data-tab="tracing"><span class="nav-icon">&#8942;</span> Tracing & Events</div>
-    <div class="nav-item" data-tab="approvals"><span class="nav-icon">&#10003;</span> Approvals <span class="nav-badge" id="approvalBadge" style="display:none">0</span></div>
-    <div class="nav-item" data-tab="soul"><span class="nav-icon">&#9829;</span> Soul Editor</div>
-    <!-- SETUP & BILLING -->
-    <div class="nav-item" data-tab="proposals"><span class="nav-icon">&#128196;</span> Proposals</div>
+    <div class="nav-item" data-tab="tools"><span class="nav-icon">&#128295;</span> Tools <span class="nav-badge">185</span></div>
+
+    <div class="nav-group-label">SETUP & BILLING</div>
     <div class="nav-item" data-tab="billing"><span class="nav-icon">&#128179;</span> Plans & Billing</div>
     <div class="nav-item" data-tab="setup"><span class="nav-icon">&#128736;</span> Setup Wizard</div>
     <div class="nav-item" data-tab="settings"><span class="nav-icon">&#9881;</span> Settings</div>
-    <!-- CUSTOM GROUPS (populated by JS) -->
-    <div id="customGroupsContainer"></div>
-  </nav>
+</nav>
   <div class="sidebar-footer">
     <span class="status-dot" id="serverDot"></span>
     <span id="serverLabel">Connecting...</span>
@@ -3328,7 +3336,188 @@ sudo ufw enable
           <div style="grid-column:span 2"><span style="color:var(--muted)">Status:</span> <span style="color:var(--green);font-weight:600">Operational</span></div>
         </div>
       </div>
-    </div>
+    
+      <!-- ════ CONDENSED SETTINGS ACCORDION ════ -->
+      <div style="margin-top:24px">
+        <div style="font-size:0.7em;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)">ADVANCED CONFIGURATION</div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_models')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">🤖 AI Models</div>
+          <div id="settingsAccordion_models_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Configure which AI models power your agents. Switch between Claude, GPT-4, Groq, Gemini and more.</div>
+        <div id="settingsAccordion_models" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">🤖</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">AI Models</div>
+                <div style="font-size:0.72em;color:var(--muted)">Configure which AI models power your agents. Switch between Claude, GPT-4, Groq, Gemini and more.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('models');document.getElementById('settingsAccordion_models').style.display='none'">
+              Open AI Models →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_mcp')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">🔌 MCP Servers</div>
+          <div id="settingsAccordion_mcp_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Connect external tools and data sources via Model Context Protocol servers.</div>
+        <div id="settingsAccordion_mcp" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">🔌</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">MCP Servers</div>
+                <div style="font-size:0.72em;color:var(--muted)">Connect external tools and data sources via Model Context Protocol servers.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('mcp');document.getElementById('settingsAccordion_mcp').style.display='none'">
+              Open MCP Servers →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_security')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">🔒 Security</div>
+          <div id="settingsAccordion_security_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">API key management, access controls, and security audit logs.</div>
+        <div id="settingsAccordion_security" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">🔒</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">Security</div>
+                <div style="font-size:0.72em;color:var(--muted)">API key management, access controls, and security audit logs.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('security');document.getElementById('settingsAccordion_security').style.display='none'">
+              Open Security →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_healing')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">🔧 Auto-Healing</div>
+          <div id="settingsAccordion_healing_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Configure automatic error recovery and system health monitoring.</div>
+        <div id="settingsAccordion_healing" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">🔧</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">Auto-Healing</div>
+                <div style="font-size:0.72em;color:var(--muted)">Configure automatic error recovery and system health monitoring.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('healing');document.getElementById('settingsAccordion_healing').style.display='none'">
+              Open Auto-Healing →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_tracing')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">📊 Request Tracing</div>
+          <div id="settingsAccordion_tracing_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Debug and trace agent requests, tool calls, and API activity.</div>
+        <div id="settingsAccordion_tracing" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">📊</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">Request Tracing</div>
+                <div style="font-size:0.72em;color:var(--muted)">Debug and trace agent requests, tool calls, and API activity.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('tracing');document.getElementById('settingsAccordion_tracing').style.display='none'">
+              Open Request Tracing →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_approvals')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">✅ Approvals</div>
+          <div id="settingsAccordion_approvals_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Set up approval workflows for high-stakes agent actions before they execute.</div>
+        <div id="settingsAccordion_approvals" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">✅</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">Approvals</div>
+                <div style="font-size:0.72em;color:var(--muted)">Set up approval workflows for high-stakes agent actions before they execute.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('approvals');document.getElementById('settingsAccordion_approvals').style.display='none'">
+              Open Approvals →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_soul')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">💜 Agent Soul</div>
+          <div id="settingsAccordion_soul_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Define your agent's core personality, tone, and behavioral guidelines.</div>
+        <div id="settingsAccordion_soul" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">💜</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">Agent Soul</div>
+                <div style="font-size:0.72em;color:var(--muted)">Define your agent's core personality, tone, and behavioral guidelines.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('soul');document.getElementById('settingsAccordion_soul').style.display='none'">
+              Open Agent Soul →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:8px">
+        <div class="panel-header" onclick="toggleSettingsPanel('settingsAccordion_deploy')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between">
+          <div class="panel-title" style="font-size:0.88em">🚀 Deploy / VPS</div>
+          <div id="settingsAccordion_deploy_chevron" style="color:var(--dim);font-size:0.8em;transition:transform 0.2s">▼</div>
+        </div>
+        <div style="font-size:0.75em;color:var(--muted);margin-bottom:12px">Manage your VPS deployment, domain, and server configuration.</div>
+        <div id="settingsAccordion_deploy" style="display:none">
+          <div style="background:var(--bg);border-radius:8px;padding:16px;border:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+              <span style="font-size:1.5em">🚀</span>
+              <div>
+                <div style="font-weight:700;font-size:0.9em">Deploy / VPS</div>
+                <div style="font-size:0.72em;color:var(--muted)">Manage your VPS deployment, domain, and server configuration.</div>
+              </div>
+            </div>
+            <button class="btn" onclick="switchTab('deploy');document.getElementById('settingsAccordion_deploy').style.display='none'">
+              Open Deploy / VPS →
+            </button>
+          </div>
+        </div>
+      </div>
+      </div>
+</div>
 
     <!-- ═══ AI EMPLOYEES TAB ═══ -->
     <div class="tab-pane" id="tab-employees">
@@ -5492,287 +5681,7 @@ sudo ufw enable
       </div>
     </div>
 
-    <!-- ═══ CRYPTO TRADING TAB ═══ -->
-    <div class="tab-pane" id="tab-crypto">
-
-      <!-- Header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-        <div>
-          <div style="font-size:1.3em;font-weight:900;background:linear-gradient(135deg,#9333ea,#ec4899,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Crypto Trading</div>
-          <div style="font-size:0.78em;color:var(--muted);margin-top:4px">AI-powered memecoin trading on Solana. Smart entries, rug protection, automated profit taking.</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <span id="ct-bot-indicator" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:0.78em;font-weight:700;background:rgba(255,82,82,0.12);color:var(--red);border:1px solid rgba(255,82,82,0.2)">
-            <span style="width:8px;height:8px;border-radius:50%;background:currentColor;animation:none" id="ct-dot"></span> STOPPED
-          </span>
-          <button class="btn" id="ct-start-btn" onclick="ctToggleBot()" style="background:linear-gradient(135deg,#9333ea,#ec4899);border:none;font-weight:700">Start Bot</button>
-        </div>
-      </div>
-
-      <!-- Solana Overview Stats -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px">
-        <div class="stat-card" style="border-color:#9333ea33">
-          <div class="stat-label">SOL Balance</div>
-          <div class="stat-value" style="color:#9333ea" id="ct-sol-balance">--</div>
-          <div class="stat-sub" id="ct-wallet-addr">Not connected</div>
-        </div>
-        <div class="stat-card" style="border-color:#ec489933">
-          <div class="stat-label">Today's PnL</div>
-          <div class="stat-value" id="ct-today-pnl" style="color:var(--green)">$0.00</div>
-          <div class="stat-sub" id="ct-today-pnl-sol">0 SOL</div>
-        </div>
-        <div class="stat-card" style="border-color:#f59e0b33">
-          <div class="stat-label">Total PnL</div>
-          <div class="stat-value" id="ct-total-pnl" style="color:var(--green)">$0.00</div>
-          <div class="stat-sub" id="ct-total-trades">0 trades</div>
-        </div>
-        <div class="stat-card" style="border-color:#00c85333">
-          <div class="stat-label">Win Rate</div>
-          <div class="stat-value green" id="ct-win-rate">--%</div>
-          <div class="stat-sub" id="ct-wins-losses">0W / 0L</div>
-        </div>
-        <div class="stat-card" style="border-color:#42a5f533">
-          <div class="stat-label">Open Positions</div>
-          <div class="stat-value blue" id="ct-open-count">0</div>
-          <div class="stat-sub" id="ct-trades-today">0/3 trades today</div>
-        </div>
-        <div class="stat-card" style="border-color:#ffffff11">
-          <div class="stat-label">Tokens Scanned</div>
-          <div class="stat-value" style="color:var(--muted)" id="ct-scanned">0</div>
-          <div class="stat-sub" id="ct-last-scan">Never</div>
-        </div>
-      </div>
-
-      <!-- Time Period Tabs -->
-      <div style="display:flex;gap:6px;margin-bottom:20px">
-        <button class="btn-sm ct-period active" data-period="today" onclick="ctSetPeriod('today',this)">Today</button>
-        <button class="btn-sm ct-period" data-period="week" onclick="ctSetPeriod('week',this)">This Week</button>
-        <button class="btn-sm ct-period" data-period="month" onclick="ctSetPeriod('month',this)">This Month</button>
-        <button class="btn-sm ct-period" data-period="all" onclick="ctSetPeriod('all',this)">All Time</button>
-      </div>
-
-      <style>
-        .ct-period { background:#111;border:1px solid #222;color:var(--dim);font-weight:600; }
-        .ct-period.active { background:linear-gradient(135deg,#9333ea22,#ec489922);color:#ec4899;border-color:#9333ea55; }
-        .ct-token-row { display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr 1fr auto;gap:8px;align-items:center;padding:10px 14px;border-bottom:1px solid #111;font-size:0.78em;transition:background 0.15s; }
-        .ct-token-row:hover { background:#ffffff06; }
-        .ct-token-header { color:var(--dim);font-weight:700;text-transform:uppercase;font-size:0.68em;letter-spacing:0.05em; }
-        .ct-pnl-pos { color:var(--green);font-weight:700; }
-        .ct-pnl-neg { color:var(--red);font-weight:700; }
-        .ct-badge { display:inline-block;padding:2px 8px;border-radius:4px;font-size:0.7em;font-weight:700; }
-        .ct-badge-open { background:rgba(66,165,245,0.15);color:var(--blue); }
-        .ct-badge-closed { background:rgba(0,200,83,0.15);color:var(--green); }
-        .ct-badge-failed { background:rgba(255,82,82,0.15);color:var(--red); }
-        .ct-badge-dry { background:rgba(247,201,72,0.15);color:var(--gold); }
-      </style>
-
-      <!-- Open Positions -->
-      <div class="panel" style="border-color:#9333ea33">
-        <div class="panel-header">
-          <div class="panel-title" style="color:#ec4899">Open Positions</div>
-          <span style="font-size:0.72em;color:var(--dim)" id="ct-positions-note">Real-time price tracking</span>
-        </div>
-        <div id="ct-positions-list">
-          <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No open positions. Bot will find opportunities automatically.</div>
-        </div>
-      </div>
-
-      <!-- AI Watchlist -->
-      <div class="panel" style="border-color:#f59e0b33">
-        <div class="panel-header">
-          <div class="panel-title" style="color:#f59e0b">AI Watchlist</div>
-          <span style="font-size:0.72em;color:var(--dim)">Tokens being monitored for entry</span>
-        </div>
-        <div id="ct-watchlist">
-          <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">Watchlist empty. Start the bot to scan for opportunities.</div>
-        </div>
-      </div>
-
-      <!-- Trade History -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Trade History</div>
-          <div style="display:flex;gap:8px">
-            <button class="btn-sm btn-outline" onclick="ctExportTrades()">Export CSV</button>
-            <button class="btn-sm btn-outline" onclick="ctRefreshTrades()">Refresh</button>
-          </div>
-        </div>
-        <div style="overflow-x:auto">
-          <div class="ct-token-row ct-token-header" style="border-bottom:1px solid #222">
-            <div>Token</div><div>Entry</div><div>Exit</div><div>PnL</div><div>AI Conf.</div><div>Time</div><div>Status</div>
-          </div>
-          <div id="ct-trade-history">
-            <div style="padding:30px;text-align:center;color:var(--dim);font-size:0.82em">No trades yet.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Bot Configuration -->
-      <div class="panel" style="border-color:#42a5f533">
-        <div class="panel-header">
-          <div class="panel-title">Bot Configuration</div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <label style="font-size:0.78em;color:var(--gold);display:flex;align-items:center;gap:6px;cursor:pointer">
-              <input type="checkbox" id="ct-dry-run" checked style="width:16px;height:16px;accent-color:var(--gold)"> Dry Run (Paper Trade)
-            </label>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">
-          <!-- Wallet -->
-          <div class="setup-field">
-            <label>Solana Wallet Private Key</label>
-            <input id="ct-wallet-key" type="password" placeholder="Base58 private key..." style="font-family:Consolas,monospace;font-size:0.82em">
-            <div class="hint">Never shared. Stored locally in config.json only.</div>
-          </div>
-          <div class="setup-field">
-            <label>RPC URL</label>
-            <input id="ct-rpc-url" placeholder="https://api.mainnet-beta.solana.com" value="https://api.mainnet-beta.solana.com" style="font-family:Consolas,monospace;font-size:0.82em">
-          </div>
-          <!-- Trade Settings -->
-          <div class="setup-field">
-            <label>Max SOL Per Trade</label>
-            <input id="ct-max-sol" type="number" step="0.01" value="0.1" placeholder="0.1">
-          </div>
-          <div class="setup-field">
-            <label>Max Trades Per Day</label>
-            <input id="ct-max-trades" type="number" value="3" placeholder="3">
-          </div>
-          <div class="setup-field">
-            <label>Take Profit %</label>
-            <input id="ct-tp" type="number" value="50" placeholder="50">
-            <div class="hint">Pump.fun coins move big. 50% is conservative for a good retrace.</div>
-          </div>
-          <div class="setup-field">
-            <label>Stop Loss %</label>
-            <input id="ct-sl" type="number" value="20" placeholder="20">
-          </div>
-          <div class="setup-field">
-            <label>Trailing Stop % (0 = off)</label>
-            <input id="ct-trailing" type="number" value="15" placeholder="15">
-            <div class="hint">15% = if we're up 60% and it drops to +45%, we sell. Locks gains.</div>
-          </div>
-          <div class="setup-field">
-            <label>Slippage (bps)</label>
-            <input id="ct-slippage" type="number" value="800" placeholder="800">
-            <div class="hint">800 = 8%. Low-MC pump.fun coins need higher slippage to fill.</div>
-          </div>
-          <!-- Strategy 1: Pump.fun Retrace Filters -->
-          <div style="grid-column:span 2;margin-top:8px"><div style="font-size:0.82em;font-weight:700;color:#9333ea;border-bottom:1px solid #9333ea33;padding-bottom:6px">Strategy 1: Pump.fun Retrace (Primary)</div></div>
-          <div class="setup-field">
-            <label>Min Market Cap ($)</label>
-            <input id="ct-s1-min-mc" type="number" value="5000" placeholder="5000">
-            <div class="hint">$5k-$15k sweet spot for pump.fun retraces</div>
-          </div>
-          <div class="setup-field">
-            <label>Max Market Cap ($)</label>
-            <input id="ct-s1-max-mc" type="number" value="15000" placeholder="15000">
-          </div>
-          <div class="setup-field">
-            <label>Min Trades/Minute</label>
-            <input id="ct-s1-min-tpm" type="number" value="3" placeholder="3">
-            <div class="hint">3+ = active. 6+ = very active (trade every ~10 sec)</div>
-          </div>
-          <div class="setup-field">
-            <label>Min Drop From Peak %</label>
-            <input id="ct-s1-min-drop" type="number" value="50" placeholder="50">
-            <div class="hint">Only enter coins that dumped 50%+ from their high</div>
-          </div>
-          <div class="setup-field">
-            <label>Min Unique Holders</label>
-            <input id="ct-s1-min-holders" type="number" value="30" placeholder="30">
-          </div>
-          <div class="setup-field">
-            <label>Max Dev Holding %</label>
-            <input id="ct-s1-max-dev" type="number" value="5" placeholder="5">
-            <div class="hint">Reject if dev holds more than this %</div>
-          </div>
-          <div class="setup-field">
-            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ct-s1-reject-bundled" checked style="width:16px;height:16px;accent-color:var(--red)"> Reject Bundled Launches</label>
-            <div class="hint">Bundled = dev bought own supply to fake volume. Always reject.</div>
-          </div>
-          <div class="setup-field">
-            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ct-s1-require-narrative" checked style="width:16px;height:16px;accent-color:var(--gold)"> Require Good Narrative</label>
-            <div class="hint">Coin name/symbol must be catchy or match trending keywords</div>
-          </div>
-          <!-- Strategy 2: Volume Spike -->
-          <div style="grid-column:span 2;margin-top:8px"><div style="font-size:0.82em;font-weight:700;color:#ec4899;border-bottom:1px solid #ec489933;padding-bottom:6px">Strategy 2: Volume Spike Hunter</div></div>
-          <div class="setup-field">
-            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="ct-s2-enabled" checked style="width:16px;height:16px;accent-color:#ec4899"> Enable Volume Spike Strategy</label>
-          </div>
-          <div class="setup-field">
-            <label>Volume Spike Multiplier</label>
-            <input id="ct-s2-spike" type="number" value="3" placeholder="3">
-            <div class="hint">3x = volume is 3 times higher than normal in last 5 min</div>
-          </div>
-          <div class="setup-field">
-            <label>Min Buy Ratio</label>
-            <input id="ct-s2-buy-ratio" type="number" step="0.05" value="0.55" placeholder="0.55">
-            <div class="hint">0.55 = at least 55% of spike trades are buys</div>
-          </div>
-          <!-- General -->
-          <div style="grid-column:span 2;margin-top:8px"><div style="font-size:0.82em;font-weight:700;color:var(--blue);border-bottom:1px solid var(--blue)33;padding-bottom:6px">General</div></div>
-          <div class="setup-field">
-            <label>Scan Interval (seconds)</label>
-            <input id="ct-scan-interval" type="number" value="15" placeholder="15">
-            <div class="hint">15s = fast scanning. 30s = lighter on APIs.</div>
-          </div>
-          <div class="setup-field">
-            <label>AI Model</label>
-            <select id="ct-ai-model" style="width:100%;padding:10px 12px;background:#111;border:1px solid #222;border-radius:8px;color:var(--text);font-size:0.85em">
-              <option value="claude-haiku-4-5-20251001">Claude Haiku (fast + cheap)</option>
-              <option value="claude-sonnet-4-20250514">Claude Sonnet (smarter)</option>
-              <option value="">Disabled (filter-only mode)</option>
-            </select>
-            <div class="hint">AI analyzes narratives, chart patterns, and entry timing. Haiku costs ~$0.001/analysis.</div>
-          </div>
-        </div>
-        <div style="margin-top:16px;display:flex;gap:10px">
-          <button class="btn" onclick="ctSaveConfig()" style="background:linear-gradient(135deg,#9333ea,#ec4899)">Save Configuration</button>
-          <button class="btn-outline" onclick="ctLoadConfig()">Reset to Saved</button>
-        </div>
-      </div>
-
-      <!-- Strategy Explainer -->
-      <div class="panel" style="border-color:#ffffff0a">
-        <div class="panel-header"><div class="panel-title">How The AI Trading Strategy Works</div></div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;font-size:0.78em">
-          <div style="background:#0d0d0d;border:1px solid #9333ea22;border-radius:10px;padding:16px">
-            <div style="font-size:1.4em;margin-bottom:8px">&#128270;</div>
-            <div style="font-weight:700;color:#9333ea;margin-bottom:6px">1. Scan Pump.fun</div>
-            <div style="color:var(--muted);line-height:1.5">Monitors active pump.fun coins at $5k-$15k market cap. Finds coins that pumped then crashed but still have trades every 5-10 seconds.</div>
-          </div>
-          <div style="background:#0d0d0d;border:1px solid #ec489922;border-radius:10px;padding:16px">
-            <div style="font-size:1.4em;margin-bottom:8px">&#128737;</div>
-            <div style="font-weight:700;color:#ec4899;margin-bottom:6px">2. Rug + Bundle Check</div>
-            <div style="color:var(--muted);line-height:1.5">Rejects bundled launches (dev bought own supply), checks holder distribution, top wallets, and RugCheck.xyz safety score. No rugs get through.</div>
-          </div>
-          <div style="background:#0d0d0d;border:1px solid #f59e0b22;border-radius:10px;padding:16px">
-            <div style="font-size:1.4em;margin-bottom:8px">&#129302;</div>
-            <div style="font-weight:700;color:#f59e0b;margin-bottom:6px">3. AI Analysis (Claude)</div>
-            <div style="color:var(--muted);line-height:1.5">Claude reads the coin's name, narrative, chart trajectory, and buy/sell flow. Scores bounce probability and decides: enter or wait.</div>
-          </div>
-          <div style="background:#0d0d0d;border:1px solid #00c85322;border-radius:10px;padding:16px">
-            <div style="font-size:1.4em;margin-bottom:8px">&#128200;</div>
-            <div style="font-weight:700;color:var(--green);margin-bottom:6px">4. Wait for Reversal</div>
-            <div style="color:var(--muted);line-height:1.5">Watches for buying pressure to return. When buys outnumber sells and the chart starts turning, that's the entry. Patience is key — 2-3 trades/day max.</div>
-          </div>
-          <div style="background:#0d0d0d;border:1px solid #42a5f522;border-radius:10px;padding:16px">
-            <div style="font-size:1.4em;margin-bottom:8px">&#128184;</div>
-            <div style="font-weight:700;color:var(--blue);margin-bottom:6px">5. Smart Exit</div>
-            <div style="color:var(--muted);line-height:1.5">Takes profit at 50% (pump.fun coins move big), stops loss at 20%, trails 15% from peak. AI can also recommend early exits if momentum dies.</div>
-          </div>
-          <div style="background:#0d0d0d;border:1px solid #ffffff11;border-radius:10px;padding:16px">
-            <div style="font-size:1.4em;margin-bottom:8px">&#9889;</div>
-            <div style="font-weight:700;color:var(--text);margin-bottom:6px">6. Volume Spike (Bonus)</div>
-            <div style="color:var(--muted);line-height:1.5">Separate strategy: detects sudden buying spikes on low-MC coins. When a quiet coin gets 3x its normal volume in 5 minutes, it flags it for review.</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ═══ ANALYTICS TAB ═══ -->
-    <div class="tab-pane" id="tab-analytics">
+    <!-- ═══ CRYPTO TRADING TAB ═══ --><div class="tab-pane" id="tab-analytics">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
         <div>
           <div style="font-size:1.15em;font-weight:800;background:linear-gradient(135deg,var(--purple),var(--blue));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Business Analytics</div>
@@ -6668,7 +6577,6 @@ const TAB_TITLES = {
   knowledge: ['Knowledge', 'Persistent Memory & Learning'],
   workflows: ['Workflows', 'Multi-Step Automations'],
   payments: ['Payments', 'Invoices, Crypto Wallets & Bank Cards'],
-  crypto: ['Crypto Trading', 'AI Memecoin Bot — Solana Smart Entries & Auto Profit'],
   channels: ['Channel Hub', '8+ Platforms — One Brain'],
   proactive: ['Proactive Agent', '24/7 Autonomous — Never Sleeps'],
   models: ['Model Router', 'Any LLM — Auto-Selects the Best'],
@@ -19841,6 +19749,17 @@ window.addEventListener('load', () => {
   renderCommunityMyCreations();
 });
 
+</script>
+
+<script>
+function toggleSettingsPanel(id) {
+  var el = document.getElementById(id);
+  var chevron = document.getElementById(id + '_chevron');
+  if (!el) return;
+  var open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.style.transform = open ? '' : 'rotate(180deg)';
+}
 </script>
 </body>
 </html>

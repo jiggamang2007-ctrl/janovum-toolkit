@@ -3397,6 +3397,27 @@ def crm_update_contact(contact_id):
     return jsonify({"ok": True})
 
 
+@app.route("/api/crm/leads", methods=["GET"])
+def crm_leads_for_page():
+    """Serve leads in Janovum_CRM.html format: business, owner, phone, email, industry, notes."""
+    contacts = _crm_load()
+    leads = []
+    for c in contacts:
+        leads.append({
+            "business": c.get("company", c.get("business", "")),
+            "owner":    c.get("name",    c.get("owner",    "")),
+            "phone":    c.get("phone",   ""),
+            "email":    c.get("email",   ""),
+            "industry": c.get("industry", c.get("role", "Business Owner")),
+            "method":   c.get("method",  "phone"),
+            "address":  c.get("address", ""),
+            "notes":    c.get("notes",   ""),
+            "source":   c.get("source",  ""),
+            "tags":     c.get("tags",    ""),
+        })
+    return jsonify(leads)
+
+
 # ══════════════════════════════════════════
 # MARKETPLACE — Browse & Deploy Templates
 # ══════════════════════════════════════════

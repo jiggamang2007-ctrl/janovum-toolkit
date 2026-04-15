@@ -14408,7 +14408,10 @@ function soDeletePost(id){
 // CRM — Full Customer Relationship Management
 // ══════════════════════════════════════
 function crmGetContacts(){ return _safeLS('janovum_crm_contacts', '[]'); }
-function crmSaveContacts(c){ localStorage.setItem('janovum_crm_contacts',JSON.stringify(c)); }
+function crmSaveContacts(contacts){
+  localStorage.setItem('janovum_crm_contacts',JSON.stringify(contacts));
+  fetch(API+'/api/crm/contacts',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(contacts)}).catch(function(){});
+}
 function crmGetActivities(){ return _safeLS('janovum_crm_activities', '[]'); }
 function crmSaveActivities(a){ localStorage.setItem('janovum_crm_activities',JSON.stringify(a)); }
 
@@ -14416,7 +14419,28 @@ const CRM_STAGES=['lead','contacted','meeting','proposal','negotiation','won','l
 const CRM_STAGE_LABELS={lead:'Lead',contacted:'Contacted',meeting:'Meeting',proposal:'Proposal',negotiation:'Negotiation',won:'Won',lost:'Lost'};
 const CRM_STAGE_COLORS={lead:'var(--muted)',contacted:'var(--blue)',meeting:'var(--purple)',proposal:'var(--gold)',negotiation:'var(--orange)',won:'var(--green)',lost:'var(--red)'};
 
-function loadCRMTab(){ crmRenderStats(); crmRenderPipeline(); crmRenderContacts(); crmRenderActivities(); }
+function loadCRMTab(){
+  var local = _safeLS('janovum_crm_contacts','[]');
+  if(!local || local.length === 0){
+    fetch(API+'/api/crm/contacts').then(function(r){return r.json();}).then(function(server){
+      if(server && server.length > 0){
+        localStorage.setItem('janovum_crm_contacts', JSON.stringify(server));
+        crmRenderStats(); crmRenderPipeline(); crmRenderContacts(); crmRenderActivities();
+      } else {
+        crmRenderStats(); crmRenderPipeline(); crmRenderContacts(); crmRenderActivities();
+      }
+    }).catch(function(){ crmRenderStats(); crmRenderPipeline(); crmRenderContacts(); crmRenderActivities(); });
+  } else {
+    // Still sync server in background to keep it up to date
+    fetch(API+'/api/crm/contacts').then(function(r){return r.json();}).then(function(server){
+      if(server && server.length > local.length){
+        localStorage.setItem('janovum_crm_contacts', JSON.stringify(server));
+        crmRenderStats(); crmRenderPipeline(); crmRenderContacts(); crmRenderActivities();
+      }
+    }).catch(function(){});
+    crmRenderStats(); crmRenderPipeline(); crmRenderContacts(); crmRenderActivities();
+  }
+}
 
 function crmRenderStats(){
   const contacts=crmGetContacts();

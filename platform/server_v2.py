@@ -3350,6 +3350,54 @@ def analytics_health():
 
 
 # ══════════════════════════════════════════
+# CRM — Server-side contacts (persistent across browsers/devices)
+# ══════════════════════════════════════════
+
+CRM_FILE = os.path.join(PLATFORM_DIR, "data", "crm_contacts.json")
+
+def _crm_load():
+    if os.path.exists(CRM_FILE):
+        with open(CRM_FILE, encoding="utf-8") as f:
+            return json.load(f)
+    return []
+
+def _crm_save(contacts):
+    os.makedirs(os.path.dirname(CRM_FILE), exist_ok=True)
+    with open(CRM_FILE, "w", encoding="utf-8") as f:
+        json.dump(contacts, f, indent=2)
+
+@app.route("/api/crm/contacts", methods=["GET"])
+def crm_get_contacts():
+    return jsonify(_crm_load())
+
+@app.route("/api/crm/contacts", methods=["POST"])
+def crm_save_contacts():
+    contacts = request.json
+    if not isinstance(contacts, list):
+        return jsonify({"error": "Expected array"}), 400
+    _crm_save(contacts)
+    return jsonify({"ok": True, "count": len(contacts)})
+
+@app.route("/api/crm/contacts/<contact_id>", methods=["DELETE"])
+def crm_delete_contact(contact_id):
+    contacts = _crm_load()
+    contacts = [c for c in contacts if c.get("id") != contact_id]
+    _crm_save(contacts)
+    return jsonify({"ok": True, "count": len(contacts)})
+
+@app.route("/api/crm/contacts/<contact_id>", methods=["POST"])
+def crm_update_contact(contact_id):
+    data = request.json or {}
+    contacts = _crm_load()
+    for c in contacts:
+        if c.get("id") == contact_id:
+            c.update(data)
+            break
+    _crm_save(contacts)
+    return jsonify({"ok": True})
+
+
+# ══════════════════════════════════════════
 # MARKETPLACE — Browse & Deploy Templates
 # ══════════════════════════════════════════
 
@@ -5304,4 +5352,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  [!] Auto-start failed: {e}")
 
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=True, use_reloader=False)

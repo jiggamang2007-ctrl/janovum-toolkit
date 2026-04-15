@@ -82,6 +82,12 @@ input,select,textarea{font-family:inherit;outline:none;}
 .act-edit:hover{border-color:var(--gold);color:var(--gold);}
 .act-del{background:none;border:1px solid var(--border);color:var(--dim);}
 .act-del:hover{border-color:var(--red);color:var(--red);}
+.act-back{background:rgba(119,119,119,.1);border:1px solid rgba(119,119,119,.2);color:#888;}
+.act-back:hover{border-color:var(--gold);color:var(--gold);}
+
+.time-in-stage{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--dim);font-weight:500;}
+.time-in-stage.long{background:rgba(245,158,11,.1);color:var(--orange);}
+.time-in-stage.very-long{background:rgba(239,68,68,.1);color:var(--red);}
 
 /* Duplicate warning glow */
 .lead-card.duplicate{border:1px solid var(--red);box-shadow:0 0 12px rgba(239,68,68,.3);animation:pulseRed 2s infinite;}
@@ -124,6 +130,7 @@ input,select,textarea{font-family:inherit;outline:none;}
 <div class="header">
   <h1>Janovum <span>CRM</span></h1>
   <div class="header-right">
+    <button class="btn btn-outline" onclick="importServerLeads()" id="importBtn">&#128229; Import Leads</button>
     <button class="btn btn-outline" onclick="exportCSV()">&#128190; Export</button>
     <button class="btn btn-gold" onclick="openModal('lead')">&#43; Add Lead</button>
   </div>
@@ -296,6 +303,13 @@ function renderCard(l, section) {
   const isDuplicate = (l.stage === 'lead' || l.stage === 'retry') && isInLostList(l);
   const classes = isDuplicate ? 'lead-card duplicate' : (isOverdue ? 'lead-card overdue' : (l.stage === 'pending' && pendingDays >= 2 ? 'lead-card warm' : 'lead-card'));
 
+  // Time in current stage
+  const stageEnteredAt = l.stage==='pending' ? l.pendingAt : l.stage==='demo' ? l.demoAt : l.stage==='proposal' ? l.proposalAt : l.stage==='closed' ? l.closedAt : l.stage==='lost' ? l.lostAt : null;
+  const stageEnteredDate = stageEnteredAt ? stageEnteredAt.split('T')[0] : (l.movedAt || l.createdAt?.split('T')[0]);
+  const daysInStage = stageEnteredDate ? daysBetween(stageEnteredDate, today()) : 0;
+  const timeClass = daysInStage >= 7 ? 'time-in-stage very-long' : daysInStage >= 3 ? 'time-in-stage long' : 'time-in-stage';
+  const timeLabel = daysInStage === 0 ? 'Today' : daysInStage === 1 ? '1 day in stage' : daysInStage + ' days in stage';
+
   let actions = '';
   if (section === 'leads') {
     actions = `
@@ -308,19 +322,25 @@ function renderCard(l, section) {
       <button class="btn-sm act-promote" onclick="promote('${l.id}','demo')" title="They scheduled a demo">&#128197; Demo</button>
       <button class="btn-sm act-promote" onclick="promote('${l.id}','proposal')" title="Sent them a proposal">&#128196; Proposal</button>
       <button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost interest">&#10007; Lost</button>
+      <button class="btn-sm act-back" onclick="stepBack('${l.id}','lead')" title="Go back to Lead List">&#8592; Back</button>
     `;
   } else if (section === 'demo') {
     actions = `
       <button class="btn-sm act-promote" onclick="promote('${l.id}','proposal')" title="Sent proposal/contract">&#128196; Sent Proposal</button>
       <button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost">&#10007; Lost</button>
+      <button class="btn-sm act-back" onclick="stepBack('${l.id}','pending')" title="Go back to Pending">&#8592; Back</button>
     `;
   } else if (section === 'proposal') {
     actions = `
       <button class="btn-sm act-yes" onclick="promote('${l.id}','closed')" title="They signed!">&#128176; Closed!</button>
       <button class="btn-sm act-no" onclick="pitched('${l.id}','no')" title="Lost">&#10007; Lost</button>
+      <button class="btn-sm act-back" onclick="stepBack('${l.id}','demo')" title="Go back to Demo">&#8592; Back</button>
     `;
   } else if (section === 'closed') {
-    actions = `<span class="badge badge-crm" style="font-size:12px;">&#10003; Active Client</span>`;
+    actions = `
+      <span class="badge badge-crm" style="font-size:12px;">&#10003; Active Client</span>
+      <button class="btn-sm act-back" onclick="stepBack('${l.id}','proposal')" title="Go back to Proposal">&#8592; Back</button>
+    `;
   } else {
     actions = `<button class="btn-sm act-retry" onclick="revive('${l.id}')" title="Move back to leads">&#128260; Retry</button>`;
   }
@@ -339,6 +359,8 @@ function renderCard(l, section) {
     <div class="lead-meta">
       <span class="method m-${l.method}">${methodLabel[l.method]||l.method}</span>
       <span class="days-ago ${isOverdue?'overdue':''}">${da} ${isOverdue ? '&#9888; Reach out!' : ''} ${isDuplicate ? '<span style="color:var(--red);font-weight:700;">&#9888; Already said no before!</span>' : ''}</span>
+      ${section !== 'leads' && section !== 'lost' ? `<span class="${timeClass}">&#128336; ${timeLabel}</span>` : ''}
+      ${l.retryCount && section === 'leads' ? `<span class="time-in-stage" style="background:rgba(74,144,217,.1);color:var(--blue);">&#128260; ${l.retryCount} no-answer${l.retryCount>1?'s':''}</span>` : ''}
     </div>
     <div class="lead-actions">
       ${actions}
@@ -394,12 +416,14 @@ function render() {
   const interested = leads.filter(l=>['pending','demo','proposal','closed'].includes(l.stage)).length;
   const closed = leads.filter(l=>l.stage==='closed').length;
   const overdueCount = leads.filter(l=>l.stage==='pending' && daysBetween(l.movedAt||l.createdAt?.split('T')[0]||today(),today())>=3).length;
+  const totalRetries = leads.reduce((sum,l)=>sum+(l.retryCount||0),0);
 
   document.getElementById('stats').innerHTML = `
     <div class="stat"><div class="label">Total</div><div class="value">${total}</div></div>
     <div class="stat"><div class="label">Pitched</div><div class="value" style="color:var(--blue);">${pitched}</div></div>
     <div class="stat"><div class="label">Interested</div><div class="value" style="color:var(--orange);">${interested}</div></div>
     <div class="stat"><div class="label">Closed</div><div class="value" style="color:var(--green);">${closed}</div></div>
+    ${totalRetries > 0 ? `<div class="stat"><div class="label">No Answers</div><div class="value" style="color:var(--blue);">${totalRetries}</div></div>` : ''}
     ${overdueCount > 0 ? `<div class="stat" style="border-color:var(--red);"><div class="label">Reach Out!</div><div class="value" style="color:var(--red);">${overdueCount}</div></div>` : ''}
     ${total > 0 ? `<div class="stat"><div class="label">Close Rate</div><div class="value" style="color:var(--gold);">${Math.round(closed/total*100)}%</div></div>` : ''}
   `;
@@ -441,9 +465,55 @@ function revive(id) {
   l.stage = 'lead';
   l.movedAt = today();
   if(!l.history) l.history = [];
-  l.history.push({stage:'lead (revived)',at:ts});
+  l.history.push({stage:'lead (revived from lost)',at:ts});
   toast('Moved back to Lead List');
   save(); render();
+}
+
+function stepBack(id, targetStage) {
+  const l = leads.find(x=>x.id===id);
+  if(!l) return;
+  const ts = new Date().toISOString();
+  const prevStage = l.stage;
+  l.stage = targetStage;
+  l.movedAt = today();
+  if(!l.history) l.history = [];
+  l.history.push({stage: targetStage + ' (stepped back from ' + prevStage + ')', at: ts});
+  // Restore appropriate timestamp
+  if(targetStage === 'pending' && !l.pendingAt) l.pendingAt = ts;
+  if(targetStage === 'demo' && !l.demoAt) l.demoAt = ts;
+  if(targetStage === 'proposal' && !l.proposalAt) l.proposalAt = ts;
+  const labels = {lead:'Lead List',pending:'Pending',demo:'Demo',proposal:'Proposal'};
+  toast('Stepped back to ' + (labels[targetStage] || targetStage));
+  save(); render();
+}
+
+function importServerLeads() {
+  const btn = document.getElementById('importBtn');
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+  fetch('/api/crm/leads')
+    .then(r => r.json())
+    .then(newLeads => {
+      if (!newLeads.length) { alert('No leads found on server.'); btn.textContent = '\u{1F4E5} Import Leads'; btn.disabled = false; return; }
+      const existingIds = new Set(leads.map(l => l.business + '|' + l.phone + '|' + l.email));
+      let added = 0;
+      const ts = new Date().toISOString();
+      const td = ts.split('T')[0];
+      newLeads.forEach(l => {
+        const key = (l.business||'') + '|' + (l.phone||'') + '|' + (l.email||'');
+        if (!existingIds.has(key)) {
+          leads.push({ id: genId(), ...l, stage: 'lead', dateContacted: '', movedAt: td, createdAt: ts, retryCount: 0, history: [{stage:'lead (imported)',at:ts}] });
+          existingIds.add(key);
+          added++;
+        }
+      });
+      save(); render();
+      btn.textContent = '\u{1F4E5} Import Leads';
+      btn.disabled = false;
+      toast(added + ' leads imported!');
+    })
+    .catch(e => { alert('Import failed: ' + e); btn.textContent = '\u{1F4E5} Import Leads'; btn.disabled = false; });
 }
 
 function del(id) {
@@ -488,6 +558,7 @@ function saveLead() {
   if(!business) { document.getElementById('fBusiness').style.borderColor='var(--red)'; return; }
 
   const editId = document.getElementById('editId').value;
+  const existing = editId ? (leads.find(l=>l.id===editId)||{}) : {};
   const data = {
     id: editId || genId(),
     business,
@@ -499,9 +570,17 @@ function saveLead() {
     address: document.getElementById('fAddress').value.trim(),
     stage: document.getElementById('fStage').value,
     notes: document.getElementById('fNotes').value.trim(),
-    dateContacted: editId ? (leads.find(l=>l.id===editId)||{}).dateContacted || '' : '',
-    movedAt: editId ? (leads.find(l=>l.id===editId)||{}).movedAt || today() : today(),
-    createdAt: editId ? (leads.find(l=>l.id===editId)||{}).createdAt || new Date().toISOString() : new Date().toISOString()
+    dateContacted: existing.dateContacted || '',
+    movedAt: existing.movedAt || today(),
+    createdAt: existing.createdAt || new Date().toISOString(),
+    retryCount: existing.retryCount || 0,
+    history: existing.history || [],
+    pendingAt: existing.pendingAt || null,
+    demoAt: existing.demoAt || null,
+    proposalAt: existing.proposalAt || null,
+    closedAt: existing.closedAt || null,
+    lostAt: existing.lostAt || null,
+    lastRetry: existing.lastRetry || null
   };
 
   if(editId) { const idx=leads.findIndex(l=>l.id===editId); if(idx>=0) leads[idx]=data; }

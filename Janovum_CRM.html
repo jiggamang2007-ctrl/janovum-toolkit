@@ -130,8 +130,9 @@ input,select,textarea{font-family:inherit;outline:none;}
 <div class="header">
   <h1>Janovum <span>CRM</span></h1>
   <div class="header-right">
-    <button class="btn btn-outline" onclick="importServerLeads()" id="importBtn">&#128229; Import Leads</button>
+    <button class="btn btn-outline" onclick="refreshLeads()" id="refreshBtn">&#8635; Refresh</button>
     <button class="btn btn-outline" onclick="exportCSV()">&#128190; Export</button>
+    <button class="btn btn-outline" onclick="clearAllLeads()" id="clearBtn" style="border-color:#ef4444;color:#ef4444;">&#128465; Clear All</button>
     <button class="btn btn-gold" onclick="openModal('lead')">&#43; Add Lead</button>
   </div>
 </div>
@@ -248,12 +249,119 @@ input,select,textarea{font-family:inherit;outline:none;}
 <div class="toast" id="toast"></div>
 
 <script>
-const SK = 'janovum_crm_v2';
+const SERVER = 'https://janovum.com/api/crm/contacts';
+const META_KEY = 'janovum_crm_meta_v2';
 let leads = [];
 let searchQ = '';
 
-function load() { try { leads = JSON.parse(localStorage.getItem(SK)) || []; } catch(e) { leads = []; } }
-function save() { localStorage.setItem(SK, JSON.stringify(leads)); }
+// Metadata: stores stage, history, timestamps, method, industry etc. keyed by server ID
+function getMeta() { try { return JSON.parse(localStorage.getItem(META_KEY)) || {}; } catch(e) { return {}; } }
+function saveMeta(id, patch) {
+  const meta = getMeta();
+  meta[id] = Object.assign(meta[id] || {}, patch);
+  localStorage.setItem(META_KEY, JSON.stringify(meta));
+}
+
+// Sync a stage or notes change back to the server (fire-and-forget)
+function syncToServer(id, patch) {
+  fetch(SERVER + '/' + id, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(patch)
+  }).catch(() => {});
+}
+
+// Load leads from server, merge with local metadata
+async function load() {
+  try {
+    const r = await fetch(SERVER);
+    if (!r.ok) throw new Error('server ' + r.status);
+    const serverLeads = await r.json();
+    const meta = getMeta();
+    leads = serverLeads.map(sl => {
+      const m = meta[sl.id] || {};
+      let stage = m.stage || sl.status || 'lead';
+      if (stage === 'meeting') stage = 'pending';
+      if (!['lead','retry','pending','demo','proposal','closed','lost'].includes(stage)) stage = 'lead';
+      return {
+        id: sl.id,
+        business: sl.company || '',
+        owner: sl.name || '',
+        phone: sl.phone || '',
+        email: sl.email || '',
+        notes: sl.notes || '',
+        stage,
+        industry: m.industry || '',
+        method: m.method || 'phone',
+        address: m.address || '',
+        dateContacted: m.dateContacted || '',
+        movedAt: m.movedAt || (sl.createdAt ? sl.createdAt.split('T')[0] : today()),
+        createdAt: sl.createdAt || new Date().toISOString(),
+        retryCount: m.retryCount || 0,
+        history: m.history || [],
+        pendingAt: m.pendingAt || null,
+        demoAt: m.demoAt || null,
+        proposalAt: m.proposalAt || null,
+        closedAt: m.closedAt || null,
+        lostAt: m.lostAt || null,
+        lastRetry: m.lastRetry || null,
+      };
+    });
+  } catch(e) {
+    toast('Could not reach server — working offline');
+    leads = [];
+  }
+}
+
+// Save only metadata (stage/history/timestamps) to localStorage; leads come from server
+function save() {
+  const meta = getMeta();
+  leads.forEach(l => {
+    meta[l.id] = Object.assign(meta[l.id] || {}, {
+      stage: l.stage, industry: l.industry, method: l.method, address: l.address,
+      dateContacted: l.dateContacted, movedAt: l.movedAt, retryCount: l.retryCount,
+      history: l.history, pendingAt: l.pendingAt, demoAt: l.demoAt,
+      proposalAt: l.proposalAt, closedAt: l.closedAt, lostAt: l.lostAt,
+      lastRetry: l.lastRetry
+    });
+  });
+  localStorage.setItem(META_KEY, JSON.stringify(meta));
+}
+
+async function refreshLeads() {
+  const btn = document.getElementById('refreshBtn');
+  btn.textContent = 'Loading...';
+  btn.disabled = true;
+  await load();
+  render();
+  btn.textContent = '\u8635 Refresh';
+  btn.disabled = false;
+  toast('Leads refreshed from server');
+}
+
+async function clearAllLeads() {
+  if (!confirm('Delete ALL ' + leads.length + ' leads from the server? This cannot be undone.')) return;
+  const btn = document.getElementById('clearBtn');
+  btn.textContent = 'Clearing...';
+  btn.disabled = true;
+  try {
+    const r = await fetch(SERVER, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify([])
+    });
+    if (!r.ok) throw new Error('server ' + r.status);
+    leads = [];
+    localStorage.removeItem(META_KEY);
+    render();
+    toast('All leads cleared');
+  } catch(e) {
+    toast('Clear failed: ' + e.message);
+  }
+  btn.textContent = '\uD83D\uDDD1 Clear All';
+  btn.disabled = false;
+}
+
 function genId() { return 'l_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2,4); }
 function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 function daysBetween(d1,d2) { return Math.floor((new Date(d2)-new Date(d1))/(1000*60*60*24)); }
@@ -440,7 +548,7 @@ function pitched(id, result) {
   if(result==='yes') { l.stage='pending'; l.pendingAt=ts; l.history.push({stage:'pending',at:ts}); toast('Moved to Pending'); }
   else if(result==='no') { l.stage='lost'; l.lostAt=ts; l.history.push({stage:'lost',at:ts}); toast('Marked as not interested'); }
   else if(result==='retry') { l.stage='retry'; l.retryCount=(l.retryCount||0)+1; l.lastRetry=ts; l.history.push({stage:'retry #'+l.retryCount,at:ts}); toast('Try again later (moved to bottom)'); }
-  save(); render();
+  save(); syncToServer(id, {status: l.stage}); render();
 }
 
 function promote(id, stage) {
@@ -455,7 +563,7 @@ function promote(id, stage) {
   if(stage==='closed') { l.closedAt=ts; l.history.push({stage:'closed',at:ts}); }
   const labels = {demo:'Demo Scheduled',proposal:'Proposal Sent',closed:'CLOSED!'};
   toast(labels[stage] || 'Updated');
-  save(); render();
+  save(); syncToServer(id, {status: l.stage}); render();
 }
 
 function revive(id) {
@@ -467,7 +575,7 @@ function revive(id) {
   if(!l.history) l.history = [];
   l.history.push({stage:'lead (revived from lost)',at:ts});
   toast('Moved back to Lead List');
-  save(); render();
+  save(); syncToServer(id, {status: 'lead'}); render();
 }
 
 function stepBack(id, targetStage) {
@@ -479,41 +587,12 @@ function stepBack(id, targetStage) {
   l.movedAt = today();
   if(!l.history) l.history = [];
   l.history.push({stage: targetStage + ' (stepped back from ' + prevStage + ')', at: ts});
-  // Restore appropriate timestamp
   if(targetStage === 'pending' && !l.pendingAt) l.pendingAt = ts;
   if(targetStage === 'demo' && !l.demoAt) l.demoAt = ts;
   if(targetStage === 'proposal' && !l.proposalAt) l.proposalAt = ts;
   const labels = {lead:'Lead List',pending:'Pending',demo:'Demo',proposal:'Proposal'};
   toast('Stepped back to ' + (labels[targetStage] || targetStage));
-  save(); render();
-}
-
-function importServerLeads() {
-  const btn = document.getElementById('importBtn');
-  btn.textContent = 'Loading...';
-  btn.disabled = true;
-  fetch('/api/crm/leads')
-    .then(r => r.json())
-    .then(newLeads => {
-      if (!newLeads.length) { alert('No leads found on server.'); btn.textContent = '\u{1F4E5} Import Leads'; btn.disabled = false; return; }
-      const existingIds = new Set(leads.map(l => l.business + '|' + l.phone + '|' + l.email));
-      let added = 0;
-      const ts = new Date().toISOString();
-      const td = ts.split('T')[0];
-      newLeads.forEach(l => {
-        const key = (l.business||'') + '|' + (l.phone||'') + '|' + (l.email||'');
-        if (!existingIds.has(key)) {
-          leads.push({ id: genId(), ...l, stage: 'lead', dateContacted: '', movedAt: td, createdAt: ts, retryCount: 0, history: [{stage:'lead (imported)',at:ts}] });
-          existingIds.add(key);
-          added++;
-        }
-      });
-      save(); render();
-      btn.textContent = '\u{1F4E5} Import Leads';
-      btn.disabled = false;
-      toast(added + ' leads imported!');
-    })
-    .catch(e => { alert('Import failed: ' + e); btn.textContent = '\u{1F4E5} Import Leads'; btn.disabled = false; });
+  save(); syncToServer(id, {status: targetStage}); render();
 }
 
 function del(id) {
@@ -587,6 +666,7 @@ function saveLead() {
   else leads.push(data);
 
   save(); closeModal(); render();
+  syncToServer(data.id, {notes: data.notes, status: data.stage});
   toast(editId ? 'Updated' : 'Lead added');
 }
 
@@ -615,78 +695,9 @@ function toast(msg) {
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); if(e.ctrlKey&&e.key==='n'){e.preventDefault();openModal('lead');} });
 document.getElementById('modalOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('modalOverlay')) closeModal(); });
 
-load();
-// Seed with scraped leads if empty
-if(leads.length === 0) {
-  const ts = new Date().toISOString();
-  const td = ts.split('T')[0];
-  const seedLeads = [
-    {
-      business: "Lazarito's Barbershop",
-      owner: "Lazaro Gamon (Lazarito)",
-      phone: "786-653-9703",
-      email: "",
-      industry: "Salon / Barbershop",
-      method: "inperson",
-      address: "1959 W 60th St, Hialeah, FL 33012",
-      notes: "Scraped by AI — Owner: Lazaro Gamon, goes by Lazarito. LinkedIn: Lazaro H Gamon. Also runs LHG Clinen Services. Phone: 786-653-9703 (shop). Community leader, NBC Miami + Voyage MIA featured. 2 locations (also 6900 W 32nd Ave). IG: @lazaritosbarbershop (9,200+). FB: Lazarito's Barber Shop. Website: lazaritosbarbershop.com. Best approach: walk in, he's usually there. Mention the community work."
-    },
-    {
-      business: "Fade Lab Barber Shop",
-      owner: "Johnny C. (Manager)",
-      phone: "813-385-7293",
-      email: "",
-      industry: "Salon / Barbershop",
-      method: "inperson",
-      address: "5393 W 20th Ave, Hialeah, FL 33012",
-      notes: "Scraped by AI — Appointment-based barbershop, specializes in clipper cuts. Manager is Johnny C. (listed on Yelp). No IG or FB found for the shop specifically. Good fit for automated appointment booking + reminder texts to reduce no-shows. Walk in and ask for Johnny."
-    },
-    {
-      business: "Professional Plumbing Corp",
-      owner: "Manuel Alonso",
-      phone: "305-822-8282",
-      email: "",
-      industry: "Home Services",
-      method: "phone",
-      address: "1755 W 39th Pl, Hialeah, FL 33012",
-      notes: "Scraped by AI — Owner: Manuel Alonso (age ~61). NUMBERS: 305-822-8282 (business), 305-557-2052 (personal/alt — public records, 30 39th St #309 Hialeah). Fax: 305-557-1607. Founded 1973, 50+ years. Website: proplumb.net. Plumbers on job sites all day = miss calls. Pitch: automated lead capture, quote request forms, follow-up emails for estimates. Call business line first, ask for Manuel. If no answer try alt number."
-    },
-    {
-      business: "Hialeah Auto Care Center",
-      owner: "Daniel Campos (President)",
-      phone: "305-556-9681",
-      email: "",
-      industry: "Auto Shop",
-      method: "inperson",
-      address: "5988 W 20th Ave, Hialeah, FL 33016",
-      notes: "Scraped by AI — Owner/President: Daniel Campos (Danny). LinkedIn: linkedin.com/in/daniel-campos-497aa73a/. AAA-certified, family-owned since 2004. 24+ Yelp reviews. Skills: strategic planning, sales management. Previously at Westland Auto Center. Website: hialeahautocare.com. Hours: M-F 7AM-6PM, Sat 8AM-4PM. Closed Sundays = misses weekend calls. Good fit for after-hours call handling, appointment booking, automated service reminders. Walk in and ask for Danny."
-    },
-    {
-      business: "Player's Lounge Barbershop",
-      owner: "",
-      phone: "305-307-0851",
-      email: "",
-      industry: "Salon / Barbershop",
-      method: "inperson",
-      address: "520 W 29th St, Hialeah, FL 33012",
-      notes: "Scraped by AI — Established 2006, 20 years in business. IG: @playersloungebarbershop. FB: Players Lounge Barbershop + Playerslounge Barbershop (2 pages). Also on Nextdoor. Owner name not found online — walk in and ask. Walk-in heavy, no online booking system found. Good fit for booking automation, reminder texts, review request system. Long-established = stable business that can afford the service."
-    }
-  ];
-  seedLeads.forEach(s => {
-    leads.push({
-      id: genId(),
-      ...s,
-      stage: 'lead',
-      dateContacted: '',
-      movedAt: td,
-      createdAt: ts,
-      retryCount: 0,
-      history: [{stage:'lead (scraped)',at:ts}]
-    });
-  });
-  save();
-}
-render();
+// Show loading state, then fetch from server
+document.getElementById('secLeads').innerHTML = '<div class="empty-msg">Loading leads from server...</div>';
+load().then(() => render());
 </script>
 </body>
 </html>

@@ -170,6 +170,31 @@
   .gold { color: var(--gold); }
   .blue { color: var(--blue); }
 
+  /* ── CALENDAR ────────────────────────────────────────── */
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-nav-btn { background: none; border: 1px solid var(--border2); color: var(--muted); padding: 7px 16px; border-radius: 8px; font-size: 0.88em; cursor: pointer; }
+  .cal-nav-btn:active { background: #1a1a1a; }
+  .cal-month-title { font-size: 1.05em; font-weight: 700; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 16px; }
+  .cal-dow { text-align: center; font-size: 0.62em; color: var(--dim); text-transform: uppercase; padding: 5px 0 4px; font-weight: 600; }
+  .cal-cell { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 5px 3px 4px; text-align: center; cursor: pointer; min-height: 54px; transition: border-color 0.15s; }
+  .cal-cell:active { opacity: 0.7; }
+  .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; pointer-events: none; }
+  .cal-cell.today { border-color: var(--gold); }
+  .cal-cell.selected { background: #1a1500; border-color: var(--gold); }
+  .cal-day-num { font-size: 0.75em; font-weight: 600; color: var(--text); }
+  .cal-cell.today .cal-day-num { color: var(--gold); }
+  .cal-cell.other-month .cal-day-num { color: var(--dim); }
+  .cal-day-profit { font-size: 0.6em; color: var(--green); font-weight: 700; margin-top: 2px; line-height: 1.2; }
+  .cal-day-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); margin: 3px auto 0; }
+  .cal-detail { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .cal-detail-header { font-size: 0.82em; font-weight: 700; color: var(--gold); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .cal-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+  .cal-summary-item { background: #0a0a0a; border: 1px solid var(--border); border-radius: 8px; padding: 10px 8px; text-align: center; }
+  .cal-summary-label { font-size: 0.62em; color: var(--dim); text-transform: uppercase; letter-spacing: 0.4px; }
+  .cal-summary-val { font-size: 1em; font-weight: 700; margin-top: 2px; }
+  .cal-no-sales { text-align: center; padding: 20px; color: var(--dim); font-size: 0.88em; }
+
   /* ── DESKTOP ─────────────────────────────────────────── */
   @media (min-width: 768px) {
     .content { max-width: 500px; }
@@ -215,6 +240,7 @@
     <div class="topbar-title">Sales Tracker</div>
     <div class="topbar-user">
       <span id="displayUsername"></span>
+      <button onclick="switchPage('settings')" style="padding:5px 8px;" title="Settings">&#9881;</button>
       <button onclick="logout()">Log out</button>
     </div>
   </div>
@@ -331,6 +357,17 @@
       </div>
     </div>
 
+    <!-- ── PAGE: CALENDAR ────────────────────────────────── -->
+    <div class="page" id="page-calendar">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calPrev()">&#8592;</button>
+        <div class="cal-month-title" id="calMonthTitle"></div>
+        <button class="cal-nav-btn" onclick="calNext()">&#8594;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div id="calDetail"></div>
+    </div>
+
     <!-- ── PAGE: SETTINGS ──────────────────────────────── -->
     <div class="page" id="page-settings">
       <div class="section-title">Data</div>
@@ -359,8 +396,12 @@
       <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
       Sell
     </button>
+    <button class="bnav" data-page="calendar" onclick="switchPage('calendar')">
+      <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/></svg>
+      Calendar
+    </button>
     <button class="bnav" data-page="sales" onclick="switchPage('sales')">
-      <svg viewBox="0 0 24 24"><path d="M3 3h18v2H3zm0 16h18v2H3zm0-8h18v2H3zm0 4h18v2H3zm0-8h18v2H3z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M3 13h18v2H3zm0-6h18v2H3zm0 12h18v2H3z"/></svg>
       History
     </button>
     <button class="bnav" data-page="products" onclick="switchPage('products')">
@@ -374,10 +415,6 @@
     <button class="bnav" data-page="roi" onclick="switchPage('roi')">
       <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
       ROI
-    </button>
-    <button class="bnav" data-page="settings" onclick="switchPage('settings')">
-      <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-      More
     </button>
   </nav>
 </div>
@@ -580,22 +617,30 @@ let data = { products: [], sales: [] };
 let currentPeriod = 'all';
 
 // ══════════════════════════════════════════════════════════
-// PERIOD FILTER
+// PERIOD FILTER  (Today = today, Week = Mon–Sun, Month = calendar month)
 // ══════════════════════════════════════════════════════════
 function filterByPeriod(sales) {
   if (currentPeriod === 'all') return sales;
   const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  if (currentPeriod === 'today') return sales.filter(s => s.date === today);
+  const todayStr = now.toISOString().split('T')[0];
+  if (currentPeriod === 'today') return sales.filter(s => s.date === todayStr);
   if (currentPeriod === 'week') {
-    const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
-    const wa = weekAgo.toISOString().split('T')[0];
-    return sales.filter(s => s.date >= wa);
+    // Monday–Sunday of current week
+    const day = now.getDay(); // 0=Sun
+    const diffToMon = (day === 0 ? -6 : 1 - day);
+    const mon = new Date(now); mon.setDate(now.getDate() + diffToMon);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const monStr = mon.toISOString().split('T')[0];
+    const sunStr = sun.toISOString().split('T')[0];
+    return sales.filter(s => s.date >= monStr && s.date <= sunStr);
   }
   if (currentPeriod === 'month') {
-    const monthAgo = new Date(now); monthAgo.setMonth(monthAgo.getMonth() - 1);
-    const ma = monthAgo.toISOString().split('T')[0];
-    return sales.filter(s => s.date >= ma);
+    // 1st to last day of current calendar month
+    const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0');
+    const first = `${y}-${m}-01`;
+    const lastDay = new Date(y, now.getMonth() + 1, 0).getDate();
+    const last = `${y}-${m}-${String(lastDay).padStart(2, '0')}`;
+    return sales.filter(s => s.date >= first && s.date <= last);
   }
   return sales;
 }
@@ -1128,6 +1173,137 @@ function toast(msg) {
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
 // ══════════════════════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════════════════════
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-indexed
+let selectedCalDate = new Date().toISOString().split('T')[0];
+
+function calPrev() { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } renderCalendar(); }
+function calNext() { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } renderCalendar(); }
+
+function renderCalendar() {
+  const todayStr = new Date().toISOString().split('T')[0];
+  const y = calYear, m = calMonth;
+
+  // Build sales-by-date index for this month
+  const salesByDate = {};
+  data.sales.forEach(s => {
+    if (!salesByDate[s.date]) salesByDate[s.date] = { revenue: 0, profit: 0, count: 0 };
+    const cost = s.cost !== undefined ? s.cost : 0;
+    salesByDate[s.date].revenue += s.salePrice;
+    salesByDate[s.date].profit += (s.salePrice - cost);
+    salesByDate[s.date].count++;
+  });
+
+  document.getElementById('calMonthTitle').textContent = MONTHS[m] + ' ' + y;
+
+  // Day-of-week headers
+  const grid = document.getElementById('calGrid');
+  let html = DAYS.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+  // First day of month
+  const firstDay = new Date(y, m, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  // Blank cells before 1st
+  for (let i = 0; i < firstDay; i++) html += `<div class="cal-cell empty"></div>`;
+
+  // Day cells
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${y}-${String(m + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const isSelected = dateStr === selectedCalDate;
+    const s = salesByDate[dateStr];
+    let cls = 'cal-cell';
+    if (isToday) cls += ' today';
+    if (isSelected) cls += ' selected';
+    let inner = `<div class="cal-day-num">${d}</div>`;
+    if (s) {
+      const profitStr = (s.profit >= 0 ? '+' : '') + '$' + Math.abs(s.profit).toFixed(0);
+      inner += `<div class="cal-day-profit">${profitStr}</div>`;
+      if (s.count > 1) inner += `<div style="font-size:0.55em;color:var(--muted);">${s.count} sales</div>`;
+    }
+    html += `<div class="${cls}" onclick="calSelectDate('${dateStr}')">${inner}</div>`;
+  }
+
+  // Fill remainder
+  const totalCells = firstDay + daysInMonth;
+  const remainder = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 0; i < remainder; i++) html += `<div class="cal-cell empty"></div>`;
+
+  grid.innerHTML = html;
+  renderCalDetail(selectedCalDate);
+}
+
+function calSelectDate(dateStr) {
+  // If clicking a date in a different month, navigate there
+  const d = new Date(dateStr);
+  if (d.getFullYear() !== calYear || d.getMonth() !== calMonth) {
+    calYear = d.getFullYear(); calMonth = d.getMonth();
+  }
+  selectedCalDate = dateStr;
+  renderCalendar();
+}
+
+function renderCalDetail(dateStr) {
+  const detail = document.getElementById('calDetail');
+  const sales = data.sales.filter(s => s.date === dateStr);
+  const d = new Date(dateStr + 'T12:00:00');
+  const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  if (sales.length === 0) {
+    detail.innerHTML = `<div class="cal-detail">
+      <div class="cal-detail-header">${label}</div>
+      <div class="cal-no-sales">No sales on this day</div>
+    </div>`;
+    return;
+  }
+
+  let rev = 0, cost = 0;
+  sales.forEach(s => { rev += s.salePrice; cost += (s.cost || 0); });
+  const profit = rev - cost;
+
+  const rows = [...sales].sort((a,b) => parseInt(b.id) - parseInt(a.id)).map(s => {
+    const p = s.salePrice - (s.cost || 0);
+    const meta = [s.clientName ? '&#128101; ' + esc(s.clientName) : '', s.notes ? esc(s.notes) : ''].filter(Boolean).join(' · ');
+    return `<div class="sale-row">
+      <div class="sale-row-info">
+        <div class="sale-row-name">${esc(s.productName)}</div>
+        ${meta ? `<div class="sale-row-meta">${meta}</div>` : ''}
+      </div>
+      <div>
+        <div class="sale-row-profit ${p >= 0 ? 'green' : 'red'}">$${p.toFixed(2)}</div>
+        <div class="sale-row-price">Sold $${s.salePrice.toFixed(2)}</div>
+      </div>
+      <button class="sale-row-del" onclick="deleteSale('${s.id}');renderCalendar();">&times;</button>
+    </div>`;
+  }).join('');
+
+  detail.innerHTML = `<div class="cal-detail">
+    <div class="cal-detail-header">${label}</div>
+    <div class="cal-summary">
+      <div class="cal-summary-item">
+        <div class="cal-summary-label">Revenue</div>
+        <div class="cal-summary-val green">$${rev.toFixed(2)}</div>
+      </div>
+      <div class="cal-summary-item">
+        <div class="cal-summary-label">Profit</div>
+        <div class="cal-summary-val ${profit >= 0 ? 'green' : 'red'}">$${profit.toFixed(2)}</div>
+      </div>
+      <div class="cal-summary-item">
+        <div class="cal-summary-label">Sales</div>
+        <div class="cal-summary-val">${sales.length}</div>
+      </div>
+    </div>
+    ${rows}
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
 // REFRESH
 // ══════════════════════════════════════════════════════════
 function refreshAll() {
@@ -1137,6 +1313,7 @@ function refreshAll() {
   renderROI();
   renderDashboard();
   renderClients();
+  renderCalendar();
   document.getElementById('saleDate').value = new Date().toISOString().split('T')[0];
 }
 </script>

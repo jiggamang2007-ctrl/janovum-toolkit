@@ -503,17 +503,58 @@
 
 <script>
 // ══════════════════════════════════════════════════════════
+// SAFE LOCALSTORAGE — prevents JSON.parse crashes from corrupted data
+// ══════════════════════════════════════════════════════════
+function lsGet(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw === null) return fallback;
+    return JSON.parse(raw);
+  } catch(e) {
+    console.warn('localStorage parse error for', key, '— clearing it');
+    try { localStorage.removeItem(key); } catch(_) {}
+    return fallback;
+  }
+}
+function lsSet(key, val) {
+  try {
+    const str = JSON.stringify(val);
+    localStorage.setItem(key, str);
+    // Verify the write landed correctly
+    if (localStorage.getItem(key) !== str) throw new Error('verify failed');
+  } catch(e) {
+    console.warn('localStorage write error for', key, e);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// DATA — declare BEFORE auto-login runs so no temporal dead zone
+// ══════════════════════════════════════════════════════════
+let data = { products: [], sales: [], clients: [] };
+let currentPeriod = 'all';
+
+function loadData() {
+  if (!currentUser) return { products: [], sales: [], clients: [] };
+  const d = lsGet('st_data_' + currentUser, { products: [], sales: [], clients: [] });
+  if (!d.products) d.products = [];
+  if (!d.sales) d.sales = [];
+  if (!d.clients) d.clients = [];
+  return d;
+}
+function saveData(d) {
+  if (!currentUser) return;
+  lsSet('st_data_' + currentUser, d);
+}
+
+// ══════════════════════════════════════════════════════════
 // AUTH SYSTEM
 // ══════════════════════════════════════════════════════════
 const ACCOUNTS_KEY = 'st_accounts';
 let currentUser = null;
-let authMode = 'login'; // 'login' or 'signup'
+let authMode = 'login';
 
-function getAccounts() {
-  const raw = localStorage.getItem(ACCOUNTS_KEY);
-  return raw ? JSON.parse(raw) : {};
-}
-function saveAccounts(accs) { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accs)); }
+function getAccounts() { return lsGet(ACCOUNTS_KEY, {}); }
+function saveAccounts(accs) { lsSet(ACCOUNTS_KEY, accs); }
 
 function toggleAuthMode() {
   authMode = authMode === 'login' ? 'signup' : 'login';
@@ -540,8 +581,7 @@ function handleAuth() {
     const displayName = document.getElementById('authDisplayName').value.trim() || user;
     accounts[user] = { pass, displayName, created: new Date().toISOString() };
     saveAccounts(accounts);
-    // Initialize empty data for new user
-    localStorage.setItem('st_data_' + user, JSON.stringify({ products: [], sales: [] }));
+    lsSet('st_data_' + user, { products: [], sales: [], clients: [] });
     loginAs(user, accounts[user].displayName);
   } else {
     if (!accounts[user]) { errEl.textContent = 'Account not found'; return; }
@@ -551,13 +591,20 @@ function handleAuth() {
 }
 
 function loginAs(username, displayName) {
-  currentUser = username;
-  localStorage.setItem('st_current_user', username);
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').classList.add('active');
-  document.getElementById('displayUsername').textContent = displayName || username;
-  data = loadData();
-  try { refreshAll(); } catch(e) { console.error('refreshAll error:', e); }
+  try {
+    currentUser = username;
+    localStorage.setItem('st_current_user', username);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+    document.getElementById('displayUsername').textContent = displayName || username;
+    data = loadData();
+    refreshAll();
+  } catch(e) {
+    console.error('loginAs error:', e);
+    // Still show the app even if render fails
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('active');
+  }
 }
 
 function logout() {
@@ -598,23 +645,6 @@ function deleteAccount() {
 document.getElementById('authPass').addEventListener('keydown', e => { if (e.key === 'Enter') handleAuth(); });
 document.getElementById('authUser').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('authPass').focus(); });
 
-// ══════════════════════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════════════════════
-function loadData() {
-  if (!currentUser) return { products: [], sales: [], clients: [] };
-  const raw = localStorage.getItem('st_data_' + currentUser);
-  const d = raw ? JSON.parse(raw) : { products: [], sales: [], clients: [] };
-  if (!d.clients) d.clients = []; // migrate old data
-  return d;
-}
-function saveData(d) {
-  if (!currentUser) return;
-  localStorage.setItem('st_data_' + currentUser, JSON.stringify(d));
-}
-
-let data = { products: [], sales: [] };
-let currentPeriod = 'all';
 
 // ══════════════════════════════════════════════════════════
 // PERIOD FILTER  (Today = today, Week = Mon–Sun, Month = calendar month)
@@ -1140,7 +1170,7 @@ function importJSON(e) {
 }
 function clearAllData() {
   if (!confirm('Delete ALL your sales and products? Cannot be undone.')) return;
-  data = { products: [], sales: [] }; saveData(data); refreshAll(); toast('All data cleared');
+  data = { products: [], sales: [], clients: [] }; saveData(data); refreshAll(); toast('All data cleared');
 }
 function dl(name, content, type) {
   const b = new Blob([content], { type }); const a = document.createElement('a');
@@ -1156,7 +1186,7 @@ function switchPage(page) {
   document.querySelectorAll('.bnav').forEach(b => b.classList.toggle('active', b.dataset.page === page));
   window.scrollTo(0, 0);
 }
-document.querySelectorAll('.bnav').forEach(b => b.addEventListener('click', () => switchPage(b.dataset.page)));
+// bnav pages are handled by onclick attributes directly on each button
 
 // ══════════════════════════════════════════════════════════
 // MODAL / TOAST / UTIL

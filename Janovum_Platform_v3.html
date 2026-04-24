@@ -16173,20 +16173,48 @@ async function searchCommunityMain() {
   let dragItem = null;
 
   // Restore saved order from localStorage
+  // Only reorders items within each section — never moves items past group labels
   function restoreNavOrder() {
     const saved = localStorage.getItem('janovum_nav_order');
     if (!saved) return;
     try {
       const order = JSON.parse(saved);
-      const items = Array.from(nav.querySelectorAll('.nav-item'));
-      const map = {};
-      items.forEach(el => map[el.dataset.tab] = el);
-      order.forEach(tab => {
-        if (map[tab]) nav.appendChild(map[tab]);
+      // Build sections: group label → [nav-items that follow it]
+      const children = Array.from(nav.childNodes).filter(n => n.nodeType === 1);
+      let currentGroup = null;
+      const sections = [];
+      children.forEach(el => {
+        if (el.classList.contains('nav-group-label')) {
+          currentGroup = { label: el, items: [] };
+          sections.push(currentGroup);
+        } else if (el.classList.contains('nav-item') && currentGroup) {
+          currentGroup.items.push(el);
+        }
       });
-      // Append any items not in saved order (new tabs added after save)
-      items.forEach(el => {
-        if (!order.includes(el.dataset.tab)) nav.appendChild(el);
+      // Within each section, reorder items according to saved order
+      sections.forEach(section => {
+        if (section.items.length < 2) return;
+        const sectionTabs = section.items.map(el => el.dataset.tab);
+        const savedOrder = order.filter(t => sectionTabs.includes(t));
+        if (savedOrder.length === 0) return;
+        // Map tab → element
+        const map = {};
+        section.items.forEach(el => map[el.dataset.tab] = el);
+        // Re-insert in saved order after the label, then any unsaved items
+        const anchor = section.label;
+        let insertAfter = anchor;
+        const insertNext = (el) => {
+          if (insertAfter.nextSibling) {
+            nav.insertBefore(el, insertAfter.nextSibling);
+          } else {
+            nav.appendChild(el);
+          }
+          insertAfter = el;
+        };
+        savedOrder.forEach(tab => { if (map[tab]) insertNext(map[tab]); });
+        section.items.forEach(el => {
+          if (!savedOrder.includes(el.dataset.tab)) insertNext(el);
+        });
       });
     } catch (e) {}
   }

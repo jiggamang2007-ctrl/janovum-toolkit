@@ -413,6 +413,7 @@
   </div>
   <div class="topbar-right">
     <a href="/" class="back-btn">← Back to Toolkit</a>
+    <button onclick="logoutOperator()" style="background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer;">Sign Out</button>
   </div>
 </div>
 
@@ -626,6 +627,12 @@
 
 <script>
 const API = '';  // same origin
+
+function logoutOperator() {
+  localStorage.removeItem('_op_token');
+  localStorage.removeItem('_op_info');
+  window.location.href = '/become-operator';
+}
 
 // ─── TABS ────────────────────────────────────────────────────────────────────
 function switchTab(name) {
@@ -968,7 +975,31 @@ document.getElementById('log-modal').addEventListener('click', function(e) {
 });
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-loadOnboarding();
+// Auth gate — if no token, redirect to signup page
+(async function init() {
+  const token = localStorage.getItem('_op_token');
+  if (!token) {
+    window.location.href = '/become-operator';
+    return;
+  }
+  // Validate token with server
+  try {
+    const r = await fetch('/api/operators/me', { headers: { 'X-Op-Token': token } });
+    if (!r.ok) {
+      localStorage.removeItem('_op_token');
+      localStorage.removeItem('_op_info');
+      window.location.href = '/become-operator';
+      return;
+    }
+    const op = await r.json();
+    // Show operator name in topbar
+    const badge = document.querySelector('.topbar-badge');
+    if (badge && op.name) badge.title = op.name + ' · ' + (op.plan || 'starter');
+  } catch(e) {
+    // Network error — still let them in (offline-safe)
+  }
+  loadOnboarding();
+})();
 </script>
 </body>
 </html>

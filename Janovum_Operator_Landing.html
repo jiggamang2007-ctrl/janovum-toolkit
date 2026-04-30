@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Become a Janovum Operator — Build Your AI Automation Agency</title>
+<style>
+  :root {
+    --brand: #3B82F6;
+    --brand-dark: #2563EB;
+    --purple: #8B5CF6;
+    --green: #10B981;
+    --yellow: #F59E0B;
+    --red: #EF4444;
+    --bg: #080810;
+    --surface: #0F0F1A;
+    --card: #16162A;
+    --border: #252540;
+    --text: #F0F0FF;
+    --muted: #7070A0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; overflow-x:hidden; }
+
+  /* ── NAV ── */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 40px; height:64px;
+    background:#080810dd; backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+  }
+  .nav-logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; text-decoration:none; color:var(--text); }
+  .nav-dot { width:10px; height:10px; border-radius:50%; background:var(--brand); }
+  .nav-right { display:flex; align-items:center; gap:16px; }
+  .nav-link { color:var(--muted); font-size:14px; text-decoration:none; transition:.2s; }
+  .nav-link:hover { color:var(--text); }
+  .nav-cta {
+    background:var(--brand); color:#fff; border:none;
+    border-radius:8px; padding:8px 18px; font-size:13px; font-weight:600;
+    cursor:pointer; text-decoration:none; transition:.2s;
+  }
+  .nav-cta:hover { background:var(--brand-dark); }
+
+  /* ── HERO ── */
+  .hero {
+    min-height:100vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center; padding:100px 24px 60px;
+    position:relative; overflow:hidden;
+  }
+  .hero-glow {
+    position:absolute; top:20%; left:50%; transform:translateX(-50%);
+    width:700px; height:400px; border-radius:50%;
+    background:radial-gradient(ellipse,#3B82F620 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .hero-badge {
+    display:inline-flex; align-items:center; gap:6px;
+    background:#3B82F615; border:1px solid #3B82F640;
+    border-radius:99px; padding:6px 16px;
+    font-size:12px; font-weight:600; color:var(--brand);
+    text-transform:uppercase; letter-spacing:.6px; margin-bottom:28px;
+  }
+  .hero h1 {
+    font-size:clamp(36px,6vw,72px); font-weight:900; line-height:1.05;
+    letter-spacing:-2px; margin-bottom:20px;
+    background:linear-gradient(135deg,#fff 40%,#8B5CF6);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  }
+  .hero-sub {
+    font-size:clamp(16px,2vw,22px); color:var(--muted);
+    max-width:560px; line-height:1.6; margin-bottom:40px;
+  }
+  .hero-sub strong { color:var(--text); }
+  .hero-btns { display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-bottom:64px; }
+  .btn-hero {
+    background:linear-gradient(135deg,#3B82F6,#8B5CF6);
+    color:#fff; border:none; border-radius:12px;
+    padding:16px 32px; font-size:16px; font-weight:700;
+    cursor:pointer; text-decoration:none; transition:.2s;
+    box-shadow:0 0 40px #3B82F640;
+  }
+  .btn-hero:hover { transform:translateY(-2px); box-shadow:0 0 60px #3B82F660; }
+  .btn-ghost {
+    background:transparent; color:var(--text);
+    border:1px solid var(--border); border-radius:12px;
+    padding:15px 28px; font-size:15px; font-weight:600;
+    cursor:pointer; text-decoration:none; transition:.2s;
+  }
+  .btn-ghost:hover { border-color:var(--muted); }
+
+  /* INCOME PROOF */
+  .income-strip {
+    display:flex; gap:32px; flex-wrap:wrap; justify-content:center;
+    padding:20px 32px; background:var(--surface);
+    border:1px solid var(--border); border-radius:16px;
+    max-width:700px; width:100%;
+  }
+  .income-item { text-align:center; }
+  .income-val { font-size:28px; font-weight:800; color:var(--green); }
+  .income-label { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  /* ── SECTION ── */
+  section { padding:80px 24px; max-width:1100px; margin:0 auto; }
+  .section-tag {
+    display:inline-block; background:#8B5CF615; border:1px solid #8B5CF640;
+    color:var(--purple); font-size:11px; font-weight:700;
+    padding:4px 14px; border-radius:99px; letter-spacing:.6px;
+    text-transform:uppercase; margin-bottom:16px;
+  }
+  .section-title { font-size:clamp(28px,4vw,44px); font-weight:800; letter-spacing:-1px; margin-bottom:12px; }
+  .section-sub { font-size:16px; color:var(--muted); max-width:560px; line-height:1.6; margin-bottom:48px; }
+
+  /* ── HOW IT WORKS ── */
+  .steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; }
+  .step-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:28px; position:relative; overflow:hidden;
+  }
+  .step-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,var(--brand),var(--purple));
+  }
+  .step-num {
+    width:36px; height:36px; border-radius:50%;
+    background:linear-gradient(135deg,var(--brand),var(--purple));
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; font-weight:800; margin-bottom:16px;
+  }
+  .step-title { font-size:17px; font-weight:700; margin-bottom:8px; }
+  .step-desc { font-size:13px; color:var(--muted); line-height:1.6; }
+
+  /* ── INCOME CALC ── */
+  .calc-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:24px; padding:40px; text-align:center;
+  }
+  .calc-slider { width:100%; max-width:480px; margin:24px auto 8px; accent-color:var(--brand); height:6px; }
+  .calc-clients { font-size:48px; font-weight:900; color:var(--brand); margin:16px 0 4px; }
+  .calc-label { font-size:14px; color:var(--muted); margin-bottom:24px; }
+  .calc-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; max-width:600px; margin:0 auto; }
+  .calc-box { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:20px; }
+  .calc-box-val { font-size:24px; font-weight:800; margin-bottom:4px; }
+  .calc-box-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+
+  /* ── WHAT YOU GET ── */
+  .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .feature-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:16px; padding:22px;
+    display:flex; gap:14px; align-items:flex-start;
+    transition:.2s;
+  }
+  .feature-card:hover { border-color:#3B82F640; transform:translateY(-2px); }
+  .feature-icon { font-size:24px; flex-shrink:0; }
+  .feature-title { font-size:14px; font-weight:700; margin-bottom:4px; }
+  .feature-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+
+  /* ── PLANS ── */
+  .plans-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px; }
+  .plan-card {
+    background:var(--card); border:2px solid var(--border);
+    border-radius:24px; padding:32px; position:relative;
+    transition:.2s; cursor:pointer;
+  }
+  .plan-card:hover { border-color:var(--brand); transform:translateY(-4px); }
+  .plan-card.popular { border-color:var(--brand); }
+  .plan-pop-badge {
+    position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+    background:linear-gradient(135deg,var(--brand),var(--purple));
+    color:#fff; font-size:10px; font-weight:800;
+    padding:4px 14px; border-radius:99px; white-space:nowrap;
+    letter-spacing:.5px;
+  }
+  .plan-name { font-size:14px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; margin-bottom:12px; }
+  .plan-price { font-size:48px; font-weight:900; line-height:1; margin-bottom:4px; }
+  .plan-price span { font-size:18px; font-weight:400; color:var(--muted); }
+  .plan-clients { font-size:13px; color:var(--muted); margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+  .plan-features { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+  .plan-feature { display:flex; gap:8px; align-items:center; font-size:13px; }
+  .plan-feature-check { color:var(--green); font-weight:700; }
+  .plan-select-btn {
+    width:100%; padding:13px; border-radius:10px; border:none;
+    font-size:14px; font-weight:700; cursor:pointer; transition:.2s;
+  }
+  .plan-select-btn.default { background:var(--surface); color:var(--text); border:1px solid var(--border); }
+  .plan-select-btn.default:hover { border-color:var(--brand); color:var(--brand); }
+  .plan-select-btn.primary { background:linear-gradient(135deg,var(--brand),var(--purple)); color:#fff; }
+  .plan-select-btn.primary:hover { opacity:.9; }
+
+  /* ── SIGNUP FORM ── */
+  #signup {
+    background:linear-gradient(135deg,#0F0F1A,#16162A);
+    border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  }
+  .signup-wrap { max-width:580px; margin:0 auto; }
+  .form-card {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:24px; padding:40px; position:relative; overflow:hidden;
+  }
+  .form-card::before {
+    content:''; position:absolute; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg,var(--brand),var(--purple));
+  }
+  .form-title { font-size:24px; font-weight:800; margin-bottom:6px; }
+  .form-sub { font-size:14px; color:var(--muted); margin-bottom:28px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group.full { grid-column:1/-1; }
+  .form-group label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .form-group input, .form-group select {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:10px; padding:11px 14px;
+    color:var(--text); font-size:14px; outline:none; transition:.2s;
+    -webkit-appearance:none;
+  }
+  .form-group input:focus, .form-group select:focus { border-color:var(--brand); }
+  .form-group select option { background:#1C1C27; }
+  .plan-selector { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+  .plan-opt {
+    background:var(--surface); border:2px solid var(--border);
+    border-radius:10px; padding:12px 8px; text-align:center;
+    cursor:pointer; transition:.2s;
+  }
+  .plan-opt:hover { border-color:var(--brand); }
+  .plan-opt.selected { border-color:var(--brand); background:#3B82F610; }
+  .plan-opt-name { font-size:13px; font-weight:700; margin-bottom:2px; }
+  .plan-opt-price { font-size:11px; color:var(--muted); }
+  .submit-btn {
+    width:100%; padding:15px; border-radius:12px; border:none;
+    background:linear-gradient(135deg,var(--brand),var(--purple));
+    color:#fff; font-size:16px; font-weight:700; cursor:pointer;
+    transition:.2s; box-shadow:0 0 30px #3B82F640; margin-top:8px;
+  }
+  .submit-btn:hover { transform:translateY(-1px); box-shadow:0 0 50px #3B82F660; }
+  .submit-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+  .form-note { font-size:11px; color:var(--muted); text-align:center; margin-top:12px; line-height:1.5; }
+  .form-note a { color:var(--brand); text-decoration:none; }
+  .form-error { background:#EF444415; border:1px solid #EF444430; border-radius:8px; padding:10px 14px; font-size:13px; color:var(--red); margin-bottom:14px; display:none; }
+  .form-success { background:#10B98115; border:1px solid #10B98130; border-radius:8px; padding:16px 14px; font-size:14px; color:var(--green); text-align:center; display:none; }
+
+  /* ── FAQ ── */
+  .faq-list { display:flex; flex-direction:column; gap:12px; max-width:720px; margin:0 auto; }
+  .faq-item {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:14px; overflow:hidden;
+  }
+  .faq-q {
+    padding:18px 20px; font-weight:600; font-size:15px;
+    cursor:pointer; display:flex; align-items:center; justify-content:space-between;
+    user-select:none;
+  }
+  .faq-q:hover { color:var(--brand); }
+  .faq-chevron { font-size:12px; color:var(--muted); transition:.3s; }
+  .faq-a { font-size:14px; color:var(--muted); line-height:1.7; padding:0 20px; max-height:0; overflow:hidden; transition:.3s; }
+  .faq-item.open .faq-a { max-height:200px; padding:0 20px 18px; }
+  .faq-item.open .faq-chevron { transform:rotate(90deg); }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align:center; padding:32px 24px;
+    border-top:1px solid var(--border);
+    font-size:13px; color:var(--muted);
+  }
+  footer a { color:var(--brand); text-decoration:none; }
+
+  /* ── LOGIN MODAL ── */
+  .modal-overlay {
+    display:none; position:fixed; inset:0;
+    background:#00000090; z-index:200;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--card); border:1px solid var(--border);
+    border-radius:20px; padding:32px; width:100%; max-width:420px; margin:16px;
+  }
+  .modal h3 { font-size:20px; font-weight:800; margin-bottom:6px; }
+  .modal p { font-size:13px; color:var(--muted); margin-bottom:24px; }
+  .modal-btns { display:flex; gap:10px; margin-top:16px; }
+  .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); font-size:20px; cursor:pointer; }
+
+  /* ── DIVIDER ── */
+  .divider { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); margin:0; }
+
+  @media(max-width:640px) {
+    nav { padding:0 16px; }
+    .form-grid { grid-template-columns:1fr; }
+    .calc-grid { grid-template-columns:1fr; max-width:280px; }
+    .plan-selector { grid-template-columns:1fr; }
+    .income-strip { gap:20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo"><div class="nav-dot"></div>Janovum</a>
+  <div class="nav-right">
+    <a href="#" class="nav-link" onclick="openLoginModal()">Already a member?</a>
+    <a href="#signup" class="nav-cta">Get Started</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-badge">🚀 Now accepting operators</div>
+  <h1>Build a $10K/Month<br>AI Automation Agency.</h1>
+  <p class="hero-sub">
+    We built the tech. <strong>You sell it. You keep 85%.</strong><br>
+    Sign local businesses, deploy AI receptionists, collect monthly fees — Janovum powers everything behind the scenes.
+  </p>
+  <div class="hero-btns">
+    <a href="#signup" class="btn-hero">Start for $97/month →</a>
+    <a href="#how" class="btn-ghost">See how it works</a>
+  </div>
+  <div class="income-strip">
+    <div class="income-item"><div class="income-val">85%</div><div class="income-label">You Keep</div></div>
+    <div class="income-item"><div class="income-val">$0</div><div class="income-label">Tech to Build</div></div>
+    <div class="income-item"><div class="income-val">33</div><div class="income-label">Tools Included</div></div>
+    <div class="income-item"><div class="income-val">24/7</div><div class="income-label">AI Works for You</div></div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="section-tag">How It Works</div>
+  <h2 class="section-title">Three steps to recurring revenue.</h2>
+  <p class="section-sub">No coding. No building. Just sales and client management.</p>
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <div class="step-title">Join as an Operator</div>
+      <div class="step-desc">Pick your plan, get instant access to the full Janovum toolkit. White-label everything with your brand in minutes.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <div class="step-title">Sign Local Businesses</div>
+      <div class="step-desc">Use the built-in CRM, AI-generated leads, and sales scripts to close restaurants, salons, auto shops, dentists — any local business that needs AI automation.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <div class="step-title">Collect Monthly. Janovum Takes 15%.</div>
+      <div class="step-desc">Charge clients $300–$1,000/month. Janovum auto-deducts 15% for powering the platform. You pocket the rest every month, forever.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- INCOME CALCULATOR -->
+<section>
+  <div class="section-tag">Income Potential</div>
+  <h2 class="section-title">What does your month look like?</h2>
+  <p class="section-sub">Drag the slider to see your projected earnings based on number of clients.</p>
+  <div class="calc-card">
+    <div style="font-size:15px;color:var(--muted);">Number of clients</div>
+    <div class="calc-clients" id="calc-num">5</div>
+    <input type="range" class="calc-slider" id="calc-slider" min="1" max="50" value="5">
+    <div class="calc-label">clients at avg $<span id="calc-avg">500</span>/mo each</div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-bottom:16px;flex-wrap:wrap;">
+      <label style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;">
+        Avg monthly fee: $<input type="number" id="calc-fee" value="500" min="100" max="5000" step="50"
+          style="width:80px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:13px;outline:none;">
+      </label>
+    </div>
+    <div class="calc-grid">
+      <div class="calc-box">
+        <div class="calc-box-val" id="calc-gross" style="color:var(--text);">$2,500</div>
+        <div class="calc-box-label">Monthly Revenue</div>
+      </div>
+      <div class="calc-box">
+        <div class="calc-box-val" id="calc-cut" style="color:var(--purple);">$375</div>
+        <div class="calc-box-label">Janovum 15%</div>
+      </div>
+      <div class="calc-box">
+        <div class="calc-box-val" id="calc-keep" style="color:var(--green);">$2,125</div>
+        <div class="calc-box-label">Your Take-Home</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- WHAT YOU GET -->
+<section>
+  <div class="section-tag">What's Included</div>
+  <h2 class="section-title">Everything you need to run an agency.</h2>
+  <p class="section-sub">33-tab toolkit, all pre-built. Deploy in a day, sell the next.</p>
+  <div class="features-grid">
+    <div class="feature-card"><div class="feature-icon">🤖</div><div><div class="feature-title">AI Receptionist</div><div class="feature-desc">Deploy a 24/7 phone agent for clients. Answers calls, books appointments, handles FAQs.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">📋</div><div><div class="feature-title">Full CRM</div><div class="feature-desc">Manage all your clients' leads, track pipeline stages, log call notes — white-labeled with your brand.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">🎯</div><div><div class="feature-title">AI Lead Gen</div><div class="feature-desc">100+ pre-loaded local business leads, categorized by industry. Start calling day one.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">💬</div><div><div class="feature-title">Sales Scripts & Pitches</div><div class="feature-desc">Industry-specific pitches for 20+ business types. Walk in prepared, close more deals.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">📊</div><div><div class="feature-title">Sales Tracker</div><div class="feature-desc">Track every call, deal stage, commission, and close rate. Built-in calendar and goals.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">⚡</div><div><div class="feature-title">Proactive AI Agent</div><div class="feature-desc">Background agent that runs health checks, CRM summaries, and pipeline reports 24/7 automatically.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">🏷️</div><div><div class="feature-title">Full White-Label</div><div class="feature-desc">Your brand name, logo, colors, and domain. Clients see your agency — not Janovum.</div></div></div>
+    <div class="feature-card"><div class="feature-icon">📄</div><div><div class="feature-title">Contracts & Proposals</div><div class="feature-desc">Ready-to-send client contracts and proposal templates. Sign deals in minutes.</div></div></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PLANS -->
+<section id="plans">
+  <div class="section-tag">Pricing</div>
+  <h2 class="section-title">Pick your plan. Start signing clients.</h2>
+  <p class="section-sub">All plans include the full toolkit. Upgrade as your agency grows.</p>
+  <div class="plans-grid">
+
+    <div class="plan-card" onclick="selectPlan('starter')">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$97<span>/mo</span></div>
+      <div class="plan-clients">Up to 3 active clients</div>
+      <div class="plan-features">
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Full 33-tab toolkit</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> AI Receptionist</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> CRM + Lead Gen</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> White-label branding</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Email support</div>
+      </div>
+      <button class="plan-select-btn default" onclick="selectPlan('starter')">Select Starter</button>
+    </div>
+
+    <div class="plan-card popular" onclick="selectPlan('pro')">
+      <div class="plan-pop-badge">MOST POPULAR</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$297<span>/mo</span></div>
+      <div class="plan-clients">Up to 10 active clients</div>
+      <div class="plan-features">
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Everything in Starter</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Priority support</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Revenue analytics</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Advanced AI tools</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Proactive AI agent</div>
+      </div>
+      <button class="plan-select-btn primary" onclick="selectPlan('pro')">Select Pro</button>
+    </div>
+
+    <div class="plan-card" onclick="selectPlan('agency')">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">$497<span>/mo</span></div>
+      <div class="plan-clients">Unlimited clients</div>
+      <div class="plan-features">
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Everything in Pro</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Dedicated support</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Custom domain</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> Multi-location clients</div>
+        <div class="plan-feature"><span class="plan-feature-check">✓</span> First access to new tools</div>
+      </div>
+      <button class="plan-select-btn default" onclick="selectPlan('agency')">Select Agency</button>
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SIGNUP FORM -->
+<section id="signup" style="padding:80px 24px;">
+  <div class="signup-wrap">
+    <div style="text-align:center;margin-bottom:32px;">
+      <div class="section-tag">Get Started</div>
+      <h2 class="section-title">Create your operator account.</h2>
+      <p style="color:var(--muted);font-size:15px;">Takes 2 minutes. Start signing clients today.</p>
+    </div>
+
+    <div class="form-card">
+      <div class="form-error" id="form-error"></div>
+      <div class="form-success" id="form-success">
+        🎉 Welcome to Janovum! Redirecting to your operator hub...
+      </div>
+
+      <div id="form-body">
+        <!-- PLAN SELECTOR -->
+        <div style="margin-bottom:20px;">
+          <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px;">Select Your Plan</div>
+          <div class="plan-selector">
+            <div class="plan-opt" id="opt-starter" onclick="selectPlan('starter')">
+              <div class="plan-opt-name">Starter</div>
+              <div class="plan-opt-price">$97/mo · 3 clients</div>
+            </div>
+            <div class="plan-opt selected" id="opt-pro" onclick="selectPlan('pro')">
+              <div class="plan-opt-name">Pro ⭐</div>
+              <div class="plan-opt-price">$297/mo · 10 clients</div>
+            </div>
+            <div class="plan-opt" id="opt-agency" onclick="selectPlan('agency')">
+              <div class="plan-opt-name">Agency</div>
+              <div class="plan-opt-price">$497/mo · Unlimited</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="f-first" placeholder="Jaden" autocomplete="given-name">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="f-last" placeholder="Smith" autocomplete="family-name">
+          </div>
+          <div class="form-group full">
+            <label>Email Address</label>
+            <input type="email" id="f-email" placeholder="you@youragency.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input type="tel" id="f-phone" placeholder="(305) 555-0100" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label>Agency / Business Name</label>
+            <input type="text" id="f-agency" placeholder="Your Agency LLC">
+          </div>
+          <div class="form-group full">
+            <label>Password</label>
+            <input type="password" id="f-pass" placeholder="Create a strong password" autocomplete="new-password">
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitSignup()">
+          Create My Operator Account →
+        </button>
+        <div class="form-note">
+          By signing up you agree to Janovum's terms. Billing is a placeholder —
+          full Stripe integration coming soon. <a href="#" onclick="openLoginModal()">Already have an account? Sign in.</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<section>
+  <div style="text-align:center;margin-bottom:40px;">
+    <div class="section-tag">FAQ</div>
+    <h2 class="section-title">Common questions.</h2>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Do I need any tech or coding skills? <span class="faq-chevron">›</span></div>
+      <div class="faq-a">None. The entire toolkit is pre-built and ready to deploy. If you can send an email and make a phone call, you can run a Janovum agency.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">What exactly do I sell to local businesses? <span class="faq-chevron">›</span></div>
+      <div class="faq-a">AI receptionist (24/7 phone answering), appointment booking, lead follow-up, and AI-powered customer engagement. Any local business — restaurant, salon, auto shop, dental office — can benefit immediately.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How does the 15% revenue share work? <span class="faq-chevron">›</span></div>
+      <div class="faq-a">When you charge a client $500/month, you log that deal in the Operator Hub. Janovum's share is $75 (15%). You keep $425 (85%). Once Stripe is connected, this happens automatically. For now, you track it manually in the Revenue tab.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">What's included in my monthly subscription? <span class="faq-chevron">›</span></div>
+      <div class="faq-a">Full access to the 33-tab Janovum toolkit: CRM, AI receptionist, lead generator, sales scripts, proposal templates, contract signing, revenue tracker, proactive AI agent, and white-label branding tools.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">How fast can I sign my first client? <span class="faq-chevron">›</span></div>
+      <div class="faq-a">Most operators sign their first client within the first week. The toolkit includes 100+ pre-loaded local business leads and industry-specific sales pitches so you're ready to call the same day you sign up.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">Can I cancel anytime? <span class="faq-chevron">›</span></div>
+      <div class="faq-a">Yes. No long-term contracts. Cancel anytime. Your clients and their data remain yours.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div style="font-weight:700;font-size:16px;margin-bottom:8px;">Janovum</div>
+  <div>© 2026 Janovum LLC. All rights reserved. · <a href="/">Back to site</a> · <a href="/operator">Operator Hub</a></div>
+</footer>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="login-modal">
+  <div class="modal" style="position:relative;">
+    <button class="modal-close" onclick="closeLoginModal()">×</button>
+    <h3>Sign In to Your Hub</h3>
+    <p>Enter your operator credentials to access the dashboard.</p>
+    <div class="form-error" id="login-error"></div>
+    <div class="form-group" style="margin-bottom:12px;">
+      <label>Email</label>
+      <input type="email" id="l-email" placeholder="you@youragency.com">
+    </div>
+    <div class="form-group" style="margin-bottom:16px;">
+      <label>Password</label>
+      <input type="password" id="l-pass" placeholder="Your password">
+    </div>
+    <button class="submit-btn" onclick="submitLogin()">Sign In →</button>
+    <div class="form-note" style="margin-top:12px;">
+      Don't have an account? <a href="#signup" onclick="closeLoginModal()">Sign up here.</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedPlan = 'pro';
+
+// ── PLAN SELECTION ────────────────────────────────────────────────────────────
+function selectPlan(plan) {
+  selectedPlan = plan;
+  ['starter','pro','agency'].forEach(p => {
+    const el = document.getElementById('opt-'+p);
+    if (el) el.classList.toggle('selected', p === plan);
+  });
+  // Scroll to signup
+  const s = document.getElementById('signup');
+  if (s) s.scrollIntoView({behavior:'smooth'});
+}
+
+// ── INCOME CALCULATOR ─────────────────────────────────────────────────────────
+function updateCalc() {
+  const n   = parseInt(document.getElementById('calc-slider').value) || 5;
+  const fee = parseFloat(document.getElementById('calc-fee').value)  || 500;
+  const gross = n * fee;
+  const cut   = gross * 0.15;
+  const keep  = gross - cut;
+  document.getElementById('calc-num').textContent  = n;
+  document.getElementById('calc-avg').textContent  = fee;
+  document.getElementById('calc-gross').textContent = '$' + gross.toLocaleString();
+  document.getElementById('calc-cut').textContent   = '$' + Math.round(cut).toLocaleString();
+  document.getElementById('calc-keep').textContent  = '$' + Math.round(keep).toLocaleString();
+}
+document.getElementById('calc-slider').addEventListener('input', updateCalc);
+document.getElementById('calc-fee').addEventListener('input', updateCalc);
+
+// ── FAQ ───────────────────────────────────────────────────────────────────────
+function toggleFaq(el) {
+  const item = el.parentElement;
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+// ── SIGNUP ────────────────────────────────────────────────────────────────────
+async function submitSignup() {
+  const btn = document.getElementById('submit-btn');
+  const errEl = document.getElementById('form-error');
+  errEl.style.display = 'none';
+
+  const first  = document.getElementById('f-first').value.trim();
+  const last   = document.getElementById('f-last').value.trim();
+  const email  = document.getElementById('f-email').value.trim();
+  const phone  = document.getElementById('f-phone').value.trim();
+  const agency = document.getElementById('f-agency').value.trim();
+  const pass   = document.getElementById('f-pass').value;
+
+  if (!first || !email || !pass) {
+    errEl.textContent = 'First name, email, and password are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (pass.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    const res = await fetch('/api/operators/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:        first + ' ' + last,
+        email:       email,
+        phone:       phone,
+        agency_name: agency,
+        password:    pass,
+        plan:        selectedPlan,
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      errEl.textContent = data.error || 'Signup failed. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Create My Operator Account →';
+      return;
+    }
+
+    // Store auth token and operator info
+    localStorage.setItem('_op_token', data.token);
+    localStorage.setItem('_op_info', JSON.stringify(data.operator));
+
+    // Show success
+    document.getElementById('form-body').style.display = 'none';
+    document.getElementById('form-success').style.display = 'block';
+
+    setTimeout(() => { window.location.href = '/operator'; }, 2000);
+
+  } catch(e) {
+    errEl.textContent = 'Network error. Please try again.';
+    errEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Create My Operator Account →';
+  }
+}
+
+// ── LOGIN ─────────────────────────────────────────────────────────────────────
+function openLoginModal()  { document.getElementById('login-modal').classList.add('open'); }
+function closeLoginModal() { document.getElementById('login-modal').classList.remove('open'); }
+
+document.getElementById('login-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeLoginModal();
+});
+
+async function submitLogin() {
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+  const email = document.getElementById('l-email').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  if (!email || !pass) {
+    errEl.textContent = 'Email and password required.';
+    errEl.style.display = 'block';
+    return;
+  }
+  try {
+    const res  = await fetch('/api/operators/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      errEl.textContent = data.error || 'Invalid credentials.';
+      errEl.style.display = 'block';
+      return;
+    }
+    localStorage.setItem('_op_token', data.token);
+    localStorage.setItem('_op_info', JSON.stringify(data.operator));
+    window.location.href = '/operator';
+  } catch(e) {
+    errEl.textContent = 'Network error.';
+    errEl.style.display = 'block';
+  }
+}
+
+// Enter key on login
+document.getElementById('l-pass').addEventListener('keydown', e => { if(e.key==='Enter') submitLogin(); });
+
+// If already logged in, show a banner
+window.addEventListener('DOMContentLoaded', () => {
+  const token = localStorage.getItem('_op_token');
+  if (token) {
+    const nav = document.querySelector('.nav-right');
+    nav.innerHTML = `<a href="/operator" class="nav-cta">Go to My Hub →</a>`;
+  }
+});
+</script>
+</body>
+</html>

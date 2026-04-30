@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Janovum Operator Hub</title>
+<style>
+  :root {
+    --brand: #3B82F6;
+    --brand-dark: #2563EB;
+    --bg: #0A0A0F;
+    --surface: #13131A;
+    --card: #1C1C27;
+    --border: #2A2A3A;
+    --text: #F0F0FF;
+    --muted: #8888AA;
+    --green: #10B981;
+    --yellow: #F59E0B;
+    --red: #EF4444;
+    --purple: #8B5CF6;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; min-height:100vh; }
+
+  /* TOP BAR */
+  .topbar {
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:0 24px;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    position:sticky;
+    top:0;
+    z-index:100;
+  }
+  .topbar-logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; }
+  .topbar-logo .dot { width:10px; height:10px; border-radius:50%; background:var(--brand); }
+  .topbar-badge {
+    background:linear-gradient(135deg,#3B82F6,#8B5CF6);
+    color:#fff;
+    font-size:11px;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:20px;
+    letter-spacing:.5px;
+    text-transform:uppercase;
+  }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .back-btn {
+    color:var(--muted);
+    font-size:13px;
+    text-decoration:none;
+    padding:6px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    transition:.2s;
+  }
+  .back-btn:hover { color:var(--text); border-color:var(--muted); }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display:flex;
+    gap:4px;
+    padding:16px 24px 0;
+    border-bottom:1px solid var(--border);
+    overflow-x:auto;
+    background:var(--surface);
+  }
+  .nav-tab {
+    padding:10px 20px;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:500;
+    color:var(--muted);
+    border:1px solid transparent;
+    border-bottom:none;
+    white-space:nowrap;
+    transition:.2s;
+    background:none;
+  }
+  .nav-tab:hover { color:var(--text); }
+  .nav-tab.active {
+    color:var(--text);
+    background:var(--bg);
+    border-color:var(--border);
+    border-bottom:1px solid var(--bg);
+    margin-bottom:-1px;
+  }
+
+  /* MAIN CONTENT */
+  .main { max-width:1100px; margin:0 auto; padding:32px 24px; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* SECTION HEADER */
+  .section-header { margin-bottom:24px; }
+  .section-header h2 { font-size:22px; font-weight:700; margin-bottom:6px; }
+  .section-header p { color:var(--muted); font-size:14px; }
+
+  /* CARDS */
+  .card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    margin-bottom:20px;
+  }
+  .card-title {
+    font-size:15px;
+    font-weight:600;
+    margin-bottom:16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  /* STATS GRID */
+  .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:16px; margin-bottom:24px; }
+  .stat-card {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+  }
+  .stat-value { font-size:28px; font-weight:800; color:var(--brand); line-height:1; margin-bottom:6px; }
+  .stat-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px; }
+
+  /* PROGRESS BAR */
+  .progress-bar { background:var(--border); border-radius:99px; height:8px; overflow:hidden; }
+  .progress-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--brand),var(--purple)); transition:width .5s; }
+
+  /* CHECKLIST */
+  .checklist { display:flex; flex-direction:column; gap:12px; }
+  .check-item {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    transition:.2s;
+  }
+  .check-item.done { border-color:#10B98133; background:#10B98108; }
+  .check-icon {
+    width:34px; height:34px;
+    border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:16px;
+    flex-shrink:0;
+    background:var(--border);
+    transition:.2s;
+  }
+  .check-item.done .check-icon { background:#10B98122; }
+  .check-info { flex:1; }
+  .check-name { font-size:14px; font-weight:600; margin-bottom:2px; }
+  .check-desc { font-size:12px; color:var(--muted); }
+  .check-btn {
+    padding:7px 16px;
+    font-size:12px;
+    font-weight:600;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    background:var(--brand);
+    color:#fff;
+    white-space:nowrap;
+    transition:.2s;
+  }
+  .check-btn:hover { background:var(--brand-dark); }
+  .check-btn.done-btn { background:#10B98122; color:var(--green); cursor:default; }
+
+  /* FORM */
+  .form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; }
+  .form-group { display:flex; flex-direction:column; gap:6px; }
+  .form-group label { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+  .form-group input, .form-group select {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 14px;
+    color:var(--text);
+    font-size:14px;
+    outline:none;
+    transition:.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color:var(--brand); }
+  .color-row { display:flex; gap:8px; align-items:center; }
+  .color-row input[type="color"] { width:40px; height:38px; padding:2px; border-radius:8px; cursor:pointer; }
+  .color-row input[type="text"] { flex:1; }
+
+  /* BUTTONS */
+  .btn-primary {
+    background:linear-gradient(135deg,#3B82F6,#8B5CF6);
+    color:#fff;
+    border:none;
+    border-radius:10px;
+    padding:11px 24px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .btn-primary:hover { opacity:.9; transform:translateY(-1px); }
+  .btn-secondary {
+    background:var(--surface);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 20px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .btn-secondary:hover { border-color:var(--brand); color:var(--brand); }
+  .btn-danger {
+    background:#EF444420;
+    color:var(--red);
+    border:1px solid #EF444430;
+    border-radius:8px;
+    padding:6px 12px;
+    font-size:12px;
+    cursor:pointer;
+    transition:.2s;
+  }
+  .btn-danger:hover { background:#EF444430; }
+
+  /* PLAN CARDS */
+  .plans-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+  .plan-card {
+    background:var(--card);
+    border:2px solid var(--border);
+    border-radius:16px;
+    padding:24px;
+    text-align:center;
+    transition:.2s;
+    cursor:pointer;
+    position:relative;
+  }
+  .plan-card:hover { border-color:var(--brand); transform:translateY(-2px); }
+  .plan-card.selected { border-color:var(--brand); background:#3B82F610; }
+  .plan-badge {
+    position:absolute;
+    top:-10px;
+    left:50%;
+    transform:translateX(-50%);
+    background:linear-gradient(135deg,#F59E0B,#EF4444);
+    color:#fff;
+    font-size:10px;
+    font-weight:700;
+    padding:3px 10px;
+    border-radius:20px;
+    white-space:nowrap;
+  }
+  .plan-name { font-size:16px; font-weight:700; margin-bottom:4px; }
+  .plan-price { font-size:36px; font-weight:800; color:var(--brand); margin:12px 0 4px; }
+  .plan-price span { font-size:16px; font-weight:400; color:var(--muted); }
+  .plan-desc { font-size:13px; color:var(--muted); margin-bottom:16px; }
+  .plan-feature { font-size:13px; color:var(--text); padding:6px 0; border-top:1px solid var(--border); }
+
+  /* REVENUE TABLE */
+  .revenue-table { width:100%; border-collapse:collapse; }
+  .revenue-table th {
+    text-align:left;
+    padding:10px 14px;
+    font-size:11px;
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    border-bottom:1px solid var(--border);
+  }
+  .revenue-table td {
+    padding:12px 14px;
+    font-size:13px;
+    border-bottom:1px solid var(--border);
+  }
+  .revenue-table tr:last-child td { border-bottom:none; }
+  .revenue-table tr:hover td { background:#ffffff04; }
+
+  /* BADGE */
+  .badge {
+    display:inline-block;
+    padding:3px 10px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:600;
+  }
+  .badge-blue { background:#3B82F620; color:#60A5FA; }
+  .badge-green { background:#10B98120; color:#34D399; }
+  .badge-yellow { background:#F59E0B20; color:#FCD34D; }
+  .badge-purple { background:#8B5CF620; color:#A78BFA; }
+
+  /* LOG ENTRIES */
+  .log-entry {
+    padding:12px 14px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    margin-bottom:8px;
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+  }
+  .log-icon { font-size:18px; flex-shrink:0; margin-top:2px; }
+  .log-body { flex:1; }
+  .log-title { font-size:13px; font-weight:600; }
+  .log-meta { font-size:11px; color:var(--muted); margin-top:2px; }
+  .log-result { font-size:12px; color:var(--muted); margin-top:4px; font-family:monospace; }
+
+  /* TOAST */
+  #toast {
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    background:#1C1C27;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 20px;
+    font-size:14px;
+    font-weight:500;
+    z-index:9999;
+    transform:translateY(100px);
+    opacity:0;
+    transition:.3s;
+    max-width:320px;
+  }
+  #toast.show { transform:translateY(0); opacity:1; }
+  #toast.success { border-color:#10B98150; color:var(--green); }
+  #toast.error { border-color:#EF444450; color:var(--red); }
+
+  /* BRAND PREVIEW */
+  .brand-preview {
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+    margin-top:16px;
+  }
+  .brand-preview-logo { font-size:24px; font-weight:800; margin-bottom:4px; }
+  .brand-preview-sub { font-size:12px; color:var(--muted); }
+
+  /* MODAL */
+  .modal-overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:#00000090;
+    z-index:1000;
+    align-items:center;
+    justify-content:center;
+  }
+  .modal-overlay.open { display:flex; }
+  .modal {
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:28px;
+    width:100%;
+    max-width:480px;
+    margin:16px;
+  }
+  .modal h3 { font-size:18px; font-weight:700; margin-bottom:16px; }
+  .modal-btns { display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+
+  /* CONNECT STRIPE BOX */
+  .stripe-box {
+    border:2px dashed var(--border);
+    border-radius:16px;
+    padding:32px;
+    text-align:center;
+  }
+  .stripe-logo { font-size:32px; margin-bottom:12px; }
+  .stripe-title { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .stripe-desc { font-size:13px; color:var(--muted); margin-bottom:20px; }
+  .coming-soon-tag {
+    display:inline-block;
+    background:#F59E0B20;
+    color:#FCD34D;
+    border:1px solid #F59E0B40;
+    padding:4px 14px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.5px;
+    margin-bottom:16px;
+  }
+
+  /* RESPONSIVE */
+  @media(max-width:640px) {
+    .main { padding:20px 14px; }
+    .nav-tabs { padding:12px 14px 0; }
+    .topbar { padding:0 14px; }
+    .stats-grid { grid-template-columns:1fr 1fr; }
+    .plans-grid { grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <div class="dot"></div>
+    Janovum
+    <span class="topbar-badge">Operator</span>
+  </div>
+  <div class="topbar-right">
+    <a href="/" class="back-btn">← Back to Toolkit</a>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('onboarding')">🚀 Onboarding</div>
+  <div class="nav-tab" onclick="switchTab('whitelabel')">🎨 White-Label</div>
+  <div class="nav-tab" onclick="switchTab('plans')">💳 Plan & Billing</div>
+  <div class="nav-tab" onclick="switchTab('revenue')">💰 Revenue Share</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ── ONBOARDING TAB ── -->
+  <div class="tab-content active" id="tab-onboarding">
+    <div class="section-header">
+      <h2>Get Started</h2>
+      <p>Complete these steps to go live and start earning</p>
+    </div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;" id="ob-label">Loading...</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;" id="ob-sublabel"></div>
+        </div>
+        <div style="font-size:28px;font-weight:800;color:var(--brand);" id="ob-pct">--%</div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="ob-fill" style="width:0%"></div></div>
+    </div>
+
+    <div class="checklist" id="checklist-container">
+      <div style="color:var(--muted);padding:20px;text-align:center;">Loading checklist...</div>
+    </div>
+  </div>
+
+  <!-- ── WHITE LABEL TAB ── -->
+  <div class="tab-content" id="tab-whitelabel">
+    <div class="section-header">
+      <h2>White-Label Settings</h2>
+      <p>Your clients see your brand — not Janovum's</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏷️ Brand Identity</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Brand Name</label>
+          <input type="text" id="cfg-brand" placeholder="Your Agency Name">
+        </div>
+        <div class="form-group">
+          <label>Logo URL</label>
+          <input type="url" id="cfg-logo" placeholder="https://yoursite.com/logo.png">
+        </div>
+        <div class="form-group">
+          <label>Primary Color</label>
+          <div class="color-row">
+            <input type="color" id="cfg-color-pick" value="#3B82F6">
+            <input type="text" id="cfg-color" value="#3B82F6" placeholder="#3B82F6" maxlength="7">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Custom Domain</label>
+          <input type="text" id="cfg-domain" placeholder="app.youragency.com">
+        </div>
+        <div class="form-group">
+          <label>Support Email</label>
+          <input type="email" id="cfg-email" placeholder="support@youragency.com">
+        </div>
+        <div class="form-group">
+          <label>Billing Email</label>
+          <input type="email" id="cfg-billing" placeholder="billing@youragency.com">
+        </div>
+      </div>
+
+      <div style="margin-top:20px;">
+        <button class="btn-primary" onclick="saveConfig()">Save Brand Settings</button>
+      </div>
+
+      <div class="brand-preview" id="brand-preview" style="margin-top:20px;">
+        <div class="brand-preview-logo" id="preview-name">Your Brand</div>
+        <div class="brand-preview-sub">Powered by Janovum</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PLANS TAB ── -->
+  <div class="tab-content" id="tab-plans">
+    <div class="section-header">
+      <h2>Your Plan</h2>
+      <p>Monthly access to the full Janovum toolkit + operator features</p>
+    </div>
+
+    <div class="plans-grid" id="plans-grid">
+      <div style="color:var(--muted);padding:20px;">Loading plans...</div>
+    </div>
+
+    <div class="card" style="margin-top:24px;">
+      <div class="card-title">💳 Billing Connection</div>
+      <div class="stripe-box">
+        <div class="stripe-logo">🔌</div>
+        <div class="stripe-title">Connect Stripe to Receive Payments</div>
+        <div class="stripe-desc">When you bill your clients, your cut lands in Stripe. Janovum's 15% revenue share is automatically deducted before payout.</div>
+        <div class="coming-soon-tag">COMING SOON</div>
+        <br>
+        <button class="btn-primary" onclick="connectStripe()">Connect Stripe Account</button>
+        <div id="stripe-status" style="margin-top:12px;font-size:12px;color:var(--muted);"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="font-size:13px;color:var(--muted);">ℹ️ How Billing Works</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="font-size:20px;">1️⃣</div>
+          <div><div style="font-weight:600;font-size:13px;margin-bottom:2px;">You Pay Monthly</div><div style="color:var(--muted);font-size:12px;">Your subscription gives you access to the full Janovum toolkit to run your agency.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="font-size:20px;">2️⃣</div>
+          <div><div style="font-weight:600;font-size:13px;margin-bottom:2px;">You Sign Clients & Collect Fees</div><div style="color:var(--muted);font-size:12px;">You invoice your clients directly — setup fees, monthly retainers, usage charges.</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="font-size:20px;">3️⃣</div>
+          <div><div style="font-weight:600;font-size:13px;margin-bottom:2px;">Janovum Gets 15%</div><div style="color:var(--muted);font-size:12px;">On every dollar you collect from clients, 15% flows to Janovum automatically. You keep 85%.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REVENUE TAB ── -->
+  <div class="tab-content" id="tab-revenue">
+    <div class="section-header">
+      <h2>Revenue Share Tracker</h2>
+      <p>Log every deal you close — Janovum's cut is auto-calculated</p>
+    </div>
+
+    <div class="stats-grid" id="revenue-stats">
+      <div class="stat-card"><div class="stat-value" id="rv-month">$0</div><div class="stat-label">This Month</div></div>
+      <div class="stat-card"><div class="stat-value" id="rv-cut-month" style="color:var(--purple);">$0</div><div class="stat-label">Janovum Cut (This Mo.)</div></div>
+      <div class="stat-card"><div class="stat-value" id="rv-keep-month" style="color:var(--green);">$0</div><div class="stat-label">Your Keep (This Mo.)</div></div>
+      <div class="stat-card"><div class="stat-value" id="rv-alltime">$0</div><div class="stat-label">All-Time Revenue</div></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div class="card-title" style="margin:0;">📋 Deal Log</div>
+        <button class="btn-primary" onclick="openLogModal()" style="font-size:13px;padding:8px 16px;">+ Log Deal</button>
+      </div>
+      <div id="revenue-table-wrap">
+        <div style="color:var(--muted);text-align:center;padding:24px;">Loading revenue data...</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- LOG DEAL MODAL -->
+<div class="modal-overlay" id="log-modal">
+  <div class="modal">
+    <h3>Log a Deal</h3>
+    <div class="form-grid" style="grid-template-columns:1fr;">
+      <div class="form-group">
+        <label>Client Name</label>
+        <input type="text" id="log-client" placeholder="e.g. Miami Auto Repair">
+      </div>
+      <div class="form-group">
+        <label>Amount ($)</label>
+        <input type="number" id="log-amount" placeholder="e.g. 2500" min="0">
+      </div>
+      <div class="form-group">
+        <label>Type</label>
+        <select id="log-type">
+          <option value="setup">Setup Fee (one-time)</option>
+          <option value="monthly">Monthly Retainer</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="log-date">
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <input type="text" id="log-notes" placeholder="Optional notes">
+      </div>
+    </div>
+    <div id="log-preview" style="background:var(--surface);border-radius:10px;padding:14px;margin-top:12px;font-size:13px;display:none;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="color:var(--muted);">Deal Amount</span>
+        <span id="log-prev-amount">$0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span style="color:var(--muted);">Janovum 15%</span>
+        <span id="log-prev-cut" style="color:var(--purple);">$0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-weight:700;">
+        <span>Your Keep (85%)</span>
+        <span id="log-prev-keep" style="color:var(--green);">$0</span>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-secondary" onclick="closeLogModal()">Cancel</button>
+      <button class="btn-primary" onclick="logDeal()">Log Deal</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+const API = '';  // same origin
+
+// ─── TABS ────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{
+    const names=['onboarding','whitelabel','plans','revenue'];
+    t.classList.toggle('active', names[i]===name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='onboarding') loadOnboarding();
+  if(name==='whitelabel') loadConfig();
+  if(name==='plans') loadPlans();
+  if(name==='revenue') loadRevenue();
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(t._tid);
+  t._tid = setTimeout(()=>t.className='', 3000);
+}
+
+// ─── ONBOARDING ──────────────────────────────────────────────────────────────
+const STEP_META = {
+  set_brand:           { icon:'🏷️', name:'Set Your Brand',           desc:'Add your agency name, logo, and colors' },
+  connect_twilio:      { icon:'📞', name:'Connect Twilio',            desc:'Wire up your AI receptionist phone number' },
+  deploy_receptionist: { icon:'🤖', name:'Deploy Receptionist',       desc:'Launch your first AI receptionist agent' },
+  add_first_client:    { icon:'👤', name:'Add Your First Client',     desc:'Add a business to the CRM and start calling' },
+  connect_billing:     { icon:'💳', name:'Connect Billing',           desc:'Log your first deal and track revenue share' },
+};
+const STEP_ACTIONS = {
+  set_brand:           ()=>switchTab('whitelabel'),
+  connect_twilio:      ()=>window.open('https://console.twilio.com','_blank'),
+  deploy_receptionist: ()=>window.location.href='/',
+  add_first_client:    ()=>window.location.href='/',
+  connect_billing:     ()=>switchTab('revenue'),
+};
+
+async function loadOnboarding() {
+  try {
+    const r = await fetch(API+'/api/platform/onboarding');
+    const data = await r.json();
+    renderOnboarding(data);
+  } catch(e) { console.error(e); }
+}
+
+function renderOnboarding(data) {
+  const pct = data.pct || 0;
+  document.getElementById('ob-pct').textContent = pct + '%';
+  document.getElementById('ob-fill').style.width = pct + '%';
+  const done = data.done || 0;
+  const total = data.total || 5;
+  if (pct === 100) {
+    document.getElementById('ob-label').textContent = '🎉 You\'re live! Start signing clients.';
+    document.getElementById('ob-sublabel').textContent = 'All setup steps complete';
+  } else {
+    document.getElementById('ob-label').textContent = `${done} of ${total} steps complete`;
+    document.getElementById('ob-sublabel').textContent = pct < 40 ? 'Keep going — almost there!' : pct < 80 ? 'Great progress!' : 'Almost done!';
+  }
+
+  const steps = data.steps || {};
+  const container = document.getElementById('checklist-container');
+  container.innerHTML = '';
+  for (const [key, isDone] of Object.entries(steps)) {
+    const meta = STEP_META[key] || { icon:'✅', name: key, desc:'' };
+    const el = document.createElement('div');
+    el.className = 'check-item' + (isDone ? ' done' : '');
+    el.innerHTML = `
+      <div class="check-icon">${isDone ? '✅' : meta.icon}</div>
+      <div class="check-info">
+        <div class="check-name">${meta.name}</div>
+        <div class="check-desc">${meta.desc}</div>
+      </div>
+      ${isDone
+        ? `<button class="check-btn done-btn">Done</button>`
+        : `<button class="check-btn" onclick="doStep('${key}')">Start →</button>`
+      }
+    `;
+    container.appendChild(el);
+  }
+}
+
+async function doStep(step) {
+  if (STEP_ACTIONS[step]) STEP_ACTIONS[step]();
+  await fetch(API+'/api/platform/onboarding/'+step, {method:'POST'});
+  loadOnboarding();
+}
+
+// ─── CONFIG / WHITE-LABEL ─────────────────────────────────────────────────────
+async function loadConfig() {
+  try {
+    const r = await fetch(API+'/api/platform/config');
+    const cfg = await r.json();
+    document.getElementById('cfg-brand').value   = cfg.brand_name    || '';
+    document.getElementById('cfg-logo').value    = cfg.logo_url      || '';
+    document.getElementById('cfg-color').value   = cfg.primary_color || '#3B82F6';
+    document.getElementById('cfg-color-pick').value = cfg.primary_color || '#3B82F6';
+    document.getElementById('cfg-domain').value  = cfg.domain        || '';
+    document.getElementById('cfg-email').value   = cfg.support_email || '';
+    document.getElementById('cfg-billing').value = cfg.billing_email || '';
+    updatePreview();
+  } catch(e) { console.error(e); }
+}
+
+function updatePreview() {
+  const name  = document.getElementById('cfg-brand').value || 'Your Brand';
+  const color = document.getElementById('cfg-color').value || '#3B82F6';
+  document.getElementById('preview-name').textContent = name;
+  document.getElementById('preview-name').style.color = color;
+  document.documentElement.style.setProperty('--brand', color);
+}
+
+document.getElementById('cfg-brand').addEventListener('input', updatePreview);
+document.getElementById('cfg-color').addEventListener('input', function() {
+  document.getElementById('cfg-color-pick').value = this.value;
+  updatePreview();
+});
+document.getElementById('cfg-color-pick').addEventListener('input', function() {
+  document.getElementById('cfg-color').value = this.value;
+  updatePreview();
+});
+
+async function saveConfig() {
+  const payload = {
+    brand_name:    document.getElementById('cfg-brand').value,
+    logo_url:      document.getElementById('cfg-logo').value,
+    primary_color: document.getElementById('cfg-color').value,
+    domain:        document.getElementById('cfg-domain').value,
+    support_email: document.getElementById('cfg-email').value,
+    billing_email: document.getElementById('cfg-billing').value,
+  };
+  try {
+    await fetch(API+'/api/platform/config', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    toast('Brand settings saved ✓');
+    updatePreview();
+  } catch(e) { toast('Error saving config', 'error'); }
+}
+
+// ─── PLANS ───────────────────────────────────────────────────────────────────
+let currentPlan = 'starter';
+
+async function loadPlans() {
+  try {
+    const [plansR, cfgR] = await Promise.all([
+      fetch(API+'/api/platform/plans'),
+      fetch(API+'/api/platform/config')
+    ]);
+    const plans = await plansR.json();
+    const cfg   = await cfgR.json();
+    currentPlan = cfg.plan || 'starter';
+    renderPlans(plans, currentPlan);
+  } catch(e) { console.error(e); }
+}
+
+function renderPlans(plans, activePlan) {
+  const grid = document.getElementById('plans-grid');
+  const features = {
+    starter: ['Up to 3 clients','Full AI toolkit','White-label branding','Email support'],
+    pro:     ['Up to 10 clients','Full AI toolkit','White-label branding','Priority support','Revenue analytics'],
+    agency:  ['Unlimited clients','Full AI toolkit','White-label branding','Dedicated support','Revenue analytics','Custom domain'],
+  };
+  grid.innerHTML = '';
+  for (const [key, plan] of Object.entries(plans)) {
+    const isSelected = key === activePlan;
+    const isMostPop  = key === 'pro';
+    const div = document.createElement('div');
+    div.className = 'plan-card' + (isSelected ? ' selected' : '');
+    div.onclick = () => selectPlan(key);
+    div.innerHTML = `
+      ${isMostPop ? '<div class="plan-badge">MOST POPULAR</div>' : ''}
+      <div class="plan-name">${plan.name}</div>
+      <div class="plan-price">$${plan.price}<span>/mo</span></div>
+      <div class="plan-desc">${plan.description}</div>
+      ${(features[key]||[]).map(f=>`<div class="plan-feature">✓ ${f}</div>`).join('')}
+      <div style="margin-top:16px;">
+        ${isSelected
+          ? '<div style="color:var(--green);font-size:13px;font-weight:600;">✓ Current Plan</div>'
+          : `<button class="btn-primary" style="width:100%;font-size:13px;" onclick="selectPlan('${key}')">Select Plan</button>`
+        }
+      </div>
+    `;
+    grid.appendChild(div);
+  }
+}
+
+async function selectPlan(plan) {
+  await fetch(API+'/api/platform/config', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({plan})
+  });
+  toast('Plan updated to ' + plan);
+  loadPlans();
+}
+
+async function connectStripe() {
+  const btn = event.target;
+  btn.textContent = 'Connecting...';
+  btn.disabled = true;
+  try {
+    const r = await fetch(API+'/api/platform/billing/connect', {method:'POST'});
+    const data = await r.json();
+    document.getElementById('stripe-status').textContent = data.message || 'Connected!';
+    toast('Stripe placeholder set — full integration coming soon');
+    await fetch(API+'/api/platform/onboarding/connect_billing', {method:'POST'});
+  } catch(e) { toast('Error connecting Stripe', 'error'); }
+  btn.textContent = 'Connect Stripe Account';
+  btn.disabled = false;
+}
+
+// ─── REVENUE ─────────────────────────────────────────────────────────────────
+async function loadRevenue() {
+  try {
+    const r = await fetch(API+'/api/platform/revenue');
+    const data = await r.json();
+    renderRevenue(data);
+  } catch(e) { console.error(e); }
+}
+
+function fmt(n) { return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+function renderRevenue(data) {
+  const m = data.this_month || {};
+  const a = data.all_time   || {};
+  document.getElementById('rv-month').textContent     = fmt(m.revenue);
+  document.getElementById('rv-cut-month').textContent = fmt(m.janovum_cut);
+  document.getElementById('rv-keep-month').textContent = fmt((m.revenue||0) - (m.janovum_cut||0));
+  document.getElementById('rv-alltime').textContent   = fmt(a.revenue);
+
+  const entries = data.entries || [];
+  const wrap = document.getElementById('revenue-table-wrap');
+  if (!entries.length) {
+    wrap.innerHTML = '<div style="color:var(--muted);text-align:center;padding:32px;">No deals logged yet. Click "Log Deal" to start tracking revenue.</div>';
+    return;
+  }
+
+  const typeLabel = { setup:'Setup Fee', monthly:'Monthly', other:'Other' };
+  const typeBadge = { setup:'badge-yellow', monthly:'badge-green', other:'badge-blue' };
+
+  wrap.innerHTML = `
+    <table class="revenue-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Client</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Janovum 15%</th>
+          <th>Your Keep</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${[...entries].reverse().map(e=>`
+          <tr>
+            <td>${e.date||''}</td>
+            <td style="font-weight:600;">${e.client_name||'—'}</td>
+            <td><span class="badge ${typeBadge[e.type]||'badge-blue'}">${typeLabel[e.type]||e.type}</span></td>
+            <td style="font-weight:600;">${fmt(e.amount)}</td>
+            <td style="color:var(--purple);">${fmt(e.janovum_cut)}</td>
+            <td style="color:var(--green);">${fmt((e.amount||0)-(e.janovum_cut||0))}</td>
+            <td><button class="btn-danger" onclick="deleteRevEntry('${e.id}')">✕</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+async function deleteRevEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  await fetch(API+'/api/platform/revenue/'+id, {method:'DELETE'});
+  toast('Entry deleted');
+  loadRevenue();
+}
+
+// ─── LOG DEAL MODAL ───────────────────────────────────────────────────────────
+function openLogModal() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('log-date').value = today;
+  document.getElementById('log-client').value = '';
+  document.getElementById('log-amount').value = '';
+  document.getElementById('log-notes').value = '';
+  document.getElementById('log-preview').style.display = 'none';
+  document.getElementById('log-modal').classList.add('open');
+}
+
+function closeLogModal() {
+  document.getElementById('log-modal').classList.remove('open');
+}
+
+document.getElementById('log-amount').addEventListener('input', function() {
+  const amt = parseFloat(this.value) || 0;
+  if (amt > 0) {
+    const cut  = amt * 0.15;
+    const keep = amt - cut;
+    document.getElementById('log-prev-amount').textContent = fmt(amt);
+    document.getElementById('log-prev-cut').textContent    = fmt(cut);
+    document.getElementById('log-prev-keep').textContent   = fmt(keep);
+    document.getElementById('log-preview').style.display  = 'block';
+  } else {
+    document.getElementById('log-preview').style.display  = 'none';
+  }
+});
+
+async function logDeal() {
+  const payload = {
+    client_name: document.getElementById('log-client').value,
+    amount:      parseFloat(document.getElementById('log-amount').value) || 0,
+    type:        document.getElementById('log-type').value,
+    date:        document.getElementById('log-date').value,
+    notes:       document.getElementById('log-notes').value,
+  };
+  if (!payload.client_name) { toast('Enter a client name', 'error'); return; }
+  if (!payload.amount)      { toast('Enter an amount', 'error'); return; }
+
+  try {
+    await fetch(API+'/api/platform/revenue/log', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    closeLogModal();
+    toast(`Deal logged — Janovum cut: ${fmt(payload.amount * 0.15)}`);
+    loadRevenue();
+    // Mark billing step done
+    fetch(API+'/api/platform/onboarding/connect_billing', {method:'POST'});
+  } catch(e) { toast('Error logging deal', 'error'); }
+}
+
+// Close modal on outside click
+document.getElementById('log-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeLogModal();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadOnboarding();
+</script>
+</body>
+</html>

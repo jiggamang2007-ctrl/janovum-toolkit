@@ -528,33 +528,59 @@ function lsSet(key, val) {
 }
 
 // ══════════════════════════════════════════════════════════
+// SERVER API
+// ══════════════════════════════════════════════════════════
+const API = 'https://janovum.com/api/sales';
+
+// ══════════════════════════════════════════════════════════
 // DATA — declare BEFORE auto-login runs so no temporal dead zone
 // ══════════════════════════════════════════════════════════
 let data = { products: [], sales: [], clients: [] };
 let currentPeriod = 'all';
+let currentUser = null;
+let currentPass = null;
 
-function loadData() {
-  if (!currentUser) return { products: [], sales: [], clients: [] };
-  const d = lsGet('st_data_' + currentUser, { products: [], sales: [], clients: [] });
+async function loadData() {
+  if (!currentUser || !currentPass) return { products: [], sales: [], clients: [] };
+  // Try server first
+  try {
+    const r = await fetch(API + '/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: currentUser, pass: currentPass })
+    });
+    if (r.ok) {
+      const d = await r.json();
+      if (!d.products) d.products = [];
+      if (!d.sales) d.sales = [];
+      if (!d.clients) d.clients = [];
+      lsSet('st_cache_' + currentUser, d); // local cache
+      return d;
+    }
+  } catch(e) { console.warn('Server load failed, using cache', e); }
+  // Fallback: local cache
+  const d = lsGet('st_cache_' + currentUser, { products: [], sales: [], clients: [] });
   if (!d.products) d.products = [];
   if (!d.sales) d.sales = [];
   if (!d.clients) d.clients = [];
   return d;
 }
+
 function saveData(d) {
-  if (!currentUser) return;
-  lsSet('st_data_' + currentUser, d);
+  if (!currentUser || !currentPass) return;
+  lsSet('st_cache_' + currentUser, d); // immediate local cache
+  // Fire-and-forget to server
+  fetch(API + '/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: currentUser, pass: currentPass, data: d })
+  }).catch(e => console.warn('Server save failed', e));
 }
 
 // ══════════════════════════════════════════════════════════
 // AUTH SYSTEM
 // ══════════════════════════════════════════════════════════
-const ACCOUNTS_KEY = 'st_accounts';
-let currentUser = null;
 let authMode = 'login';
-
-function getAccounts() { return lsGet(ACCOUNTS_KEY, {}); }
-function saveAccounts(accs) { lsSet(ACCOUNTS_KEY, accs); }
 
 function toggleAuthMode() {
   authMode = authMode === 'login' ? 'signup' : 'login';
@@ -566,42 +592,55 @@ function toggleAuthMode() {
   document.getElementById('authError').textContent = '';
 }
 
-function handleAuth() {
+async function handleAuth() {
   const user = document.getElementById('authUser').value.trim().toLowerCase();
   const pass = document.getElementById('authPass').value;
   const errEl = document.getElementById('authError');
+  const btn = document.getElementById('authSubmit');
 
   if (!user || !pass) { errEl.textContent = 'Fill in all fields'; return; }
   if (user.length < 2) { errEl.textContent = 'Username too short'; return; }
 
-  const accounts = getAccounts();
+  btn.disabled = true;
+  btn.textContent = 'Please wait...';
+  errEl.textContent = '';
 
-  if (authMode === 'signup') {
-    if (accounts[user]) { errEl.textContent = 'Username taken'; return; }
-    const displayName = document.getElementById('authDisplayName').value.trim() || user;
-    accounts[user] = { pass, displayName, created: new Date().toISOString() };
-    saveAccounts(accounts);
-    lsSet('st_data_' + user, { products: [], sales: [], clients: [] });
-    loginAs(user, accounts[user].displayName);
-  } else {
-    if (!accounts[user]) { errEl.textContent = 'Account not found'; return; }
-    if (accounts[user].pass !== pass) { errEl.textContent = 'Wrong password'; return; }
-    loginAs(user, accounts[user].displayName);
+  try {
+    const body = { action: authMode, username: user, pass };
+    if (authMode === 'signup') {
+      const dn = document.getElementById('authDisplayName').value.trim();
+      if (dn) body.displayName = dn;
+    }
+    const r = await fetch(API + '/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const res = await r.json();
+    if (res.ok) {
+      await loginAs(user, pass, res.displayName);
+    } else {
+      errEl.textContent = res.error || 'Error';
+    }
+  } catch(e) {
+    errEl.textContent = 'Network error — check connection';
   }
+  btn.disabled = false;
+  btn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
 }
 
-function loginAs(username, displayName) {
+async function loginAs(username, pass, displayName) {
   try {
     currentUser = username;
-    localStorage.setItem('st_current_user', username);
+    currentPass = pass;
+    lsSet('st_session', { username, pass, displayName });
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').classList.add('active');
     document.getElementById('displayUsername').textContent = displayName || username;
-    data = loadData();
+    data = await loadData();
     refreshAll();
   } catch(e) {
     console.error('loginAs error:', e);
-    // Still show the app even if render fails
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').classList.add('active');
   }
@@ -609,7 +648,8 @@ function loginAs(username, displayName) {
 
 function logout() {
   currentUser = null;
-  localStorage.removeItem('st_current_user');
+  currentPass = null;
+  localStorage.removeItem('st_session');
   document.getElementById('app').classList.remove('active');
   document.getElementById('loginScreen').style.display = '';
   document.getElementById('authUser').value = '';
@@ -621,22 +661,23 @@ function logout() {
 
 function deleteAccount() {
   if (!confirm('Delete your account and ALL data? This cannot be undone.')) return;
-  const accounts = getAccounts();
-  delete accounts[currentUser];
-  saveAccounts(accounts);
-  localStorage.removeItem('st_data_' + currentUser);
+  // Clear local cache
+  localStorage.removeItem('st_cache_' + currentUser);
+  // Clear server data (save empty)
+  fetch(API + '/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: currentUser, pass: currentPass, data: { products: [], sales: [], clients: [] } })
+  }).catch(() => {});
   logout();
 }
 
 // Auto-login check
 (function checkSession() {
-  const saved = localStorage.getItem('st_current_user');
-  if (saved) {
-    const accounts = getAccounts();
-    if (accounts[saved]) {
-      loginAs(saved, accounts[saved].displayName);
-      return;
-    }
+  const saved = lsGet('st_session', null);
+  if (saved && saved.username && saved.pass) {
+    loginAs(saved.username, saved.pass, saved.displayName);
+    return;
   }
   document.getElementById('loginScreen').style.display = '';
 })();

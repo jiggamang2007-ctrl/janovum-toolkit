@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0E1A">
+<title>LOCK IN</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0A0E1A;--card:#131929;--card2:#1A2235;
+  --blue:#3B82F6;--green:#10B981;--orange:#F59E0B;--red:#EF4444;--purple:#8B5CF6;
+  --text:#F1F5F9;--text2:#94A3B8;--border:rgba(255,255,255,0.08)
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;padding-top:calc(32px + env(safe-area-inset-top));z-index:100}
+.login-logo{font-size:64px;margin-bottom:10px;text-align:center}
+.login-title{font-size:36px;font-weight:900;letter-spacing:-1px;text-align:center}
+.login-sub{color:var(--text2);font-size:15px;margin-bottom:48px;text-align:center}
+.input-group{width:100%;max-width:340px;margin-bottom:16px}
+.input-label{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;display:block}
+input,textarea,select{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;color:var(--text);font-size:16px;outline:none;transition:border-color .2s;-webkit-appearance:none}
+input:focus,textarea:focus{border-color:var(--blue)}
+textarea{resize:none}
+.btn-primary{width:100%;max-width:340px;background:var(--blue);color:#fff;border:none;border-radius:14px;padding:18px;font-size:17px;font-weight:700;cursor:pointer;letter-spacing:.5px;transition:opacity .2s,transform .1s;display:block;min-height:56px}
+.btn-primary:active{transform:scale(.98);opacity:.9}
+.btn-secondary{width:100%;background:transparent;border:1px solid var(--border);border-radius:14px;padding:16px;color:var(--text2);font-size:16px;font-weight:600;cursor:pointer;margin-top:10px;min-height:52px}
+.login-error{color:var(--red);font-size:14px;margin-top:12px;text-align:center;min-height:20px}
+
+/* ── APP SHELL ── */
+#app{display:none;padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+.app-header{position:sticky;top:0;background:rgba(10,14,26,.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:calc(14px + env(safe-area-inset-top)) 20px 10px;z-index:50;border-bottom:1px solid var(--border)}
+.header-row1{display:flex;justify-content:space-between;align-items:center}
+.header-date{font-size:13px;color:var(--text2);font-weight:500}
+.header-right{display:flex;align-items:center;gap:10px}
+.live-clock{font-size:13px;color:var(--text2);font-weight:600;font-variant-numeric:tabular-nums}
+.streak-badge{background:var(--card);padding:6px 12px;border-radius:20px;font-size:14px;font-weight:700}
+.header-title{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-top:3px}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(19,25,41,.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;padding:10px 0 0;padding-bottom:calc(12px + env(safe-area-inset-bottom));z-index:50}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;min-height:54px;cursor:pointer;color:var(--text2);transition:color .2s;-webkit-tap-highlight-color:transparent}
+.nav-item.active{color:var(--blue)}
+.nav-icon{font-size:24px}
+.nav-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── SCREENS ── */
+.screen{display:none}.screen.active{display:block}
+
+/* ── HERO ── */
+.day-hero{margin:16px;background:linear-gradient(135deg,#1E3A5F 0%,#0F2040 100%);border-radius:20px;padding:24px;border:1px solid rgba(59,130,246,.35);position:relative;overflow:hidden}
+.day-hero::before{content:'';position:absolute;top:-40%;right:-15%;width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,.2) 0%,transparent 70%)}
+.day-number{font-size:12px;font-weight:700;color:#60A5FA;text-transform:uppercase;letter-spacing:1px}
+.day-quote{font-size:19px;font-weight:800;line-height:1.3;margin:6px 0 14px;letter-spacing:-.3px}
+.progress-row{display:flex;align-items:center;gap:12px}
+.progress-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--blue);border-radius:3px;transition:width .5s ease}
+.progress-text{font-size:13px;font-weight:700;color:#60A5FA;white-space:nowrap}
+
+/* ── GOALS / FOCUS BLOCK ── */
+.goals-card{margin:0 16px 16px;background:var(--card);border-radius:16px;border:1px solid var(--border);overflow:hidden}
+.goals-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.goals-title-row{display:flex;align-items:center;gap:8px}
+.goals-badge{background:rgba(239,68,68,.15);color:#F87171;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px;letter-spacing:.5px}
+.goals-edit-btn{background:none;border:none;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;padding:4px 8px;border-radius:6px}
+.goals-edit-btn:active{background:rgba(255,255,255,.05)}
+.goals-form{padding:14px 16px}
+.primary-task-label{font-size:11px;font-weight:700;color:#F87171;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.primary-task-hint{font-size:12px;color:var(--text2);margin-bottom:10px}
+.goal-input-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.goal-num{font-size:13px;font-weight:800;color:var(--blue);min-width:20px}
+.goal-num.primary{color:#F87171}
+.goal-input{padding:10px 14px;font-size:15px;border-radius:10px}
+.goal-input.primary-input{border-color:rgba(239,68,68,.4);font-size:16px;font-weight:600}
+.goal-input.primary-input:focus{border-color:#EF4444}
+.goals-save-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.goals-list{padding:12px 16px}
+.goal-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.goal-item:last-child{border-bottom:none}
+.goal-item.primary-item{padding:12px 0;border-bottom:2px solid var(--border)}
+.goal-check{width:22px;height:22px;border-radius:7px;border:2px solid rgba(255,255,255,.2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.goal-check.done{background:var(--green);border-color:var(--green)}
+.primary-item .goal-check{width:26px;height:26px;border-radius:8px;border-color:rgba(239,68,68,.5)}
+.goal-text{font-size:15px;font-weight:600;flex:1}
+.primary-item .goal-text{font-size:17px;font-weight:800}
+.goal-text.done{text-decoration:line-through;opacity:.45}
+.primary-win-label{font-size:10px;font-weight:700;color:#F87171;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px}
+.goals-empty{padding:20px 16px;text-align:center;color:var(--text2);font-size:13px}
+
+/* ── SOCIAL LOCK ── */
+.social-lock{margin:0 16px 16px;border-radius:14px;padding:16px 18px;display:flex;align-items:center;gap:14px;border:1px solid}
+.social-lock.locked{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3)}
+.social-lock.unlocked{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)}
+.lock-icon{font-size:26px;flex-shrink:0}
+.lock-text{flex:1}
+.lock-main{font-size:15px;font-weight:800}
+.lock-sub{font-size:13px;opacity:.75;margin-top:2px}
+.lock-time-badge{font-size:13px;font-weight:700;padding:6px 12px;border-radius:10px;white-space:nowrap}
+.locked .lock-time-badge{background:rgba(239,68,68,.15);color:#F87171}
+.unlocked .lock-time-badge{background:rgba(16,185,129,.15);color:#34D399}
+
+/* ── RIGHT NOW ── */
+.right-now-card{margin:0 16px 16px;background:linear-gradient(135deg,#5B21B6 0%,#3730A3 100%);border-radius:16px;padding:16px 20px;border:1px solid rgba(139,92,246,.4)}
+.rn-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.7);margin-bottom:3px}
+.rn-task{font-size:20px;font-weight:800;margin-bottom:2px}
+.rn-desc{font-size:13px;color:rgba(255,255,255,.8)}
+.rn-time{display:inline-block;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-top:8px}
+
+/* ── CARD ── */
+.card{background:var(--card);border-radius:16px;border:1px solid var(--border);margin:0 16px 16px;overflow:hidden}
+.card-header{padding:14px 20px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2)}
+.card-action{background:none;border:none;color:var(--text2);font-size:12px;cursor:pointer;padding:2px 6px}
+
+/* ── ROUTINE ── */
+.routine-item{display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;position:relative;min-height:64px}
+.routine-item:last-child{border-bottom:none}
+.routine-item:active{background:rgba(255,255,255,.05)}
+.routine-item.completed{opacity:.4}
+.routine-item.current-task{background:rgba(59,130,246,.08);border-left:3px solid var(--blue);padding-left:17px}
+.task-checkbox{width:28px;height:28px;border-radius:8px;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all .2s}
+.routine-item.completed .task-checkbox{background:var(--green);border-color:var(--green)}
+.check-icon{display:none;font-size:15px;color:#fff;font-weight:900}
+.routine-item.completed .check-icon{display:block}
+.task-icon{font-size:22px;flex-shrink:0;width:28px;text-align:center;margin-top:2px}
+.task-content{flex:1;min-width:0}
+.task-time{font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.3px}
+.task-name{font-size:16px;font-weight:700;margin:2px 0;line-height:1.2}
+.task-desc{font-size:13px;color:var(--text2);line-height:1.45}
+.timer-btn{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);border-radius:8px;padding:6px 12px;color:#A78BFA;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;margin-top:8px;display:inline-block;min-height:36px}
+
+/* category colors */
+.cat-morning .task-name{color:#FCD34D}
+.cat-gym .task-name{color:#34D399}
+.cat-calls .task-name{color:#F87171}
+.cat-work .task-name{color:#60A5FA}
+.cat-break .task-name{color:#A78BFA}
+.cat-review .task-name{color:#2DD4BF}
+.cat-evening .task-name{color:#FB923C}
+.cat-sleep .task-name{color:#94A3B8}
+
+/* ── HYPERFOCUS TIMER OVERLAY ── */
+#hf-overlay{position:fixed;inset:0;background:#060912;z-index:400;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+.hf-mode-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#A78BFA;margin-bottom:16px}
+.hf-task-name{font-size:22px;font-weight:800;margin-bottom:8px;max-width:300px;line-height:1.3}
+.hf-task-desc{font-size:14px;color:var(--text2);margin-bottom:48px;max-width:280px}
+.hf-timer-ring{width:220px;height:220px;position:relative;margin-bottom:48px}
+.hf-timer-ring svg{transform:rotate(-90deg)}
+.hf-timer-circle-bg{fill:none;stroke:rgba(255,255,255,.06);stroke-width:8}
+.hf-timer-circle-fill{fill:none;stroke:#8B5CF6;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.hf-timer-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.hf-time-display{font-size:52px;font-weight:900;letter-spacing:-2px;font-variant-numeric:tabular-nums}
+.hf-time-label{font-size:12px;color:var(--text2);font-weight:600;margin-top:4px}
+.hf-controls{display:flex;gap:16px}
+.hf-btn{border:none;border-radius:14px;padding:14px 28px;font-size:16px;font-weight:700;cursor:pointer}
+.hf-btn-stop{background:rgba(239,68,68,.15);color:#F87171}
+.hf-btn-pause{background:rgba(255,255,255,.08);color:var(--text)}
+.hf-duration-row{display:flex;gap:10px;margin-bottom:32px}
+.hf-dur-btn{background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:8px 16px;font-size:13px;font-weight:600;color:var(--text2);cursor:pointer}
+.hf-dur-btn.active{background:rgba(139,92,246,.2);border-color:#8B5CF6;color:#A78BFA}
+
+/* ── BRAIN DUMP BUTTON ── */
+#brain-fab{position:fixed;bottom:88px;right:16px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#7C3AED,#4C1D95);border:none;font-size:22px;cursor:pointer;z-index:49;box-shadow:0 4px 20px rgba(139,92,246,.4);display:flex;align-items:center;justify-content:center;transition:transform .15s}
+#brain-fab:active{transform:scale(.92)}
+.brain-badge{position:absolute;top:-4px;right:-4px;background:var(--red);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;display:none}
+
+/* ── CALENDAR ── */
+.cal-screen-pad{padding:16px 16px 0}
+.month-label{font-size:18px;font-weight:800;margin-bottom:12px}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
+.wd-label{text-align:center;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;padding:6px 0}
+.cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:24px}
+.cal-cell{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;cursor:default;position:relative;transition:background .15s}
+.cal-cell.program-day{background:rgba(59,130,246,.1);cursor:pointer}
+.cal-cell.program-day:active{background:rgba(59,130,246,.2)}
+.cal-cell.today{background:var(--blue)!important;font-weight:800}
+.cal-cell.empty{opacity:0;pointer-events:none}
+.cal-num{font-size:14px;font-weight:600}
+.cal-dot{width:4px;height:4px;background:var(--orange);border-radius:50%;position:absolute;bottom:3px}
+.cal-ring{position:absolute;inset:2px;border-radius:7px;border:2px solid var(--green)}
+
+/* ── EVENTS ── */
+.events-pad{padding:16px 16px 0}
+.events-title{font-size:20px;font-weight:800;margin-bottom:4px}
+.events-sub{color:var(--text2);font-size:13px;margin-bottom:16px}
+.add-btn{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--card);border:2px dashed rgba(59,130,246,.4);border-radius:14px;padding:15px;color:var(--blue);font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-bottom:12px}
+.event-card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--border);display:flex;gap:12px;align-items:flex-start}
+.evt-badge{background:var(--blue);border-radius:10px;padding:8px 10px;text-align:center;min-width:50px;flex-shrink:0}
+.evt-month{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;opacity:.8}
+.evt-day{font-size:22px;font-weight:900;line-height:1}
+.evt-info{flex:1}
+.evt-name{font-size:15px;font-weight:700;margin-bottom:3px}
+.evt-meta{font-size:13px;color:var(--text2)}
+.evt-del{background:rgba(239,68,68,.1);border:none;border-radius:8px;padding:6px 10px;color:var(--red);font-size:16px;cursor:pointer;flex-shrink:0}
+.empty-state{text-align:center;padding:48px 20px;color:var(--text2)}
+.empty-icon{font-size:48px;margin-bottom:10px}
+
+/* ── SETTINGS ── */
+.settings-pad{padding:20px 16px 0}
+.section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);padding:16px 4px 8px;display:block}
+.settings-item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.si-label{font-size:15px;font-weight:500}
+.si-value{font-size:14px;color:var(--text2)}
+.si-danger{color:var(--red)!important}
+
+/* ── BRAIN DUMP SCREEN ── */
+.brain-screen-pad{padding:16px}
+.brain-capture{background:var(--card);border-radius:14px;border:1px solid var(--border);padding:14px;margin-bottom:16px}
+.brain-textarea{border-radius:10px;min-height:70px;font-size:15px;border:none;background:transparent;padding:0}
+.brain-submit{width:100%;background:var(--purple);color:#fff;border:none;border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+.brain-list-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:10px}
+.brain-item{background:var(--card);border-radius:12px;padding:14px 16px;margin-bottom:8px;border:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+.brain-item-text{flex:1;font-size:14px;line-height:1.5}
+.brain-item-time{font-size:11px;color:var(--text2);white-space:nowrap;margin-top:2px}
+.brain-del{background:none;border:none;color:var(--text2);font-size:16px;cursor:pointer;padding:0 4px}
+.brain-resolved{opacity:.4;text-decoration:line-through}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);z-index:300;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:var(--card2);border-radius:20px 20px 0 0;width:100%;padding:16px 20px calc(28px + env(safe-area-inset-bottom));max-height:92vh;overflow-y:auto}
+.modal-handle{width:40px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:18px;font-weight:800;margin-bottom:18px}
+.form-group{margin-bottom:14px}
+.dd-task{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.dd-task:last-child{border-bottom:none}
+.dd-time{font-size:11px;color:var(--text2);font-weight:600;min-width:58px;padding-top:3px}
+.dd-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.dd-sub{font-size:12px;color:var(--text2)}
+.today-evt{padding:12px 20px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:center}
+.today-evt:last-child{border-bottom:none}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-logo">🔒</div>
+  <div class="login-title">LOCK IN</div>
+  <div class="login-sub">Admin access only</div>
+  <div class="input-group">
+    <label class="input-label">Username</label>
+    <input type="text" id="lu" placeholder="Username" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+  </div>
+  <div class="input-group">
+    <label class="input-label">Password</label>
+    <input type="password" id="lp" placeholder="Password">
+  </div>
+  <button class="btn-primary" onclick="doLogin()">LOCK IN →</button>
+  <div class="login-error" id="lerr"></div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════════════════════════ -->
+<div id="app">
+  <div class="app-header">
+    <div class="header-row1">
+      <div class="header-date" id="hdate"></div>
+      <div class="header-right">
+        <div class="live-clock" id="hclock"></div>
+        <div class="streak-badge" id="hstreak">🔥 0</div>
+      </div>
+    </div>
+    <div class="header-title" id="htitle">Today's Mission</div>
+  </div>
+
+  <!-- TODAY -->
+  <div id="screen-today" class="screen active">
+    <div class="day-hero">
+      <div class="day-number" id="day-num">Day 1 of 30</div>
+      <div class="day-quote" id="day-quote">Every rep. Every call. Every day.</div>
+      <div class="progress-row">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="progress-text" id="prog-text">0 done</div>
+      </div>
+    </div>
+
+    <!-- FOCUS BLOCK -->
+    <div class="goals-card">
+      <div class="goals-header">
+        <div class="goals-title-row">
+          <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2)">⚡ Focus Block</span>
+          <span class="goals-badge">1 WIN REQUIRED</span>
+        </div>
+        <button class="goals-edit-btn" id="goals-edit-btn" onclick="toggleGoalsEdit()">Edit</button>
+      </div>
+      <div id="goals-form" style="display:none" class="goals-form">
+        <div class="primary-task-label">Primary Win (required)</div>
+        <div class="primary-task-hint">"What does done look like in one sentence?" — no vague tasks.</div>
+        <div class="goal-input-wrap"><span class="goal-num primary">★</span><input class="goal-input primary-input" id="g1" type="text" placeholder="e.g. Make 30 cold calls"></div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin:10px 0 6px">Optional (max 2)</div>
+        <div class="goal-input-wrap"><span class="goal-num">2</span><input class="goal-input" id="g2" type="text" placeholder="e.g. Send 5 follow-up emails"></div>
+        <div class="goal-input-wrap"><span class="goal-num">3</span><input class="goal-input" id="g3" type="text" placeholder="e.g. Finish landing page hero"></div>
+        <button class="goals-save-btn" onclick="saveGoals()">Lock In →</button>
+      </div>
+      <div id="goals-list" class="goals-list" style="display:none"></div>
+      <div id="goals-empty" class="goals-empty">Tap <strong>Edit</strong> — set your ONE primary win for today. Social stays locked until it's done.</div>
+    </div>
+
+    <!-- SOCIAL LOCK -->
+    <div class="social-lock locked" id="social-lock">
+      <div class="lock-icon" id="lock-icon">🔒</div>
+      <div class="lock-text">
+        <div class="lock-main" id="lock-main">Social mode LOCKED</div>
+        <div class="lock-sub" id="lock-sub">No texting girls until 1:00 PM. Build first.</div>
+      </div>
+      <div class="lock-time-badge" id="lock-badge">1:00 PM</div>
+    </div>
+
+    <!-- RIGHT NOW -->
+    <div class="right-now-card">
+      <div class="rn-label">⚡ Right Now</div>
+      <div class="rn-task" id="rn-task">—</div>
+      <div class="rn-desc" id="rn-desc"></div>
+      <div class="rn-time" id="rn-time"></div>
+    </div>
+
+    <!-- TODAY EVENTS -->
+    <div class="card" id="today-evt-card" style="display:none">
+      <div class="card-header"><div class="card-title">📅 Today's Events</div></div>
+      <div id="today-evt-list"></div>
+    </div>
+
+    <!-- ROUTINE -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 Daily Routine</div>
+        <button class="card-action" onclick="resetToday()">Reset ↺</button>
+      </div>
+      <div id="routine-list"></div>
+    </div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="screen-calendar" class="screen">
+    <div class="cal-screen-pad">
+      <div class="month-label">April 2026</div>
+      <div class="cal-weekdays"><div class="wd-label">Sun</div><div class="wd-label">Mon</div><div class="wd-label">Tue</div><div class="wd-label">Wed</div><div class="wd-label">Thu</div><div class="wd-label">Fri</div><div class="wd-label">Sat</div></div>
+      <div class="cal-days" id="cal-grid1"></div>
+      <div class="month-label">May 2026</div>
+      <div class="cal-weekdays"><div class="wd-label">Sun</div><div class="wd-label">Mon</div><div class="wd-label">Tue</div><div class="wd-label">Wed</div><div class="wd-label">Thu</div><div class="wd-label">Fri</div><div class="wd-label">Sat</div></div>
+      <div class="cal-days" id="cal-grid2"></div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div id="screen-events" class="screen">
+    <div class="events-pad">
+      <div class="events-title">Business Events</div>
+      <div class="events-sub">Add South Miami networking events. Orange dots appear on calendar.</div>
+      <button class="add-btn" onclick="openAddEvt()">＋ Add Event</button>
+      <div id="evt-list"></div>
+    </div>
+  </div>
+
+  <!-- BRAIN DUMP -->
+  <div id="screen-brain" class="screen">
+    <div class="brain-screen-pad">
+      <div style="font-size:20px;font-weight:800;margin-bottom:4px">💭 Brain Dump</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:16px">Get it out of your head. Every open loop goes here.</div>
+      <div class="brain-capture">
+        <textarea class="brain-textarea" id="brain-input" placeholder="Type the thought that's distracting you right now..." rows="3"></textarea>
+        <button class="brain-submit" onclick="addBrainItem()">Capture It →</button>
+      </div>
+      <div id="brain-overload-warn" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:12px;padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:700;color:#F87171;margin-bottom:2px">⚠️ Overloaded — too many open loops</div>
+        <div style="font-size:12px;color:var(--text2)">Pick 3 that matter today. Mark the rest as done or delete them. The system only works if you stay under 3.</div>
+      </div>
+      <div class="brain-list-title" id="brain-list-label">Open Loops</div>
+      <div id="brain-list"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="screen-settings" class="screen">
+    <div class="settings-pad">
+      <div style="font-size:20px;font-weight:800;margin-bottom:4px">Settings</div>
+      <span class="section-label">Account</span>
+      <div class="settings-item" onclick="openModal('pw-modal')"><span class="si-label">Change Password</span><span class="si-value">›</span></div>
+      <div class="settings-item" onclick="openModal('un-modal')"><span class="si-label">Change Username</span><span class="si-value" id="un-display">jaden</span></div>
+      <span class="section-label">Schedule</span>
+      <div class="settings-item"><span class="si-label">Program Start</span><span class="si-value">Apr 30, 2026</span></div>
+      <div class="settings-item" onclick="resetToday()"><span class="si-label">Reset Today's Tasks</span><span class="si-value">↺</span></div>
+      <div class="settings-item" onclick="clearGoalsToday()"><span class="si-label">Reset Today's Goals</span><span class="si-value">↺</span></div>
+      <span class="section-label">Session</span>
+      <div class="settings-item" onclick="doLogout()"><span class="si-label si-danger">Log Out</span><span class="si-value">→</span></div>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-today" onclick="switchScreen('today')"><div class="nav-icon">🎯</div><div class="nav-label">Today</div></div>
+    <div class="nav-item" id="nav-calendar" onclick="switchScreen('calendar')"><div class="nav-icon">📅</div><div class="nav-label">Calendar</div></div>
+    <div class="nav-item" id="nav-events" onclick="switchScreen('events')"><div class="nav-icon">🤝</div><div class="nav-label">Events</div></div>
+    <div class="nav-item" id="nav-brain" onclick="switchScreen('brain')"><div class="nav-icon">💭</div><div class="nav-label">Brain</div></div>
+    <div class="nav-item" id="nav-settings" onclick="switchScreen('settings')"><div class="nav-icon">⚙️</div><div class="nav-label">Settings</div></div>
+  </div>
+</div>
+
+<!-- ══ HYPERFOCUS TIMER OVERLAY ══════════════════════════════════════ -->
+<div id="hf-overlay">
+  <div class="hf-mode-label">⚡ HYPERFOCUS MODE</div>
+  <div class="hf-task-name" id="hf-task-name">Deep Work</div>
+  <div class="hf-task-desc" id="hf-task-desc">Stay in the zone. One thing at a time.</div>
+  <div class="hf-duration-row">
+    <button class="hf-dur-btn active" onclick="setHFDuration(25,this)">25 min</button>
+    <button class="hf-dur-btn" onclick="setHFDuration(45,this)">45 min</button>
+    <button class="hf-dur-btn" onclick="setHFDuration(60,this)">60 min</button>
+  </div>
+  <div class="hf-timer-ring">
+    <svg width="220" height="220" viewBox="0 0 220 220">
+      <circle class="hf-timer-circle-bg" cx="110" cy="110" r="98"/>
+      <circle class="hf-timer-circle-fill" id="hf-circle" cx="110" cy="110" r="98" stroke-dasharray="615.75" stroke-dashoffset="0"/>
+    </svg>
+    <div class="hf-timer-text">
+      <div class="hf-time-display" id="hf-display">25:00</div>
+      <div class="hf-time-label" id="hf-state-label">ready</div>
+    </div>
+  </div>
+  <div class="hf-controls">
+    <button class="hf-btn hf-btn-pause" id="hf-pause-btn" onclick="toggleHFPause()">▶ Start</button>
+    <button class="hf-btn hf-btn-stop" onclick="stopHF()">✕ Exit</button>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="evt-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Event</div>
+    <div class="form-group"><label class="input-label">Event Name</label><input type="text" id="en" placeholder="e.g. Miami Entrepreneurs Mixer"></div>
+    <div class="form-group"><label class="input-label">Date</label><input type="date" id="ed" min="2026-04-30" max="2026-05-29"></div>
+    <div class="form-group"><label class="input-label">Time</label><input type="time" id="et"></div>
+    <div class="form-group"><label class="input-label">Location</label><input type="text" id="el" placeholder="e.g. Brickell City Centre, Miami"></div>
+    <div class="form-group"><label class="input-label">Notes (optional)</label><textarea id="eno" rows="3" placeholder="Who to talk to, what to bring..."></textarea></div>
+    <button class="btn-primary" onclick="saveEvt()">Save Event</button>
+    <button class="btn-secondary" onclick="closeModal('evt-modal')">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="day-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="day-modal-title"></div>
+    <div id="day-modal-body"></div>
+    <div style="height:16px"></div>
+    <button class="btn-secondary" onclick="closeModal('day-modal')">Close</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pw-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Change Password</div>
+    <div class="form-group"><label class="input-label">New Password</label><input type="password" id="np1" placeholder="New password"></div>
+    <div class="form-group"><label class="input-label">Confirm</label><input type="password" id="np2" placeholder="Confirm password"></div>
+    <div class="login-error" id="pw-err"></div>
+    <button class="btn-primary" onclick="savePw()">Save</button>
+    <button class="btn-secondary" onclick="closeModal('pw-modal')">Cancel</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="un-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Change Username</div>
+    <div class="form-group"><label class="input-label">New Username</label><input type="text" id="nun" placeholder="Username"></div>
+    <button class="btn-primary" onclick="saveUn()">Save</button>
+    <button class="btn-secondary" onclick="closeModal('un-modal')">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────────────────────────
+const START = new Date('2026-04-30T00:00:00');
+
+const QUOTES = [
+  "Every rep. Every call. Every day.",
+  "Discipline is choosing your future self over your feelings.",
+  "The gym doesn't care how you feel. Neither does the market.",
+  "Make calls while they sleep. Win while they scroll.",
+  "You don't rise to your goals — you fall to your systems.",
+  "Janovum doesn't build itself. You do.",
+  "Show up. Ship. Repeat.",
+  "Momentum is built one call at a time.",
+  "Your future self is watching what you do today.",
+  "No one is coming to save you. Pick up the phone.",
+  "One conversation can change everything. Have it.",
+  "The best time to call was yesterday. Next best is now.",
+  "Pain is temporary. A built company is forever.",
+  "You built this from nothing. Keep going.",
+  "Ordinary people avoid hard calls. Founders make them.",
+  "Each call you skip is money left on the table.",
+  "Win the morning, win the day.",
+  "Action creates clarity. Stop thinking, start dialing.",
+  "Your competition is comfortable. Use that.",
+  "30 days of lockdown = one year ahead of everyone.",
+  "Champions don't wait to feel ready.",
+  "This is your season. Don't waste it.",
+  "Every 'no' is closer to the 'yes' that changes everything.",
+  "Build it like it's already worth millions.",
+  "Stay dangerous. Stay focused.",
+  "You didn't start Janovum to play it safe.",
+  "Week 4. You're not who you were on Day 1.",
+  "End game: look back and be proud.",
+  "Last days. Full send.",
+  "Day 30. You kept your word to yourself. 🏆"
+];
+
+const WEEKDAY = [
+  {t:"7:00 AM",n:"WAKE UP",d:"Feet on the floor. Phone stays face-down.",i:"🌅",c:"morning",timer:false},
+  {t:"7:02 AM",n:"Drink 16oz Water",d:"Your brain is 75% water. Start it right.",i:"💧",c:"morning",timer:false},
+  {t:"7:05 AM",n:"Brush Teeth + Cold Splash",d:"Wake up your face. Look in the mirror. Let's go.",i:"🪥",c:"morning",timer:false},
+  {t:"7:15 AM",n:"5-Minute Stretch",d:"Neck, arms, hamstrings. Get blood moving.",i:"🤸",c:"morning",timer:true},
+  {t:"7:30 AM",n:"GYM — No Excuses",d:"Iron sharpens iron. 90 min. You know what to do.",i:"💪",c:"gym",timer:true},
+  {t:"9:00 AM",n:"Shower + Get Sharp",d:"Dress like the CEO you're becoming. Look the part.",i:"🚿",c:"morning",timer:false},
+  {t:"9:20 AM",n:"High-Protein Breakfast",d:"Eggs, protein shake. No sugar crashes today.",i:"🍳",c:"morning",timer:false},
+  {t:"9:45 AM",n:"Set Today's 3 Goals",d:"Open the Goals section above. Type 3 measurable things.",i:"📝",c:"work",timer:false},
+  {t:"9:55 AM",n:"Phone on DND",d:"Notifications off. You control it — it doesn't control you.",i:"🔕",c:"morning",timer:false},
+  {t:"10:00 AM",n:"🔥 LEAD CALLING — GO",d:"First call dials at 10:00 sharp. Zero delay.",i:"📞",c:"calls",timer:true},
+  {t:"10:30 AM",n:"Keep Dialing",d:"Log every call. Track every outcome in Sales Tracker.",i:"📞",c:"calls",timer:true},
+  {t:"11:00 AM",n:"Keep Dialing",d:"You're in the zone. Don't stop.",i:"📞",c:"calls",timer:true},
+  {t:"11:30 AM",n:"Keep Dialing",d:"One hour left. Strong finish.",i:"📞",c:"calls",timer:true},
+  {t:"12:00 PM",n:"Final Calling Hour",d:"Last push. Make every call count.",i:"📞",c:"calls",timer:true},
+  {t:"1:00 PM",n:"LUNCH — You Earned It",d:"Real food. Sit down. 30 min brain recharge.",i:"🍽️",c:"break",timer:false},
+  {t:"1:30 PM",n:"Follow-Ups + Emails",d:"Reply to callbacks. Send follow-up messages.",i:"📧",c:"work",timer:true},
+  {t:"2:00 PM",n:"Janovum Deep Work",d:"Build features, pitch decks, automate something.",i:"🏗️",c:"work",timer:true},
+  {t:"3:30 PM",n:"Update CRM + Sales Tracker",d:"Log all calls. Keep the pipeline clean.",i:"📊",c:"work",timer:true},
+  {t:"4:00 PM",n:"Review Your Wins",d:"What did you ship today? Count every rep.",i:"✅",c:"review",timer:false},
+  {t:"5:00 PM",n:"Free Time / Networking Event",d:"Check today's events. Or fully decompress.",i:"🎯",c:"evening",timer:false},
+  {t:"9:00 PM",n:"Write Tomorrow's ONE Task",d:"Just one. What moves the needle most tomorrow?",i:"📋",c:"evening",timer:false},
+  {t:"9:15 PM",n:"Phone Across the Room",d:"Charger goes across the room. Not next to you.",i:"🔋",c:"evening",timer:false},
+  {t:"10:00 PM",n:"LIGHTS OUT",d:"Sleep is the cheat code. Recover hard.",i:"😴",c:"sleep",timer:false}
+];
+
+const WEEKEND = [
+  {t:"8:00 AM",n:"WAKE UP",d:"Slight recovery. Still no phone first.",i:"🌅",c:"morning",timer:false},
+  {t:"8:02 AM",n:"Drink 16oz Water",d:"Every day. No exceptions.",i:"💧",c:"morning",timer:false},
+  {t:"8:10 AM",n:"Stretch + Breathe",d:"5 minutes. Decompress from the week.",i:"🤸",c:"morning",timer:true},
+  {t:"8:30 AM",n:"GYM — Weekend Edition",d:"Still showing up. That's what separates you.",i:"💪",c:"gym",timer:true},
+  {t:"10:00 AM",n:"Shower + Breakfast",d:"Fuel up. High protein. Good mood.",i:"🚿",c:"morning",timer:false},
+  {t:"10:30 AM",n:"Janovum Build Session",d:"No calls today — build instead. What's missing?",i:"🏗️",c:"work",timer:true},
+  {t:"12:00 PM",n:"Lunch",d:"Real food. Sit down. No screens.",i:"🍽️",c:"break",timer:false},
+  {t:"1:00 PM",n:"Janovum Strategy",d:"Review the week. Plan next week's 3 priorities.",i:"📊",c:"work",timer:true},
+  {t:"2:30 PM",n:"Self-Improvement",d:"Read, podcast, research competitors, learn.",i:"📚",c:"work",timer:true},
+  {t:"4:00 PM",n:"Free Time",d:"Recharge. Walk, hang out, whatever you need.",i:"🌴",c:"break",timer:false},
+  {t:"5:00 PM",n:"Networking Event (if any)",d:"Check your events for today.",i:"🤝",c:"evening",timer:false},
+  {t:"8:00 PM",n:"Research Next Week's Leads",d:"Who are you calling Monday? Find them tonight.",i:"🔍",c:"work",timer:true},
+  {t:"9:00 PM",n:"Write Monday's ONE Task",d:"Sunday sets the week. Decide now.",i:"📝",c:"evening",timer:false},
+  {t:"9:15 PM",n:"Phone Across the Room",d:"Rest. You earned it.",i:"🔋",c:"evening",timer:false},
+  {t:"10:00 PM",n:"LIGHTS OUT",d:"Week starts tomorrow. Sleep strong.",i:"😴",c:"sleep",timer:false}
+];
+
+// ── STORAGE ───────────────────────────────────────────────────────────
+const S = {
+  get:(k,fb)=>{try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):fb}catch{return fb}},
+  set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),
+  del:(k)=>localStorage.removeItem(k)
+};
+const getUN=()=>S.get('_un','jaden');
+const getPW=()=>S.get('_pw','lockin2026');
+const getChecked=(ds)=>S.get('ck_'+ds,[]);
+const setChecked=(ds,arr)=>S.set('ck_'+ds,arr);
+const getEvts=()=>S.get('_evts',[]);
+const setEvts=(e)=>S.set('_evts',e);
+const fmtDate=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  // Try auto-login from stored token
+  const token=S.get('_token',null);
+  if(token){
+    try{
+      const[u,p]=atob(token).split(':');
+      if(u===getUN()&&p===getPW()){
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('app').style.display='block';
+        launchApp();
+        return;
+      }
+    }catch(e){}
+    S.del('_token');
+  }
+});
+document.getElementById('lp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+document.getElementById('lu').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('lp').focus();});
+
+function doLogin(){
+  const u=document.getElementById('lu').value.trim();
+  const p=document.getElementById('lp').value;
+  if(u===getUN()&&p===getPW()){
+    S.set('_token',btoa(u+':'+p));
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    launchApp();
+  } else {
+    const el=document.getElementById('lerr');
+    el.textContent='Wrong username or password.';
+    setTimeout(()=>el.textContent='',3000);
+  }
+}
+function doLogout(){
+  if(!confirm('Log out?'))return;
+  S.del('_token');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('lu').value='';
+  document.getElementById('lp').value='';
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+let _tick;
+function launchApp(){
+  updateHeader();
+  renderToday();
+  renderCalendar();
+  renderEvtList();
+  renderBrainList();
+  document.getElementById('un-display').textContent=getUN();
+  if(_tick)clearInterval(_tick);
+  _tick=setInterval(()=>{updateClock();updateRightNow();updateSocialLock();},1000);
+}
+
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MSHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function dayNum(d){
+  const a=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const b=new Date(START.getFullYear(),START.getMonth(),START.getDate());
+  return Math.floor((a-b)/86400000)+1;
+}
+function routine(d){return(d.getDay()===0||d.getDay()===6)?WEEKEND:WEEKDAY;}
+
+function updateHeader(){
+  const now=new Date();
+  document.getElementById('hdate').textContent=DAYS[now.getDay()]+', '+MONTHS[now.getMonth()]+' '+now.getDate();
+  updateClock();
+  const n=dayNum(now);
+  document.getElementById('htitle').textContent=n>=1&&n<=30?`Day ${n} of 30 — Lock In`:n>30?'30-Day Program Complete 🏆':"Today's Mission";
+  updateStreak();
+}
+
+function updateClock(){
+  const now=new Date();
+  const h=now.getHours(),m=String(now.getMinutes()).padStart(2,'0'),s=String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('hclock').textContent=`${h%12||12}:${m}:${s} ${h>=12?'PM':'AM'}`;
+}
+
+// ── SOCIAL LOCK ───────────────────────────────────────────────────────
+function isPrimaryGoalDone(){
+  const ds=fmtDate(new Date());
+  const goals=S.get('goals_'+ds,null);
+  const done=S.get('goals_done_'+ds,[]);
+  if(!goals||!goals.length) return false;
+  return done.includes(0);
+}
+
+function updateSocialLock(){
+  const unlocked=isPrimaryGoalDone();
+  const el=document.getElementById('social-lock');
+  const icon=document.getElementById('lock-icon');
+  const main=document.getElementById('lock-main');
+  const sub=document.getElementById('lock-sub');
+  const badge=document.getElementById('lock-badge');
+  if(!unlocked){
+    el.className='social-lock locked';
+    icon.textContent='🔒';
+    main.textContent='Social mode LOCKED';
+    sub.textContent='Complete your primary win first. Then enjoy.';
+    badge.textContent='Win first';
+  } else {
+    el.className='social-lock unlocked';
+    icon.textContent='🔓';
+    main.textContent='Social mode UNLOCKED';
+    sub.textContent='Primary win done. You earned it. Go enjoy.';
+    badge.textContent='Unlocked ✓';
+  }
+}
+
+// ── GOALS ─────────────────────────────────────────────────────────────
+function toggleGoalsEdit(){
+  const ds=fmtDate(new Date());
+  const goals=S.get('goals_'+ds,null);
+  const form=document.getElementById('goals-form');
+  const btn=document.getElementById('goals-edit-btn');
+  if(form.style.display==='none'){
+    if(goals){
+      document.getElementById('g1').value=goals[0]||'';
+      document.getElementById('g2').value=goals[1]||'';
+      document.getElementById('g3').value=goals[2]||'';
+    }
+    form.style.display='block';
+    document.getElementById('goals-list').style.display='none';
+    document.getElementById('goals-empty').style.display='none';
+    btn.textContent='Cancel';
+  } else {
+    form.style.display='none';
+    btn.textContent='Edit';
+    renderGoals();
+  }
+}
+
+function saveGoals(){
+  const ds=fmtDate(new Date());
+  const g=[
+    document.getElementById('g1').value.trim(),
+    document.getElementById('g2').value.trim(),
+    document.getElementById('g3').value.trim()
+  ].filter(x=>x);
+  if(!g.length){alert('Enter at least one goal.');return;}
+  S.set('goals_'+ds,g);
+  S.set('goals_done_'+ds,[]);
+  document.getElementById('goals-form').style.display='none';
+  document.getElementById('goals-edit-btn').textContent='Edit';
+  renderGoals();
+}
+
+function renderGoals(){
+  const ds=fmtDate(new Date());
+  const goals=S.get('goals_'+ds,null);
+  const done=S.get('goals_done_'+ds,[]);
+  const list=document.getElementById('goals-list');
+  const empty=document.getElementById('goals-empty');
+  if(!goals||!goals.length){
+    list.style.display='none';
+    empty.style.display='block';
+    updateSocialLock();
+    return;
+  }
+  empty.style.display='none';
+  list.style.display='block';
+  list.innerHTML=goals.map((g,i)=>{
+    const isPrimary=i===0;
+    const isDone=done.includes(i);
+    return `<div class="goal-item${isPrimary?' primary-item':''}" onclick="toggleGoalDone(${i})">
+      <div class="goal-check${isDone?' done':''}">
+        ${isDone?'✓':''}
+      </div>
+      <div class="goal-text${isDone?' done':''}">
+        ${isPrimary?`<span class="primary-win-label">★ Primary Win</span>`:''}
+        ${g}
+      </div>
+    </div>`;
+  }).join('');
+  updateSocialLock();
+}
+
+function toggleGoalDone(i){
+  const ds=fmtDate(new Date());
+  let done=S.get('goals_done_'+ds,[]);
+  done=done.includes(i)?done.filter(x=>x!==i):[...done,i];
+  S.set('goals_done_'+ds,done);
+  renderGoals();
+}
+
+function clearGoalsToday(){
+  if(!confirm('Clear today\'s goals?'))return;
+  const ds=fmtDate(new Date());
+  S.del('goals_'+ds);
+  S.del('goals_done_'+ds);
+  renderGoals();
+}
+
+// ── TODAY ─────────────────────────────────────────────────────────────
+function renderToday(){
+  const now=new Date();
+  const ds=fmtDate(now);
+  const n=dayNum(now);
+  const r=routine(now);
+  const checked=getChecked(ds);
+
+  const qi=Math.max(0,Math.min(n-1,QUOTES.length-1));
+  document.getElementById('day-num').textContent=n>=1&&n<=30?`Day ${n} of 30`:n>30?'Program Complete 🏆':'Starting Soon';
+  document.getElementById('day-quote').textContent=QUOTES[qi>=0?qi:0];
+  const pct=Math.round(checked.length/r.length*100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-text').textContent=`${checked.length} / ${r.length} done`;
+
+  renderGoals();
+  updateRightNow();
+  updateSocialLock();
+
+  // Today events
+  const todayEvts=getEvts().filter(e=>e.date===ds);
+  const ec=document.getElementById('today-evt-card');
+  if(todayEvts.length>0){
+    ec.style.display='';
+    document.getElementById('today-evt-list').innerHTML=todayEvts.map(e=>`
+      <div class="today-evt">
+        <div style="font-size:22px">📍</div>
+        <div>
+          <div style="font-weight:700;font-size:15px">${e.name}</div>
+          <div style="color:var(--text2);font-size:13px">${fmtTime(e.time)} · ${e.location||'No location'}</div>
+          ${e.notes?`<div style="color:var(--text2);font-size:12px;margin-top:3px">${e.notes}</div>`:''}
+        </div>
+      </div>`).join('');
+  } else { ec.style.display='none'; }
+
+  // Routine
+  const ci=currentTaskIdx(r);
+  const list=document.getElementById('routine-list');
+  list.innerHTML='';
+  r.forEach((task,i)=>{
+    const done=checked.includes(i);
+    const cur=i===ci;
+    const div=document.createElement('div');
+    div.className=`routine-item cat-${task.c}${done?' completed':''}${cur?' current-task':''}`;
+    div.innerHTML=`
+      <div class="task-checkbox"><span class="check-icon">✓</span></div>
+      <div class="task-icon">${task.i}</div>
+      <div class="task-content">
+        <div class="task-time">${task.t}</div>
+        <div class="task-name">${task.n}</div>
+        <div class="task-desc">${task.d}</div>
+        ${task.timer?`<div class="timer-btn" data-idx="${i}">⏱ Focus Timer</div>`:''}
+      </div>`;
+    div.querySelector('.task-checkbox')?.addEventListener('click',e=>{e.stopPropagation();toggleTask(ds,i,r);});
+    const tb=div.querySelector('.timer-btn');
+    if(tb) tb.addEventListener('click',e=>{e.stopPropagation();startHF(task.n,task.d);});
+    list.appendChild(div);
+  });
+}
+
+function toggleTask(ds,i,r){
+  let c=getChecked(ds);
+  c=c.includes(i)?c.filter(x=>x!==i):[...c,i];
+  setChecked(ds,c);
+  updateStreak();
+  renderToday();
+}
+function resetToday(){
+  if(!confirm('Reset all tasks for today?'))return;
+  S.del('ck_'+fmtDate(new Date()));
+  renderToday();
+}
+
+function currentTaskIdx(r){
+  const now=new Date();
+  const cur=now.getHours()*60+now.getMinutes();
+  for(let i=r.length-1;i>=0;i--){
+    const parts=r[i].t.split(' ');
+    const[h,m]=parts[0].split(':').map(Number);
+    const ampm=parts[1];
+    let hh=h;
+    if(ampm==='PM'&&h!==12)hh+=12;
+    if(ampm==='AM'&&h===12)hh=0;
+    if(cur>=hh*60+(m||0))return i;
+  }
+  return 0;
+}
+
+function updateRightNow(){
+  const now=new Date();
+  const r=routine(now);
+  const idx=currentTaskIdx(r);
+  const task=r[idx];
+  document.getElementById('rn-task').textContent=task.i+' '+task.n;
+  document.getElementById('rn-desc').textContent=task.d;
+  document.getElementById('rn-time').textContent=task.t;
+}
+
+// ── STREAK ────────────────────────────────────────────────────────────
+function updateStreak(){
+  const now=new Date();
+  const ds=fmtDate(now);
+  const r=routine(now);
+  const checked=getChecked(ds);
+  let streak=S.get('_streak',0);
+  const lastDs=S.get('_streak_date','');
+  if(checked.length===r.length&&lastDs!==ds){
+    const yest=new Date(now);yest.setDate(yest.getDate()-1);
+    streak=fmtDate(yest)===lastDs?streak+1:1;
+    S.set('_streak',streak);S.set('_streak_date',ds);
+  }
+  document.getElementById('hstreak').textContent='🔥 '+streak;
+}
+
+// ── HYPERFOCUS TIMER ──────────────────────────────────────────────────
+let hfDuration=25*60, hfRemaining=25*60, hfRunning=false, hfInterval=null;
+const circumference=2*Math.PI*98;
+
+function startHF(taskName,taskDesc){
+  document.getElementById('hf-task-name').textContent=taskName;
+  document.getElementById('hf-task-desc').textContent=taskDesc;
+  hfRemaining=hfDuration;
+  hfRunning=false;
+  updateHFDisplay();
+  document.getElementById('hf-pause-btn').textContent='▶ Start';
+  document.getElementById('hf-state-label').textContent='ready';
+  document.getElementById('hf-overlay').style.display='flex';
+}
+
+function setHFDuration(min,btn){
+  document.querySelectorAll('.hf-dur-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  hfDuration=min*60;
+  hfRemaining=hfDuration;
+  hfRunning=false;
+  if(hfInterval){clearInterval(hfInterval);hfInterval=null;}
+  document.getElementById('hf-pause-btn').textContent='▶ Start';
+  document.getElementById('hf-state-label').textContent='ready';
+  updateHFDisplay();
+}
+
+function toggleHFPause(){
+  if(!hfRunning){
+    hfRunning=true;
+    document.getElementById('hf-pause-btn').textContent='⏸ Pause';
+    document.getElementById('hf-state-label').textContent='locked in';
+    hfInterval=setInterval(()=>{
+      hfRemaining--;
+      updateHFDisplay();
+      if(hfRemaining<=0){
+        clearInterval(hfInterval);hfRunning=false;
+        document.getElementById('hf-pause-btn').textContent='▶ Restart';
+        document.getElementById('hf-state-label').textContent='done 🏆';
+        try{new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAA').play();}catch(e){}
+      }
+    },1000);
+  } else {
+    hfRunning=false;
+    clearInterval(hfInterval);
+    document.getElementById('hf-pause-btn').textContent='▶ Resume';
+    document.getElementById('hf-state-label').textContent='paused';
+  }
+}
+
+function updateHFDisplay(){
+  const m=Math.floor(hfRemaining/60);
+  const s=hfRemaining%60;
+  document.getElementById('hf-display').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const pct=hfRemaining/hfDuration;
+  const offset=circumference*(1-pct);
+  document.getElementById('hf-circle').style.strokeDashoffset=offset;
+  document.getElementById('hf-circle').style.strokeDasharray=circumference;
+}
+
+function stopHF(){
+  if(hfInterval)clearInterval(hfInterval);
+  hfRunning=false;hfInterval=null;
+  document.getElementById('hf-overlay').style.display='none';
+}
+
+// ── BRAIN DUMP ────────────────────────────────────────────────────────
+function addBrainItem(){
+  const inp=document.getElementById('brain-input');
+  const text=inp.value.trim();
+  if(!text)return;
+  const items=S.get('_brain',[]);
+  items.unshift({id:Date.now().toString(),text,ts:new Date().toISOString(),done:false});
+  S.set('_brain',items);
+  inp.value='';
+  renderBrainList();
+}
+
+document.getElementById('brain-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();addBrainItem();}
+});
+
+function toggleBrainDone(id){
+  const items=S.get('_brain',[]);
+  const it=items.find(x=>x.id===id);
+  if(it)it.done=!it.done;
+  S.set('_brain',items);
+  renderBrainList();
+}
+
+function deleteBrainItem(id){
+  S.set('_brain',S.get('_brain',[]).filter(x=>x.id!==id));
+  renderBrainList();
+}
+
+function renderBrainList(){
+  const items=S.get('_brain',[]);
+  const el=document.getElementById('brain-list');
+  const openItems=items.filter(x=>!x.done);
+  const openCount=openItems.length;
+
+  // Update label + overload warning
+  const label=document.getElementById('brain-list-label');
+  if(openCount>3){
+    label.innerHTML=`Open Loops <span style="color:var(--red);font-weight:900">${openCount} — OVERLOADED</span>`;
+    const warn=document.getElementById('brain-overload-warn');
+    if(warn) warn.style.display='block';
+  } else {
+    label.innerHTML=`Open Loops <span style="color:${openCount===3?'#F59E0B':'var(--green)'}">(${openCount}/3)</span>`;
+    const warn=document.getElementById('brain-overload-warn');
+    if(warn) warn.style.display='none';
+  }
+
+  if(!items.length){
+    el.innerHTML=`<div class="empty-state"><div class="empty-icon">🧠</div><div>Nothing captured yet. When a thought distracts you, dump it here and get back to work.</div></div>`;
+    return;
+  }
+  el.innerHTML=items.map(item=>{
+    const d=new Date(item.ts);
+    const t=`${d.getMonth()+1}/${d.getDate()} ${d.getHours()%12||12}:${String(d.getMinutes()).padStart(2,'0')} ${d.getHours()>=12?'PM':'AM'}`;
+    return `<div class="brain-item">
+      <div style="flex:1">
+        <div class="brain-item-text${item.done?' brain-resolved':''}" onclick="toggleBrainDone('${item.id}')" style="cursor:pointer">${item.text}</div>
+        <div class="brain-item-time">${t}</div>
+      </div>
+      <button class="brain-del" onclick="deleteBrainItem('${item.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── CALENDAR ──────────────────────────────────────────────────────────
+function renderCalendar(){
+  buildMonth('cal-grid1',2026,3);
+  buildMonth('cal-grid2',2026,4);
+}
+function buildMonth(gridId,year,month){
+  const grid=document.getElementById(gridId);grid.innerHTML='';
+  const first=new Date(year,month,1).getDay();
+  const days=new Date(year,month+1,0).getDate();
+  const today=fmtDate(new Date());
+  const evts=getEvts();
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='cal-cell empty';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const date=new Date(year,month,d);
+    const ds=fmtDate(date);
+    const dn=dayNum(date);
+    const isProg=dn>=1&&dn<=30;
+    const isToday=ds===today;
+    const hasEvt=evts.some(e=>e.date===ds);
+    const r=routine(date);
+    const chk=getChecked(ds);
+    const isComplete=isProg&&chk.length===r.length;
+    const cell=document.createElement('div');
+    cell.className=`cal-cell${isProg?' program-day':''}${isToday?' today':''}`;
+    let inner=`<div class="cal-num">${d}</div>`;
+    if(hasEvt)inner+=`<div class="cal-dot"></div>`;
+    if(isComplete&&!isToday)inner+=`<div class="cal-ring"></div>`;
+    cell.innerHTML=inner;
+    if(isProg)cell.addEventListener('click',()=>showDayModal(date,ds,dn));
+    grid.appendChild(cell);
+  }
+}
+function showDayModal(date,ds,dn){
+  document.getElementById('day-modal-title').textContent=`Day ${dn} — ${DAYS[date.getDay()]}, ${MSHORT[date.getMonth()]} ${date.getDate()}`;
+  const evts=getEvts().filter(e=>e.date===ds);
+  const r=routine(date);
+  let html='';
+  if(evts.length){
+    html+=`<div style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:12px;margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">📅 Events</div>`;
+    evts.forEach(e=>{html+=`<div style="font-size:14px;font-weight:600">${e.name}</div><div style="font-size:12px;color:var(--text2)">${fmtTime(e.time)} · ${e.location||''}</div>`;});
+    html+='</div>';
+  }
+  r.forEach(task=>{html+=`<div class="dd-task"><div class="dd-time">${task.t}</div><div><div class="dd-name">${task.i} ${task.n}</div><div class="dd-sub">${task.d}</div></div></div>`;});
+  document.getElementById('day-modal-body').innerHTML=html;
+  openModal('day-modal');
+}
+
+// ── EVENTS ────────────────────────────────────────────────────────────
+function renderEvtList(){
+  const evts=getEvts().sort((a,b)=>a.date.localeCompare(b.date));
+  const el=document.getElementById('evt-list');
+  if(!evts.length){el.innerHTML=`<div class="empty-state"><div class="empty-icon">📅</div><div>No events yet. Add South Miami networking events to stay in the room where deals happen.</div></div>`;return;}
+  el.innerHTML=evts.map(e=>{
+    const d=new Date(e.date+'T12:00:00');
+    return `<div class="event-card"><div class="evt-badge"><div class="evt-month">${MSHORT[d.getMonth()]}</div><div class="evt-day">${d.getDate()}</div></div><div class="evt-info"><div class="evt-name">${e.name}</div><div class="evt-meta">${fmtTime(e.time)} · ${e.location||'No location'}</div>${e.notes?`<div style="font-size:12px;color:var(--text2);margin-top:3px">${e.notes}</div>`:''}</div><button class="evt-del" onclick="deleteEvt('${e.id}')">✕</button></div>`;
+  }).join('');
+}
+function openAddEvt(){['en','ed','et','el','eno'].forEach(id=>document.getElementById(id).value='');openModal('evt-modal');}
+function saveEvt(){
+  const name=document.getElementById('en').value.trim();
+  const date=document.getElementById('ed').value;
+  if(!name||!date){alert('Name and date are required.');return;}
+  const evts=getEvts();
+  evts.push({id:Date.now().toString(),name,date,time:document.getElementById('et').value,location:document.getElementById('el').value.trim(),notes:document.getElementById('eno').value.trim()});
+  setEvts(evts);closeModal('evt-modal');renderEvtList();renderToday();renderCalendar();
+}
+function deleteEvt(id){
+  if(!confirm('Delete this event?'))return;
+  setEvts(getEvts().filter(e=>e.id!==id));renderEvtList();renderToday();renderCalendar();
+}
+
+// ── SETTINGS ──────────────────────────────────────────────────────────
+function savePw(){
+  const p1=document.getElementById('np1').value,p2=document.getElementById('np2').value;
+  const err=document.getElementById('pw-err');
+  if(p1.length<4){err.textContent='Too short (min 4 chars).';return;}
+  if(p1!==p2){err.textContent="Passwords don't match.";return;}
+  S.set('_pw',p1);closeModal('pw-modal');alert('Password updated!');
+}
+function saveUn(){
+  const u=document.getElementById('nun').value.trim();
+  if(!u)return;S.set('_un',u);document.getElementById('un-display').textContent=u;closeModal('un-modal');
+}
+
+// ── NAV ───────────────────────────────────────────────────────────────
+const SCREEN_TITLES={today:"Today's Mission",calendar:"30-Day Plan",events:"Business Events",brain:"Brain Dump",settings:"Settings"};
+function switchScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  document.getElementById('htitle').textContent=SCREEN_TITLES[name];
+  if(name==='today')renderToday();
+  if(name==='calendar')renderCalendar();
+  if(name==='events')renderEvtList();
+  if(name==='brain')renderBrainList();
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(el=>{el.addEventListener('click',function(e){if(e.target===this)closeModal(this.id);});});
+
+// ── UTILS ─────────────────────────────────────────────────────────────
+function fmtTime(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;}
+</script>
+</body>
+</html>
